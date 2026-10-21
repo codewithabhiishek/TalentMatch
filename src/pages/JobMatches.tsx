@@ -39,11 +39,11 @@ export function JobMatches() {
   const totalPages = Math.ceil(enrichedMatches.length / perPage);
   const paginated = enrichedMatches.slice((page - 1) * perPage, page * perPage);
 
-  const statusColors: Record<string, string> = {
-    pending: 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]',
-    reviewed: 'bg-[var(--color-info-bg)] text-[var(--color-info)]',
-    accepted: 'bg-[var(--color-success-bg)] text-[var(--color-success)]',
-    rejected: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
+  const statusBadgeClass: Record<string, string> = {
+    pending: 'badge-warning',
+    reviewed: 'badge-info',
+    accepted: 'badge-success',
+    rejected: 'badge-error',
   };
 
   const StatusIcon = ({ status }: { status: string }) => {
@@ -64,49 +64,63 @@ export function JobMatches() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
         <div>
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Job Matches</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] tracking-tight">Job Matches</h2>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Review candidate-to-job matches with explainable scoring</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] px-2 py-1 bg-[var(--color-warning-bg)] text-[var(--color-warning)] rounded font-medium">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="badge badge-warning text-[10px] py-1 px-2.5 font-medium">
             Demo scores — not scientifically validated predictions
           </span>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+      {/* Filter & Search Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 animate-fade-in" style={{ animationDelay: '60ms' }}>
+        <div className="relative flex-1 max-w-md">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] pointer-events-none" />
           <input
             type="text"
             placeholder="Search by candidate, position, facility..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="input w-full h-9 pl-9 pr-3 text-sm placeholder:text-[var(--color-text-tertiary)]"
+            className="input w-full h-9 pl-9 pr-3 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)]"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <Filter size={13} className="text-[var(--color-text-tertiary)]" />
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="relative flex items-center">
+            <Filter size={13} className="absolute left-2.5 text-[var(--color-text-tertiary)] pointer-events-none" />
             <select
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="input h-9 px-3 text-sm cursor-pointer"
+              className="input h-9 pl-8 pr-7 text-xs font-medium cursor-pointer appearance-none bg-transparent"
+              aria-label="Filter by match status"
             >
-              {matchStatuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              {matchStatuses.map(s => (
+                <option key={s} value={s} className="bg-[var(--color-surface)] text-[var(--color-text-primary)]">
+                  {s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
             </select>
+            <ChevronDown size={12} className="absolute right-2 text-[var(--color-text-tertiary)] pointer-events-none" />
           </div>
-          <select
-            value={specialtyFilter}
-            onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
-            className="input h-9 px-3 text-sm cursor-pointer"
-          >
-            {specialties.map(s => <option key={s} value={s}>{s === 'All' ? 'All Specialties' : s}</option>)}
-          </select>
+          <div className="relative flex items-center">
+            <select
+              value={specialtyFilter}
+              onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
+              className="input h-9 px-3 pr-7 text-xs font-medium cursor-pointer appearance-none bg-transparent"
+              aria-label="Filter by specialty"
+            >
+              {specialties.map(s => (
+                <option key={s} value={s} className="bg-[var(--color-surface)] text-[var(--color-text-primary)]">
+                  {s === 'All' ? 'All Specialties' : s}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={12} className="absolute right-2 text-[var(--color-text-tertiary)] pointer-events-none" />
+          </div>
         </div>
       </div>
 
@@ -204,7 +218,7 @@ export function JobMatches() {
                 </div>
 
                 {/* Status badge anchored on the far right */}
-                <span className={`badge flex items-center gap-1 text-[10px] font-medium h-6 px-2 rounded flex-shrink-0 ml-1 ${statusColors[m.status]}`}>
+                <span className={`badge ${statusBadgeClass[m.status] || 'badge-neutral'} flex items-center gap-1 text-[10px] font-medium h-6 px-2 rounded flex-shrink-0 ml-1`}>
                   <StatusIcon status={m.status} />
                   <span className="capitalize">{m.status}</span>
                 </span>
@@ -272,24 +286,47 @@ export function JobMatches() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-3 border-t border-[var(--color-border)]/60">
           <p className="text-xs text-[var(--color-text-tertiary)]">
-            Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, enrichedMatches.length)} of {enrichedMatches.length}
+            Showing <span className="font-medium text-[var(--color-text-secondary)]">{(page - 1) * perPage + 1}</span>–<span className="font-medium text-[var(--color-text-secondary)]">{Math.min(page * perPage, enrichedMatches.length)}</span> of <span className="font-medium text-[var(--color-text-secondary)]">{enrichedMatches.length}</span> matches
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn btn-secondary btn-sm">Previous</button>
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="btn btn-secondary btn-sm"
+            >
+              Previous
+            </button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i + 1} onClick={() => setPage(i + 1)} className={`btn btn-sm w-7 px-0 ${page === i + 1 ? 'btn-primary' : 'btn-secondary'}`}>{i + 1}</button>
+              <button
+                key={i + 1}
+                onClick={() => setPage(i + 1)}
+                className={`btn btn-sm w-7 px-0 ${page === i + 1 ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {i + 1}
+              </button>
             ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn btn-secondary btn-sm">Next</button>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="btn btn-secondary btn-sm"
+            >
+              Next
+            </button>
           </div>
         </div>
       )}
 
       {enrichedMatches.length === 0 && (
-        <div className="text-center py-12 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg animate-fade-in">
-          <p className="text-sm text-[var(--color-text-secondary)]">No matches found</p>
-          <button onClick={() => { setSearch(''); setStatusFilter('All'); setSpecialtyFilter('All'); }} className="mt-2 text-xs text-[var(--color-info)] hover:underline">Clear filters</button>
+        <div className="text-center py-12 card animate-fade-in">
+          <p className="text-sm font-medium text-[var(--color-text-secondary)]">No matches found</p>
+          <button
+            onClick={() => { setSearch(''); setStatusFilter('All'); setSpecialtyFilter('All'); }}
+            className="mt-2 text-xs text-[var(--color-info)] hover:underline font-medium"
+          >
+            Clear all filters
+          </button>
         </div>
       )}
     </div>
