@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, X, FileText, CheckCircle, AlertCircle, Loader2, Eye, RotateCcw,
-  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight
+  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { extractDocumentText } from '../services/documentParser';
 import { parseResumeWithAI } from '../services/aiExtractionService';
+import { downloadCandidateReport } from '../services/downloadService';
 
 interface UploadFile {
   id: string;
@@ -34,7 +35,7 @@ const processingSteps = [
 ];
 
 export function ResumeImport() {
-  const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig } = useAppStore();
+  const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig, candidates } = useAppStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -295,14 +296,28 @@ export function ResumeImport() {
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {f.status === 'completed' && f.candidateId && (
-                        <button
-                          onClick={() => navigateTo('candidate-profile', f.candidateId)}
-                          className="btn btn-primary btn-sm text-xs cursor-pointer flex items-center gap-1"
-                        >
-                          <Eye size={12} /> View Profile
-                        </button>
-                      )}
+                      {f.status === 'completed' && f.candidateId && (() => {
+                        const cand = candidates.find(c => c.id === f.candidateId);
+                        return (
+                          <>
+                            {cand && (
+                              <button
+                                onClick={() => downloadCandidateReport(cand)}
+                                className="btn btn-secondary btn-sm text-xs cursor-pointer flex items-center gap-1"
+                                title="Download Candidate Dossier"
+                              >
+                                <Download size={11} /> Dossier
+                              </button>
+                            )}
+                            <button
+                              onClick={() => navigateTo('candidate-profile', f.candidateId)}
+                              className="btn btn-primary btn-sm text-xs cursor-pointer flex items-center gap-1"
+                            >
+                              <Eye size={12} /> View Profile
+                            </button>
+                          </>
+                        );
+                      })()}
                       {f.status === 'failed' && (
                         <button
                           onClick={() => retryFile(f.id)}
@@ -324,24 +339,44 @@ export function ResumeImport() {
                   </div>
 
                   {/* Parsed Candidate Summary Card if completed */}
-                  {f.status === 'completed' && (
-                    <div className="mt-2.5 p-2.5 bg-[var(--color-surface-secondary)]/70 border border-[var(--color-border)] rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <strong className="text-[var(--color-text-primary)]">{f.candidateName}</strong>
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-medium">
-                            {f.specialty}
+                  {f.status === 'completed' && (() => {
+                    const cand = candidates.find(c => c.id === f.candidateId);
+                    return (
+                      <div className="mt-2.5 p-2.5 bg-[var(--color-surface-secondary)]/70 border border-[var(--color-border)] rounded-md text-xs space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <strong className="text-[var(--color-text-primary)]">{f.candidateName}</strong>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-medium">
+                                {f.specialty}
+                              </span>
+                              {cand?.confidenceScore && (
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-semibold flex items-center gap-0.5">
+                                  <Sparkles size={9} /> {cand.confidenceScore}% confidence
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">
+                              {f.position} · {f.experience} years clinical experience
+                            </p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] self-start sm:self-auto font-mono">
+                            via {f.usedProvider}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">
-                          {f.position} · {f.experience} years clinical experience
-                        </p>
+                        {cand?.certifications && cand.certifications.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-[var(--color-border)]/50">
+                            <span className="text-[10px] text-[var(--color-text-tertiary)] font-medium">Licenses:</span>
+                            {cand.certifications.map(cert => (
+                              <span key={cert} className="text-[9px] px-1.5 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] font-medium">
+                                {cert}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] self-start sm:self-auto font-mono">
-                        via {f.usedProvider}
-                      </span>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Progress & Steps */}
                   {(f.status === 'uploading' || f.status === 'processing') && (

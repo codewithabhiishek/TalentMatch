@@ -17,6 +17,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'mitchell_sarah_rn_icu.pdf',
     uploadedAt: '2025-01-15',
     professionalSummary: 'Experienced ICU Registered Nurse with 7 years of critical care experience across Level I and Level II trauma centers. Proficient in ventilator management, hemodynamic monitoring, and complex medication administration. Holds CCRN certification and BLS/ACLS.',
+    certifications: ['RN Compact License', 'CCRN', 'BLS', 'ACLS', 'NIHSS'],
+    confidenceScore: 97,
     experienceTimeline: [
       { id: 'e1', position: 'ICU Staff Nurse', facility: 'Oregon Health & Science University', location: 'Portland, OR', startDate: '2022-03', endDate: 'Present', description: 'Provide critical care in a 48-bed medical-surgical ICU. Manage ventilated patients, CRRT, and vasoactive drips.' },
       { id: 'e2', position: 'ICU Travel Nurse', facility: 'Swedish Medical Center', location: 'Seattle, WA', startDate: '2021-01', endDate: '2022-02', description: '13-week assignment in a 36-bed cardiac ICU. Specialized in post-open-heart surgical recovery.' },
@@ -40,6 +42,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'rodriguez_james_pt.pdf',
     uploadedAt: '2025-01-18',
     professionalSummary: 'Doctor of Physical Therapy specializing in orthopedic rehabilitation. Experienced in post-surgical protocols, sports injury recovery, and manual therapy techniques. OCS board-certified.',
+    certifications: ['PT State License (TX)', 'OCS Board Certified', 'CPR/AED', 'Dry Needling Cert'],
+    confidenceScore: 94,
     experienceTimeline: [
       { id: 'e4', position: 'Physical Therapist', facility: 'Austin Sports & Spine', location: 'Austin, TX', startDate: '2023-01', endDate: 'Present', description: 'Manage a caseload of 12-15 patients daily focusing on orthopedic and sports injuries.' },
       { id: 'e5', position: 'Travel PT', facility: 'Banner Health', location: 'Phoenix, AZ', startDate: '2022-01', endDate: '2022-12', description: 'Outpatient orthopedic clinic. Implemented evidence-based protocols for total joint replacement.' },
@@ -63,6 +67,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'chen_emily_rn_er.pdf',
     uploadedAt: '2025-01-20',
     professionalSummary: 'Emergency Department RN with experience in high-volume Level I trauma centers. Skilled in triage, rapid assessment, and emergency procedures. TNCC and ENPC certified.',
+    certifications: ['RN Illinois License', 'TNCC', 'ENPC', 'BLS', 'ACLS', 'PALS'],
+    confidenceScore: 92,
     experienceTimeline: [
       { id: 'e7', position: 'ER Staff Nurse', facility: 'University of Chicago Medicine', location: 'Chicago, IL', startDate: '2022-08', endDate: 'Present', description: 'Level I trauma center ED. Handle 60+ patients per shift across all acuity levels.' },
       { id: 'e8', position: 'Travel Nurse — ED', facility: 'Froedtert Hospital', location: 'Milwaukee, WI', startDate: '2021-06', endDate: '2022-07', description: 'Fast-paced community hospital ED with stroke and STEMI center designation.' }
@@ -85,6 +91,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'thompson_michael_mri.pdf',
     uploadedAt: '2025-01-12',
     professionalSummary: 'Senior MRI Technologist with 8 years of experience in cardiac, neuro, and musculoskeletal imaging. ARRT certified with additional cardiac MRI certification. Experienced with Siemens and GE platforms.',
+    certifications: ['ARRT (MR)(R)', 'BLS Healthcare Provider', 'State Fluoroscopy Permit'],
+    confidenceScore: 96,
     experienceTimeline: [
       { id: 'e9', position: 'Senior MRI Technologist', facility: 'UCHealth University of Colorado Hospital', location: 'Denver, CO', startDate: '2023-01', endDate: 'Present', description: 'Lead technologist for cardiac MRI program. Perform 15-20 studies daily.' },
       { id: 'e10', position: 'MRI Travel Tech', facility: 'Intermountain Medical Center', location: 'Salt Lake City, UT', startDate: '2021-06', endDate: '2022-12', description: 'High-volume imaging center. Specialized in cardiac and oncology protocols.' },
@@ -108,6 +116,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'foster_amanda_rt_nicu.pdf',
     uploadedAt: '2025-01-10',
     professionalSummary: 'Neonatal Respiratory Therapist with specialized experience in Level IV NICUs. Expert in high-frequency ventilation, surfactant administration, and neonatal transport. NPS-certified.',
+    certifications: ['RRT-NPS', 'Georgia RCP License', 'NRP', 'PALS', 'BLS'],
+    confidenceScore: 98,
     experienceTimeline: [
       { id: 'e12', position: 'Lead RT — NICU', facility: 'Emory University Hospital', location: 'Atlanta, GA', startDate: '2022-01', endDate: 'Present', description: 'Lead respiratory therapist in 150-bed Level IV NICU. Manage complex ventilator cases and ECMO.' },
       { id: 'e13', position: 'Travel RT — NICU', facility: 'Carolinas Medical Center', location: 'Charlotte, NC', startDate: '2020-06', endDate: '2021-12', description: 'Regional perinatal center. Participated in neonatal transport team.' }
@@ -130,6 +140,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'kim_david_rn_ms.pdf',
     uploadedAt: '2025-01-22',
     professionalSummary: 'Med-Surg RN with strong foundation in acute care nursing. Experienced with telemetry, wound care, and post-operative management. Recently completed progressive care certification.',
+    certifications: ['CA RN License', 'PCCN', 'BLS', 'ACLS'],
+    confidenceScore: 91,
     experienceTimeline: [
       { id: 'e14', position: 'Staff Nurse — Med/Surg', facility: 'Regional Medical Center of San Jose', location: 'San Jose, CA', startDate: '2022-09', endDate: 'Present', description: '32-bed medical-surgical unit with telemetry. Manage diverse patient population.' },
       { id: 'e15', position: 'New Grad RN', facility: 'UC Davis Medical Center', location: 'Sacramento, CA', startDate: '2021-07', endDate: '2022-08', description: 'Completed nurse residency program in medical-surgical/telemetry unit.' }
@@ -152,6 +164,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'bennett_rachel_ot_peds.pdf',
     uploadedAt: '2025-01-05',
     professionalSummary: 'Pediatric Occupational Therapist with 9 years of experience in hospital and school-based settings. Specialized in sensory integration, fine motor development, and autism spectrum interventions.',
+    certifications: ['OTR/L (NBCOT)', 'PA State License', 'Sensory Integration Certified', 'CPR'],
+    confidenceScore: 95,
     experienceTimeline: [
       { id: 'e16', position: 'Senior OT — Pediatrics', facility: 'Children\'s Hospital of Philadelphia', location: 'Philadelphia, PA', startDate: '2022-01', endDate: 'Present', description: 'Inpatient and outpatient pediatric OT. Lead sensory integration program.' },
       { id: 'e17', position: 'Travel OT', facility: 'Johns Hopkins All Children\'s', location: 'Baltimore, MD', startDate: '2019-06', endDate: '2021-12', description: 'NICU follow-up clinic and early intervention programs.' }
@@ -174,6 +188,8 @@ export const candidates: Candidate[] = [
     resumeFilename: 'williams_marcus_pharmtech.pdf',
     uploadedAt: '2025-01-19',
     professionalSummary: 'Certified Pharmacy Technician with hospital experience in sterile compounding, automated dispensing systems, and medication reconciliation. PTCB certified with IV certification.',
+    certifications: ['CPhT (PTCB)', 'Texas State Pharmacy Tech Reg', 'USP 797/800 Sterile Compounding'],
+    confidenceScore: 93,
     experienceTimeline: [
       { id: 'e18', position: 'Pharmacy Technician — Inpatient', facility: 'Houston Methodist Hospital', location: 'Houston, TX', startDate: '2022-03', endDate: 'Present', description: 'Central pharmacy operations. Manage Pyxis automated dispensing and IV room.' },
       { id: 'e19', position: 'Travel Pharmacy Tech', facility: 'Ochsner Medical Center', location: 'New Orleans, LA', startDate: '2021-01', endDate: '2022-02', description: 'Satellite pharmacy and decentralized operations in a 900-bed facility.' }

@@ -16,6 +16,8 @@ export interface Candidate {
   professionalSummary: string;
   experienceTimeline: ExperienceRecord[];
   verifiedByRecruiter: boolean;
+  certifications?: string[];
+  confidenceScore?: number;
 }
 
 export interface ExperienceRecord {

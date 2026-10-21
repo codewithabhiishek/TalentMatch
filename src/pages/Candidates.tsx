@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
+import { downloadCandidateReport } from '../services/downloadService';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
@@ -259,10 +260,11 @@ export function Candidates() {
                           Edit Status
                         </button>
                         <button
-                          onClick={() => setOpenMenu(null)}
-                          className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors"
+                          onClick={() => { downloadCandidateReport(c); setOpenMenu(null); }}
+                          className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors flex items-center justify-between"
                         >
-                          Download Resume
+                          <span>Download Dossier</span>
+                          <Download size={11} className="text-[var(--color-text-tertiary)]" />
                         </button>
                       </div>
                     )}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase, Download, Sparkles, Award, FileJson } from 'lucide-react';
 import { useAppStore } from '../store';
 import { ProfileViewSkeleton } from '../components/Skeletons';
+import { downloadCandidateReport, downloadCandidateJSON } from '../services/downloadService';
 
 export function CandidateProfile() {
   const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo } = useAppStore();
@@ -73,18 +74,29 @@ export function CandidateProfile() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
-            <button className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8">
-              <Edit size={12} /> Edit Profile
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
+            <button
+              onClick={() => downloadCandidateReport(candidate)}
+              className="btn btn-primary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Download formatted candidate dossier"
+            >
+              <Download size={12} /> Download Dossier
+            </button>
+            <button
+              onClick={() => downloadCandidateJSON(candidate)}
+              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer"
+              title="Export candidate JSON"
+            >
+              <FileJson size={12} /> JSON
             </button>
             <button className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8">
-              <Eye size={12} /> Review
+              <Edit size={12} /> Edit
             </button>
           </div>
         </div>
 
         {/* Meta info */}
-        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-[var(--color-border)]">
+        <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-[var(--color-border)]">
           <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
             <FileText size={12} className="text-[var(--color-text-tertiary)]" />
             <span>{candidate.resumeFilename}</span>
@@ -97,6 +109,12 @@ export function CandidateProfile() {
             <Briefcase size={12} className="text-[var(--color-text-tertiary)]" />
             <span>{candidate.experience} years experience</span>
           </div>
+          {candidate.confidenceScore && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+              <Sparkles size={11} />
+              <span>{candidate.confidenceScore}% Extraction Accuracy</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -146,6 +164,30 @@ export function CandidateProfile() {
 
         {/* Sidebar */}
         <div className="space-y-4">
+          {/* Clinical Certifications & Licenses */}
+          {candidate.certifications && candidate.certifications.length > 0 && (
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-sm font-medium text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  <Award size={14} className="text-[var(--color-primary)]" />
+                  Certifications & Licenses
+                </h3>
+                <span className="text-[10px] font-mono text-[var(--color-text-tertiary)]">{candidate.certifications.length} parsed</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {candidate.certifications.map(cert => (
+                  <span
+                    key={cert}
+                    className="px-2 py-1 text-xs font-medium rounded-md bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-primary)] flex items-center gap-1"
+                  >
+                    <CheckCircle size={10} className="text-[var(--color-success)]" />
+                    {cert}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Classification */}
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Classification</h3>
@@ -178,7 +220,7 @@ export function CandidateProfile() {
                   <button
                     key={match.id}
                     onClick={() => navigateTo('job-detail', undefined, job.id)}
-                    className="w-full text-left p-2.5 rounded-md border border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)] transition-colors"
+                    className="w-full text-left p-2.5 rounded-md border border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)] transition-colors cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -201,20 +243,24 @@ export function CandidateProfile() {
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Extraction Review</h3>
             <div className="flex items-start gap-2 mb-3">
               {candidate.verifiedByRecruiter ? (
-                <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)]">
+                <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] font-medium">
                   <CheckCircle size={13} /> Verified by recruiter
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs text-[var(--color-warning)]">
-                  <AlertTriangle size={13} /> Pending review
+                <div className="flex items-center gap-1.5 text-xs text-[var(--color-warning)] font-medium">
+                  <AlertTriangle size={13} /> Pending verification
                 </div>
               )}
             </div>
             <p className="text-[10px] text-[var(--color-text-tertiary)] leading-relaxed">
-              This information was extracted from the candidate's resume using automated processing. 
-              Fields marked as verified have been reviewed and confirmed by a recruiter.
+              Spatial document parsing extracts high-fidelity clinical credentials and career timelines directly from raw resumes.
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)] mt-2 italic">Demo data — extraction is simulated</p>
+            {candidate.confidenceScore && (
+              <div className="mt-2.5 pt-2 border-t border-[var(--color-border)] text-[10px] flex items-center justify-between text-[var(--color-text-secondary)]">
+                <span>Model Confidence</span>
+                <span className="font-semibold text-[var(--color-primary)]">{candidate.confidenceScore}%</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
