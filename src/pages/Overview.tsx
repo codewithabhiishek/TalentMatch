@@ -1,13 +1,54 @@
 import { useState, useEffect } from 'react';
 import { Users, Briefcase, UserPlus, GitMerge, ArrowUpRight, FileText, Clock } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '../store';
 import { weeklyActivity } from '../data/mockData';
 import { OverviewSkeleton } from '../components/Skeletons';
 
+interface ActivityTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    dataKey: string;
+  }>;
+  label?: string;
+}
+
+function ActivityTooltip({ active, payload, label }: ActivityTooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-2xl text-xs z-50 pointer-events-auto select-none min-w-[130px] animate-scale-in">
+      <div className="flex items-center justify-between gap-2 pb-1 mb-1.5 border-b border-[var(--color-border)]">
+        <span className="font-semibold text-[var(--color-text-primary)] text-xs flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-info)]" />
+          {label}
+        </span>
+        <span className="text-[9px] text-[var(--color-text-tertiary)] uppercase font-mono tracking-wider">Pinned</span>
+      </div>
+      <div className="space-y-1">
+        {payload.map((item, idx) => (
+          <div key={idx} className="flex items-center justify-between gap-3 text-[11px]">
+            <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
+              <span className="w-2 h-2 rounded-xs" style={{ backgroundColor: item.color }} />
+              {item.name}:
+            </span>
+            <span className="font-bold text-[var(--color-text-primary)]">{item.value}</span>
+          </div>
+        ))}
+      </div>
+      {/* Downward triangle anchor pointing straight down to the bar */}
+      <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[var(--color-surface)] border-b border-r border-[var(--color-border)] rotate-45 pointer-events-none" />
+    </div>
+  );
+}
+
 export function Overview() {
   const { candidates, jobs, jobMatches, importedFiles, navigateTo, theme } = useAppStore();
   const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 160);
@@ -107,36 +148,90 @@ export function Overview() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-[var(--color-border)]">
             <div>
               <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Weekly Activity</h3>
-              <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">Candidates and match operations</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">Click any bar to inspect daily metrics</p>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-[var(--color-text-secondary)] font-medium">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: primaryBarColor }} />
-                Candidates
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: barColor }} />
-                Matches
-              </span>
+            <div className="flex items-center gap-3">
+              {selectedDay && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[11px] animate-fade-in">
+                  <span className="text-[var(--color-text-secondary)]">
+                    Inspecting: <strong className="text-[var(--color-text-primary)]">{selectedDay}</strong>
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDay(null);
+                    }}
+                    className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-xs font-bold px-0.5 cursor-pointer leading-none"
+                    title="Clear selection"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-[11px] text-[var(--color-text-secondary)] font-medium">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: primaryBarColor }} />
+                  Candidates
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: barColor }} />
+                  Matches
+                </span>
+              </div>
             </div>
           </div>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyActivity} barGap={4}>
+              <BarChart
+                data={weeklyActivity}
+                barGap={4}
+                onClick={(e) => {
+                  if (e && e.activeLabel) {
+                    setSelectedDay((prev) => (prev === e.activeLabel ? null : e.activeLabel));
+                  }
+                }}
+              >
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: textColor }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: textColor }} width={24} />
                 <Tooltip
-                  contentStyle={{
-                    fontSize: 11,
-                    borderRadius: 6,
-                    border: '1px solid var(--color-border)',
-                    backgroundColor: 'var(--color-surface)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  }}
-                  cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                  trigger="click"
+                  position={{ y: 8 }}
+                  content={<ActivityTooltip />}
+                  cursor={{ fill: 'var(--color-surface-tertiary)', opacity: 0.35, radius: 4 }}
+                  isAnimationActive={false}
                 />
-                <Bar dataKey="candidates" fill={primaryBarColor} radius={[3, 3, 0, 0]} name="Candidates" />
-                <Bar dataKey="matches" fill={barColor} radius={[3, 3, 0, 0]} name="Matches" />
+                <Bar dataKey="candidates" fill={primaryBarColor} radius={[3, 3, 0, 0]} name="Candidates">
+                  {weeklyActivity.map((entry, index) => {
+                    const isSelected = selectedDay === entry.day;
+                    const isMuted = selectedDay !== null && !isSelected;
+                    return (
+                      <Cell
+                        key={`cand-${index}`}
+                        fill={primaryBarColor}
+                        opacity={isMuted ? 0.35 : 1}
+                        stroke={isSelected ? 'var(--color-info)' : 'none'}
+                        strokeWidth={isSelected ? 1.5 : 0}
+                        cursor="pointer"
+                      />
+                    );
+                  })}
+                </Bar>
+                <Bar dataKey="matches" fill={barColor} radius={[3, 3, 0, 0]} name="Matches">
+                  {weeklyActivity.map((entry, index) => {
+                    const isSelected = selectedDay === entry.day;
+                    const isMuted = selectedDay !== null && !isSelected;
+                    return (
+                      <Cell
+                        key={`match-${index}`}
+                        fill={barColor}
+                        opacity={isMuted ? 0.35 : 1}
+                        stroke={isSelected ? 'var(--color-info)' : 'none'}
+                        strokeWidth={isSelected ? 1.5 : 0}
+                        cursor="pointer"
+                      />
+                    );
+                  })}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
