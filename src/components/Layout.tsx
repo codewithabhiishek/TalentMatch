@@ -61,9 +61,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isNavigating, setIsNavigating] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsNavigating(true);
+    const t = setTimeout(() => setIsNavigating(false), 240);
+    return () => clearTimeout(t);
+  }, [currentPage]);
 
   const { sequencePending, clearSequence, modifierLabel } = useKeyboardShortcuts(searchInputRef);
 
@@ -236,7 +243,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-4">
+        <header className="relative flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-4">
+          {isNavigating && <div className="top-nav-loader" />}
           {/* Left section: mobile menu toggle & page title */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             <button

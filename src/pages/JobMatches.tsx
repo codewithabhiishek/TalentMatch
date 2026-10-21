@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Eye, CheckCircle, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ExternalLink, X, MapPin, User, Briefcase } from 'lucide-react';
 import { useAppStore } from '../store';
+import { MatchCardsSkeleton } from '../components/Skeletons';
 
 const matchStatuses = ['All', 'pending', 'reviewed', 'accepted', 'rejected'];
 
@@ -11,6 +12,7 @@ export function JobMatches() {
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const perPage = 8;
 
   const hasActiveFilters = statusFilter !== 'All' || specialtyFilter !== 'All';
@@ -20,6 +22,12 @@ export function JobMatches() {
     setSpecialtyFilter('All');
     setPage(1);
   };
+
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [search, statusFilter, specialtyFilter, page]);
 
   const specialties = ['All', ...Array.from(new Set(candidates.map(c => c.specialty)))];
 
@@ -153,7 +161,10 @@ export function JobMatches() {
       </div>
 
       {/* Match list */}
-      <div className="space-y-2">
+      {loading ? (
+        <MatchCardsSkeleton count={Math.min(perPage, Math.max(paginated.length, 4))} />
+      ) : (
+        <div className="space-y-2">
         {paginated.map((m, idx) => (
           <div
             key={m.id}
@@ -380,6 +391,7 @@ export function JobMatches() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, ChevronUp, ChevronDown, Plus, Upload, MapPin, MoreHorizontal, Briefcase, CheckCircle2, FileText, ArrowRight, X } from 'lucide-react';
 import { useAppStore } from '../store';
+import { TableSkeleton } from '../components/Skeletons';
 
 const statuses = ['All', 'active', 'draft', 'closed', 'filled'];
 
@@ -13,6 +14,7 @@ export function Jobs() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const perPage = 8;
 
   const hasActiveFilters = statusFilter !== 'All' || stateFilter !== 'All';
@@ -22,6 +24,12 @@ export function Jobs() {
     setStateFilter('All');
     setPage(1);
   };
+
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [search, statusFilter, stateFilter, sortField, sortDir, page]);
 
   const states = ['All', ...Array.from(new Set(jobs.map(j => j.state)))];
   const jobFiles = importedFiles.filter(f => f.type === 'jobs');
@@ -218,8 +226,13 @@ export function Jobs() {
         </div>
       </div>
 
-      {/* Table - Desktop */}
-      <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden animate-fade-in shadow-xs" style={{ animationDelay: '120ms' }}>
+      {/* Table & Cards - with Skeleton Loading state */}
+      {loading ? (
+        <TableSkeleton rows={Math.min(perPage, Math.max(paginated.length, 5))} cols={7} />
+      ) : (
+        <>
+          {/* Table - Desktop */}
+          <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden animate-fade-in shadow-xs" style={{ animationDelay: '120ms' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -332,6 +345,8 @@ export function Jobs() {
           </button>
         ))}
       </div>
+        </>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

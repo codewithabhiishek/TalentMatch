@@ -1,8 +1,22 @@
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase } from 'lucide-react';
 import { useAppStore } from '../store';
+import { ProfileViewSkeleton } from '../components/Skeletons';
 
 export function CandidateProfile() {
   const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [selectedCandidateId]);
+
+  if (loading) {
+    return <ProfileViewSkeleton />;
+  }
+
   const candidate = candidates.find(c => c.id === selectedCandidateId);
 
   if (!candidate) {

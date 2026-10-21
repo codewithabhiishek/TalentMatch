@@ -1,10 +1,22 @@
+import { useState, useEffect } from 'react';
 import { Users, Briefcase, UserPlus, GitMerge, ArrowUpRight, FileText, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '../store';
 import { weeklyActivity } from '../data/mockData';
+import { OverviewSkeleton } from '../components/Skeletons';
 
 export function Overview() {
   const { candidates, jobs, jobMatches, importedFiles, navigateTo, theme } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 160);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) {
+    return <OverviewSkeleton />;
+  }
 
   const totalCandidates = candidates.length;
   const activeJobs = jobs.filter(j => j.status === 'active').length;

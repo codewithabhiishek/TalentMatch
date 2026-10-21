@@ -1,8 +1,22 @@
+import { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Calendar, Building, FileText, CheckCircle } from 'lucide-react';
 import { useAppStore } from '../store';
+import { JobDetailSkeleton } from '../components/Skeletons';
 
 export function JobDetail() {
   const { selectedJobId, jobs, jobMatches, candidates, navigateTo } = useAppStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [selectedJobId]);
+
+  if (loading) {
+    return <JobDetailSkeleton />;
+  }
+
   const job = jobs.find(j => j.id === selectedJobId);
 
   if (!job) {

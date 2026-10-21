@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X } from 'lucide-react';
 import { useAppStore } from '../store';
+import { TableSkeleton } from '../components/Skeletons';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
@@ -14,6 +15,7 @@ export function Candidates() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const perPage = 8;
 
   const hasActiveFilters = specialtyFilter !== 'All' || statusFilter !== 'All';
@@ -23,6 +25,12 @@ export function Candidates() {
     setStatusFilter('All');
     setPage(1);
   };
+
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [search, specialtyFilter, statusFilter, sortField, sortDir, page]);
 
   const filtered = useMemo(() => {
     let result = [...candidates];
@@ -160,8 +168,13 @@ export function Candidates() {
         </div>
       </div>
 
-      {/* Table - Desktop */}
-      <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden animate-fade-in shadow-xs" style={{ animationDelay: '120ms' }}>
+      {/* Table & Cards - with Skeleton Loading state */}
+      {loading ? (
+        <TableSkeleton rows={Math.min(perPage, Math.max(paginated.length, 5))} cols={8} />
+      ) : (
+        <>
+          {/* Table - Desktop */}
+          <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden animate-fade-in shadow-xs" style={{ animationDelay: '120ms' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -296,6 +309,8 @@ export function Candidates() {
           </button>
         ))}
       </div>
+        </>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
