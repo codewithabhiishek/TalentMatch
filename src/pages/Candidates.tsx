@@ -71,12 +71,12 @@ export function Candidates() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateTo('resume-import')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover text-[var(--color-text-secondary)]"
+            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
           >
-            <Upload size={13} /> Import Resumes
+            <Upload size={14} /> Import Resumes
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-[var(--color-surface)] rounded-md hover:bg-[var(--color-primary-hover)] transition-all duration-150 btn-hover">
-            <Plus size={13} /> Add Candidate
+          <button className="btn-primary flex items-center gap-2 px-4 py-2 text-sm">
+            <Plus size={14} /> Add Candidate
           </button>
         </div>
       </div>
@@ -90,7 +90,7 @@ export function Candidates() {
             placeholder="Search by name, position, specialty..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="w-full h-8 pl-8 pr-3 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
+            className="input w-full h-9 pl-9 pr-3 text-sm placeholder:text-[var(--color-text-tertiary)]"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export function Candidates() {
             <select
               value={specialtyFilter}
               onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
-              className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+              className="input h-9 px-3 text-sm cursor-pointer"
             >
               {specialties.map(s => <option key={s} value={s}>{s === 'All' ? 'All Specialties' : s}</option>)}
             </select>
@@ -107,7 +107,7 @@ export function Candidates() {
           <select
             value={statusFilter}
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+            className="input h-9 px-3 text-sm cursor-pointer"
           >
             {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>

@@ -86,7 +86,7 @@ export function JobMatches() {
             placeholder="Search by candidate, position, facility..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="w-full h-8 pl-8 pr-3 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
+            className="input w-full h-9 pl-9 pr-3 text-sm placeholder:text-[var(--color-text-tertiary)]"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export function JobMatches() {
             <select
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+              className="input h-9 px-3 text-sm cursor-pointer"
             >
               {matchStatuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
@@ -103,7 +103,7 @@ export function JobMatches() {
           <select
             value={specialtyFilter}
             onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+            className="input h-9 px-3 text-sm cursor-pointer"
           >
             {specialties.map(s => <option key={s} value={s}>{s === 'All' ? 'All Specialties' : s}</option>)}
           </select>
@@ -115,7 +115,7 @@ export function JobMatches() {
         {paginated.map((m, idx) => (
           <div
             key={m.id}
-            className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden hover-lift animate-fade-in"
+            className="card hover-lift overflow-hidden animate-fade-in"
             style={{ animationDelay: `${idx * 40}ms` }}
           >
             {/* Main row - restructured for proper alignment */}
@@ -157,47 +157,47 @@ export function JobMatches() {
                 </span>
               </div>
 
-              {/* Action buttons row - always straight, below info on mobile, inline on desktop */}
-              <div className="flex items-center gap-1.5 mt-3 flex-nowrap overflow-x-auto">
+              {/* Action buttons row - properly aligned */}
+              <div className="flex items-center gap-2 mt-3">
                 <button
                   onClick={() => setExpandedMatch(expandedMatch === m.id ? null : m.id)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover whitespace-nowrap flex-shrink-0"
+                  className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
                 >
-                  {expandedMatch === m.id ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                  {expandedMatch === m.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   Details
                 </button>
                 {m.status === 'pending' && (
                   <>
                     <button
                       onClick={() => updateMatchStatus(m.id, 'accepted')}
-                      className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:opacity-80 transition-all duration-150 btn-hover whitespace-nowrap flex-shrink-0"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:bg-[var(--color-success)] hover:text-white transition-all duration-150 btn-hover"
                     >
-                      <CheckCircle size={10} /> Accept
+                      <CheckCircle size={12} /> Accept
                     </button>
                     <button
                       onClick={() => updateMatchStatus(m.id, 'rejected')}
-                      className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium bg-[var(--color-error-bg)] text-[var(--color-error)] rounded-md hover:opacity-80 transition-all duration-150 btn-hover whitespace-nowrap flex-shrink-0"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-error-bg)] text-[var(--color-error)] rounded-md hover:bg-[var(--color-error)] hover:text-white transition-all duration-150 btn-hover"
                     >
-                      <XCircle size={10} /> Reject
+                      <XCircle size={12} /> Reject
                     </button>
                   </>
                 )}
                 {m.status === 'reviewed' && (
                   <button
                     onClick={() => updateMatchStatus(m.id, 'accepted')}
-                    className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:opacity-80 transition-all duration-150 btn-hover whitespace-nowrap flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:bg-[var(--color-success)] hover:text-white transition-all duration-150 btn-hover"
                   >
-                    <CheckCircle size={10} /> Accept
+                    <CheckCircle size={12} /> Accept
                   </button>
                 )}
                 {m.status === 'accepted' && (
-                  <span className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium text-[var(--color-success)] whitespace-nowrap flex-shrink-0">
-                    <CheckCircle size={10} /> Matched
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-success)]">
+                    <CheckCircle size={12} /> Matched
                   </span>
                 )}
                 {m.status === 'rejected' && (
-                  <span className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium text-[var(--color-error)] whitespace-nowrap flex-shrink-0">
-                    <XCircle size={10} /> Rejected
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-error)]">
+                    <XCircle size={12} /> Rejected
                   </span>
                 )}
               </div>
@@ -269,11 +269,11 @@ export function JobMatches() {
             Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, enrichedMatches.length)} of {enrichedMatches.length}
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Previous</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">Previous</button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-7 h-7 text-xs rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}>{i + 1}</button>
+              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-9 h-9 text-sm font-medium rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}>{i + 1}</button>
             ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Next</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
           </div>
         </div>
       )}

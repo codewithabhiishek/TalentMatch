@@ -43,31 +43,31 @@ export function Settings() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 bg-white border border-[var(--color-border)] rounded-lg p-5">
+        <div className="card flex-1 p-6">
           {activeTab === 'profile' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Profile Settings</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-5">
+              <h3 className="text-base font-semibold">Profile Settings</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">First Name</label>
-                  <input type="text" defaultValue="Jordan" className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]" />
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">First Name</label>
+                  <input type="text" defaultValue="Jordan" className="input w-full h-10 px-3 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Last Name</label>
-                  <input type="text" defaultValue="Rivera" className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]" />
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Last Name</label>
+                  <input type="text" defaultValue="Rivera" className="input w-full h-10 px-3 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Email</label>
-                  <input type="email" defaultValue="jordan@talentflow.com" className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]" />
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Email</label>
+                  <input type="email" defaultValue="jordan@talentflow.com" className="input w-full h-10 px-3 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Role</label>
-                  <input type="text" defaultValue="Senior Recruiter" className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]" />
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Role</label>
+                  <input type="text" defaultValue="Senior Recruiter" className="input w-full h-10 px-3 text-sm" />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Timezone</label>
-                <select className="h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]">
+                <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Timezone</label>
+                <select className="input w-full sm:w-auto h-10 px-3 text-sm cursor-pointer">
                   <option>Pacific Time (PT)</option>
                   <option>Mountain Time (MT)</option>
                   <option>Central Time (CT)</option>
@@ -162,9 +162,9 @@ export function Settings() {
             )}
             <button
               onClick={handleSave}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors"
+              className="btn-primary ml-auto flex items-center gap-2 px-5 py-2.5 text-sm"
             >
-              <Save size={12} /> Save Changes
+              <Save size={14} /> Save Changes
             </button>
           </div>
         </div>

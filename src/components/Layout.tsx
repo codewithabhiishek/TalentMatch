@@ -72,7 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className={`
         fixed lg:relative z-50 flex flex-col h-full bg-[var(--color-surface)] border-r border-[var(--color-border)]
-        transition-all duration-200 ease-in-out
+        transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]
         ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${sidebarCollapsed ? 'w-16' : 'w-60'}
       `}>
@@ -98,10 +98,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               key={item.id}
               onClick={() => navigateTo(item.id)}
               className={`
-                w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium
-                transition-all duration-150 btn-hover
+                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]
                 ${isActive(item.id)
-                  ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)]'
+                  ? 'bg-[var(--color-primary)] text-[var(--color-surface)] shadow-sm'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-tertiary)] hover:text-[var(--color-text-primary)]'
                 }
                 ${sidebarCollapsed ? 'justify-center' : ''}
@@ -150,46 +150,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Search */}
           <div className="flex-1 max-w-md mx-auto lg:mx-0 lg:ml-4">
-            <div className="relative">
-              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+            <div className="relative group">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-primary)] transition-colors" />
               <input
                 type="text"
                 placeholder="Search candidates, jobs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-8 pr-3 text-sm bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] focus:bg-[var(--color-surface)] transition-all duration-150"
+                className="input w-full h-9 pl-9 pr-3 text-sm placeholder:text-[var(--color-text-tertiary)]"
               />
-              <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded">⌘K</kbd>
+              <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] rounded">⌘K</kbd>
             </div>
           </div>
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-200 hover:scale-110 hover:rotate-12"
+            className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-200 hover:scale-105 active:scale-95"
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
-            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+            <div className="relative w-4 h-4">
+              {theme === 'light' ? (
+                <Moon size={16} className="absolute inset-0 animate-scale-in" />
+              ) : (
+                <Sun size={16} className="absolute inset-0 animate-scale-in" />
+              )}
+            </div>
           </button>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-150 hover:scale-105"
+              className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-150 hover:scale-105 active:scale-95"
               aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
             >
               <Bell size={17} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse-soft">
+                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 top-full mt-1 w-80 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto animate-scale-in">
+              <div className="dropdown absolute right-0 top-full mt-2 w-80 z-50 max-h-96 overflow-y-auto animate-scale-in">
                 <div className="p-3 border-b border-[var(--color-border)]">
-                  <p className="text-sm font-medium">Notifications</p>
+                  <p className="text-sm font-semibold">Notifications</p>
                 </div>
                 {notifications.map(n => (
                   <button
@@ -228,7 +234,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="hidden sm:block text-xs font-medium text-[var(--color-text-primary)]">Jordan</span>
             </button>
             {showUserMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1 animate-scale-in">
+              <div className="dropdown absolute right-0 top-full mt-2 w-48 z-50 py-1 animate-scale-in">
                 <div className="px-3 py-2 border-b border-[var(--color-border)]">
                   <p className="text-xs font-medium">Jordan Rivera</p>
                   <p className="text-xs text-[var(--color-text-tertiary)]">jordan@talentflow.com</p>

@@ -232,15 +232,22 @@ function MetricCard({ label, value, icon, subtext, trend, onClick, delay }: {
   return (
     <button
       onClick={onClick}
-      className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 text-left transition-all duration-200 hover-lift animate-fade-in ${onClick ? 'cursor-pointer' : ''}`}
+      className={`card hover-lift p-5 text-left animate-fade-in ${onClick ? 'cursor-pointer' : ''}`}
       style={{ animationDelay: `${delay || 0}ms` }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[var(--color-text-tertiary)]">{icon}</span>
-        {trend === 'up' && <ArrowUpRight size={13} className="text-[var(--color-success)]" />}
+      <div className="flex items-center justify-between mb-3">
+        <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)]">
+          {icon}
+        </div>
+        {trend === 'up' && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--color-success-bg)] text-[var(--color-success)]">
+            <ArrowUpRight size={12} />
+            <span className="text-[10px] font-semibold">+{value}</span>
+          </div>
+        )}
       </div>
-      <p className="text-2xl font-semibold text-[var(--color-text-primary)]">{value}</p>
-      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">{subtext}</p>
+      <p className="text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">{value}</p>
+      <p className="text-xs text-[var(--color-text-tertiary)] mt-1 font-medium">{subtext}</p>
     </button>
   );
 }
