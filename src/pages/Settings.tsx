@@ -6,11 +6,13 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
+import { testAIConnection, AIConfig } from '../services/aiExtractionService';
 
 export function Settings() {
   const {
     theme, setTheme, setShortcutsModalOpen,
     userProfile, updateUserProfile,
+    aiConfig, updateAIConfig,
     candidates, jobs, jobMatches, importedFiles, notifications,
     resetAllData, exportDataJSON, importDataJSON
   } = useAppStore();
@@ -20,6 +22,35 @@ export function Settings() {
   const [saveMessage, setSaveMessage] = useState('Saved successfully');
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [storageSize, setStorageSize] = useState<string>('0 KB');
+
+  // AI Configuration Form state
+  const [aiForm, setAiForm] = useState<AIConfig>({
+    provider: aiConfig?.provider || 'ollama',
+    apiUrl: aiConfig?.apiUrl || 'http://localhost:11434',
+    apiKey: aiConfig?.apiKey || '',
+    modelName: aiConfig?.modelName || 'llama3',
+    temperature: aiConfig?.temperature ?? 0.1,
+  });
+
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionTestResult, setConnectionTestResult] = useState<{
+    tested: boolean;
+    success: boolean;
+    message: string;
+  } | null>(null);
+
+  // Sync AI form if store changes
+  useEffect(() => {
+    if (aiConfig) {
+      setAiForm({
+        provider: aiConfig.provider || 'ollama',
+        apiUrl: aiConfig.apiUrl || 'http://localhost:11434',
+        apiKey: aiConfig.apiKey || '',
+        modelName: aiConfig.modelName || 'llama3',
+        temperature: aiConfig.temperature ?? 0.1,
+      });
+    }
+  }, [aiConfig]);
 
   // Form local state synced with userProfile
   const [formData, setFormData] = useState({
@@ -648,32 +679,230 @@ export function Settings() {
             </div>
           )}
 
-          {/* API */}
+          {/* AI & LLM CONFIGURATION */}
           {activeTab === 'api' && (
-            <div className="space-y-4 animate-fade-in">
-              <h3 className="text-sm font-medium">API Configuration</h3>
-              <p className="text-xs text-[var(--color-text-tertiary)]">Configure API keys for external services.</p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Backend API URL</label>
-                  <input type="text" placeholder="http://localhost:8000/api" className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)] placeholder:text-[var(--color-text-tertiary)]" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">LLM Provider</label>
-                  <select className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]">
-                    <option>Local Ollama (Llama 3)</option>
-                    <option>OpenAI</option>
-                    <option>Anthropic</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">API Key</label>
-                  <input type="password" placeholder="sk-..." className="w-full h-8 px-2.5 text-xs border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)] placeholder:text-[var(--color-text-tertiary)]" />
+            <div className="space-y-5 animate-fade-in">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <Key size={16} className="text-[var(--color-info)]" />
+                  AI & LLM Configuration
+                </h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  Choose how resumes and documents are analyzed. Run completely private on your local device with Ollama, connect your cloud API key, or use the built-in parser.
+                </p>
+              </div>
+
+              {/* Provider Selector Cards */}
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-[var(--color-text-secondary)]">
+                  Inference Provider
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setAiForm({
+                      ...aiForm,
+                      provider: 'ollama',
+                      apiUrl: 'http://localhost:11434',
+                      modelName: 'llama3',
+                    })}
+                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                      aiForm.provider === 'ollama'
+                        ? 'border-[var(--color-info)] bg-[var(--color-surface-secondary)] ring-1 ring-[var(--color-info)]'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)]/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Local Ollama</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-success-bg)] text-[var(--color-success)] font-medium">100% Private</span>
+                    </div>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">
+                      Runs locally on your Mac/PC at localhost:11434 with zero data leaving your machine.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAiForm({
+                      ...aiForm,
+                      provider: 'openai',
+                      apiUrl: 'https://api.openai.com/v1',
+                      modelName: 'gpt-4o-mini',
+                    })}
+                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                      aiForm.provider === 'openai'
+                        ? 'border-[var(--color-info)] bg-[var(--color-surface-secondary)] ring-1 ring-[var(--color-info)]'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)]/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">OpenAI API</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-medium">GPT-4o Mini</span>
+                    </div>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">
+                      High-accuracy clinical extraction using OpenAI's fast, low-cost GPT-4o-mini model.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAiForm({
+                      ...aiForm,
+                      provider: 'groq',
+                      apiUrl: 'https://api.groq.com/openai/v1',
+                      modelName: 'llama-3.3-70b-versatile',
+                    })}
+                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                      aiForm.provider === 'groq'
+                        ? 'border-[var(--color-info)] bg-[var(--color-surface-secondary)] ring-1 ring-[var(--color-info)]'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)]/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Groq Cloud</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">Ultra-Fast LPU</span>
+                    </div>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">
+                      Sub-second Llama 3.3 70B parsing via Groq's high-speed inference API.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAiForm({
+                      ...aiForm,
+                      provider: 'heuristic',
+                    })}
+                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                      aiForm.provider === 'heuristic'
+                        ? 'border-[var(--color-info)] bg-[var(--color-surface-secondary)] ring-1 ring-[var(--color-info)]'
+                        : 'border-[var(--color-border)] hover:bg-[var(--color-surface-secondary)]/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Built-in Extractor</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] font-medium">Zero Setup</span>
+                    </div>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1">
+                      Deterministic pattern & NLP extractor. No API keys or external servers required.
+                    </p>
+                  </button>
                 </div>
               </div>
-              <p className="text-[10px] text-[var(--color-text-tertiary)] italic">
-                Device storage active — all data operates in offline-first mode on your machine.
-              </p>
+
+              {/* Detailed inputs if not pure heuristic */}
+              {aiForm.provider !== 'heuristic' && (
+                <div className="space-y-3.5 pt-2">
+                  <div>
+                    <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                      Endpoint URL
+                    </label>
+                    <input
+                      type="text"
+                      value={aiForm.apiUrl}
+                      onChange={(e) => setAiForm({ ...aiForm, apiUrl: e.target.value })}
+                      placeholder="http://localhost:11434"
+                      className="input w-full h-9 px-3 text-xs font-mono"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                        Model Name
+                      </label>
+                      <input
+                        type="text"
+                        value={aiForm.modelName}
+                        onChange={(e) => setAiForm({ ...aiForm, modelName: e.target.value })}
+                        placeholder={aiForm.provider === 'ollama' ? 'llama3' : 'gpt-4o-mini'}
+                        className="input w-full h-9 px-3 text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+                        API Key {aiForm.provider === 'ollama' ? '(Optional for Local Ollama)' : '(Required)'}
+                      </label>
+                      <input
+                        type="password"
+                        value={aiForm.apiKey}
+                        onChange={(e) => setAiForm({ ...aiForm, apiKey: e.target.value })}
+                        placeholder={aiForm.provider === 'ollama' ? 'None needed' : 'sk-...'}
+                        className="input w-full h-9 px-3 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Connection Test Result */}
+              {connectionTestResult && (
+                <div className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 animate-scale-in ${
+                  connectionTestResult.success
+                    ? 'bg-[var(--color-success-bg)] border-[var(--color-success)]/30 text-[var(--color-success)]'
+                    : 'bg-[var(--color-error-bg)] border-[var(--color-error)]/30 text-[var(--color-error)]'
+                }`}>
+                  {connectionTestResult.success ? (
+                    <CheckCircle2 size={15} className="flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className="flex-1 leading-relaxed">{connectionTestResult.message}</span>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)]">
+                <button
+                  type="button"
+                  disabled={testingConnection}
+                  onClick={async () => {
+                    setTestingConnection(true);
+                    setConnectionTestResult(null);
+                    try {
+                      const res = await testAIConnection(aiForm);
+                      setConnectionTestResult({
+                        tested: true,
+                        success: res.success,
+                        message: res.message,
+                      });
+                    } catch (err: any) {
+                      setConnectionTestResult({
+                        tested: true,
+                        success: false,
+                        message: err.message || 'Connection test failed',
+                      });
+                    } finally {
+                      setTestingConnection(false);
+                    }
+                  }}
+                  className="btn btn-secondary btn-sm text-xs cursor-pointer"
+                >
+                  <RefreshCw size={12} className={testingConnection ? 'animate-spin' : ''} />
+                  {testingConnection ? 'Testing Connection...' : 'Test Connection'}
+                </button>
+
+                <div className="flex items-center gap-3">
+                  {saved && (
+                    <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium">
+                      <CheckCircle2 size={13} /> {saveMessage}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateAIConfig(aiForm);
+                      setSaveMessage('AI configuration saved to local storage!');
+                      setSaved(true);
+                      setTimeout(() => setSaved(false), 2400);
+                    }}
+                    className="btn btn-primary h-9 px-4 text-xs cursor-pointer"
+                  >
+                    <Save size={13} /> Save AI Configuration
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

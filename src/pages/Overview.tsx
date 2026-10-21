@@ -187,7 +187,8 @@ export function Overview() {
                 barGap={4}
                 onClick={(e) => {
                   if (e && e.activeLabel) {
-                    setSelectedDay((prev) => (prev === e.activeLabel ? null : e.activeLabel));
+                    const label = e.activeLabel;
+                    setSelectedDay((prev) => (prev === label ? null : label));
                   }
                 }}
               >

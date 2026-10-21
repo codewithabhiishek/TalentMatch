@@ -8,6 +8,8 @@ import {
   importedFiles as mockFiles,
   notifications as mockNotifications
 } from '../data/mockData';
+import { AIConfig, defaultAIConfig } from '../services/aiExtractionService';
+import { calculateCandidateJobMatch } from '../services/matchEngine';
 
 export type Theme = 'light' | 'dark' | 'black';
 
@@ -42,6 +44,9 @@ export interface AppState {
   // Profile
   userProfile: UserProfile;
 
+  // AI Configuration (Local LLM / API Key / Heuristic)
+  aiConfig: AIConfig;
+
   // Data (Stored in localStorage on user device)
   candidates: Candidate[];
   jobs: Job[];
@@ -56,11 +61,13 @@ export interface AppState {
   setShortcutsModalOpen: (open: boolean) => void;
 
   updateUserProfile: (profile: Partial<UserProfile>) => void;
+  updateAIConfig: (config: Partial<AIConfig>) => void;
 
   updateCandidateStatus: (id: string, status: Candidate['status']) => void;
   updateCandidate: (id: string, updates: Partial<Candidate>) => void;
   deleteCandidate: (id: string) => void;
   addCandidate: (candidate: Candidate) => void;
+  addCandidateWithMatches: (candidate: Candidate) => void;
 
   updateJob: (id: string, updates: Partial<Job>) => void;
   deleteJob: (id: string) => void;
@@ -115,6 +122,7 @@ export const useAppStore = create<AppState>()(
       shortcutsModalOpen: false,
       theme: getInitialTheme(),
       userProfile: defaultProfile,
+      aiConfig: defaultAIConfig,
 
       candidates: mockCandidates,
       jobs: mockJobs,
@@ -137,6 +145,10 @@ export const useAppStore = create<AppState>()(
         userProfile: { ...state.userProfile, ...profile },
       })),
 
+      updateAIConfig: (config) => set((state) => ({
+        aiConfig: { ...state.aiConfig, ...config },
+      })),
+
       updateCandidateStatus: (id, status) => set((state) => ({
         candidates: state.candidates.map(c => c.id === id ? { ...c, status } : c),
       })),
@@ -153,6 +165,34 @@ export const useAppStore = create<AppState>()(
       addCandidate: (candidate) => set((state) => ({
         candidates: [candidate, ...state.candidates],
       })),
+
+      addCandidateWithMatches: (candidate) => set((state) => {
+        // Calculate matches with active jobs
+        const activeJobs = state.jobs.filter(j => j.status === 'active');
+        const newMatches: JobMatch[] = activeJobs.map(job =>
+          calculateCandidateJobMatch(candidate, job)
+        );
+
+        let bestMatchStr = candidate.bestMatch;
+        if (newMatches.length > 0) {
+          const sorted = [...newMatches].sort((a, b) => b.score - a.score);
+          const topMatch = sorted[0];
+          const matchedJob = activeJobs.find(j => j.id === topMatch.jobId);
+          if (matchedJob) {
+            bestMatchStr = `${matchedJob.position} (${topMatch.score}%)`;
+          }
+        }
+
+        const candidateWithBestMatch: Candidate = {
+          ...candidate,
+          bestMatch: bestMatchStr,
+        };
+
+        return {
+          candidates: [candidateWithBestMatch, ...state.candidates],
+          jobMatches: [...newMatches, ...state.jobMatches],
+        };
+      }),
 
       updateJob: (id, updates) => set((state) => ({
         jobs: state.jobs.map(j => j.id === id ? { ...j, ...updates } : j),
@@ -180,7 +220,7 @@ export const useAppStore = create<AppState>()(
       })),
 
       markAllNotificationsRead: () => set((state) => ({
-        notifications: state.notifications.map(n => ({ ...n, read: true })),
+        notifications: state.notifications.map(n => ({ ...n, read: true }))
       })),
 
       addNotification: (notif) => set((state) => ({
@@ -223,6 +263,7 @@ export const useAppStore = create<AppState>()(
           importedFiles: mockFiles,
           notifications: mockNotifications,
           userProfile: defaultProfile,
+          aiConfig: defaultAIConfig,
         });
       },
 
@@ -232,6 +273,7 @@ export const useAppStore = create<AppState>()(
           version: 1,
           exportedAt: new Date().toISOString(),
           userProfile: state.userProfile,
+          aiConfig: state.aiConfig,
           candidates: state.candidates,
           jobs: state.jobs,
           jobMatches: state.jobMatches,
@@ -253,6 +295,7 @@ export const useAppStore = create<AppState>()(
               importedFiles: Array.isArray(parsed.importedFiles) ? parsed.importedFiles : state.importedFiles,
               notifications: Array.isArray(parsed.notifications) ? parsed.notifications : state.notifications,
               userProfile: parsed.userProfile ? { ...state.userProfile, ...parsed.userProfile } : state.userProfile,
+              aiConfig: parsed.aiConfig ? { ...state.aiConfig, ...parsed.aiConfig } : state.aiConfig,
               theme: parsed.theme ? parsed.theme : state.theme,
             }));
             return true;
@@ -274,6 +317,7 @@ export const useAppStore = create<AppState>()(
         importedFiles: state.importedFiles,
         notifications: state.notifications,
         userProfile: state.userProfile,
+        aiConfig: state.aiConfig,
         theme: state.theme,
         sidebarCollapsed: state.sidebarCollapsed,
       }),
