@@ -147,9 +147,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             title="TalentFlow ATS (G then O)"
           >
             <img
-              src="/logo.svg"
+              src="/favicon.svg"
               alt="TalentFlow Logo"
-              className="w-7 h-7 rounded-md flex-shrink-0 object-contain shadow-xs hover:scale-105 transition-transform"
+              className="w-7 h-7 rounded-full flex-shrink-0 object-contain shadow-xs hover:scale-105 transition-transform"
             />
             {!sidebarCollapsed && (
               <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
