@@ -60,10 +60,10 @@ export function CandidateProfile() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover">
+            <button className="btn btn-secondary">
               <Edit size={12} /> Edit Profile
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover">
+            <button className="btn btn-secondary">
               <Eye size={12} /> Review Extraction
             </button>
           </div>

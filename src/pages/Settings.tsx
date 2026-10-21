@@ -209,22 +209,29 @@ export function Settings() {
 
           {activeTab === 'notifications' && (
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Notification Preferences</h3>
-              <div className="space-y-3">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Notification Preferences</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  Control how and when you receive candidate match and processing alerts.
+                </p>
+              </div>
+              <div className="space-y-1 divide-y divide-[var(--color-border)]/60">
                 {[
                   { label: 'New candidate matches', desc: 'Get notified when new candidate-job matches are found' },
                   { label: 'Resume processing complete', desc: 'Notification when resume processing finishes' },
                   { label: 'Job import results', desc: 'Summary after job file imports complete' },
                   { label: 'Status changes', desc: 'Updates when candidate or job status changes' },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-start justify-between gap-4 py-2 border-b border-[var(--color-border)] last:border-0">
-                    <div>
+                  <div key={idx} className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.label}</p>
-                      <p className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5">{item.desc}</p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">{item.desc}</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                       <input type="checkbox" defaultChecked={idx < 2} className="sr-only peer" />
-                      <div className="w-8 h-4.5 bg-[var(--color-surface-tertiary)] peer-checked:bg-[var(--color-primary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-3.5 after:h-3.5 after:bg-white after:rounded-full after:transition-transform peer-checked:after:translate-x-3.5" />
+                      <div className="toggle-track">
+                        <div className="toggle-thumb" />
+                      </div>
                     </label>
                   </div>
                 ))}
@@ -292,7 +299,7 @@ export function Settings() {
             )}
             <button
               onClick={handleSave}
-              className="btn-primary ml-auto flex items-center gap-2 px-5 py-2.5 text-sm"
+              className="btn btn-primary h-9 px-4 text-xs ml-auto"
             >
               <Save size={14} /> Save Changes
             </button>

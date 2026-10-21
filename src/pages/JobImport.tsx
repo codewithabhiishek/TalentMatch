@@ -149,10 +149,10 @@ export function JobImport() {
           </div>
 
           <div className="flex justify-between mt-5">
-            <button onClick={() => setStep(1)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors">
+            <button onClick={() => setStep(1)} className="btn btn-secondary">
               <ArrowLeft size={12} /> Back
             </button>
-            <button onClick={() => setStep(3)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors">
+            <button onClick={() => setStep(3)} className="btn btn-primary">
               Map Columns <ArrowRight size={12} />
             </button>
           </div>
@@ -212,13 +212,13 @@ export function JobImport() {
           </div>
 
           <div className="flex justify-between mt-5">
-            <button onClick={() => setStep(2)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors">
+            <button onClick={() => setStep(2)} className="btn btn-secondary">
               <ArrowLeft size={12} /> Back
             </button>
             <button
               onClick={() => setStep(4)}
               disabled={unmappedRequired.length > 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="btn btn-primary"
             >
               Validate <ArrowRight size={12} />
             </button>
@@ -272,10 +272,10 @@ export function JobImport() {
           </div>
 
           <div className="flex justify-between mt-5">
-            <button onClick={() => setStep(3)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors">
+            <button onClick={() => setStep(3)} className="btn btn-secondary">
               <ArrowLeft size={12} /> Back
             </button>
-            <button onClick={() => setStep(5)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors">
+            <button onClick={() => setStep(5)} className="btn btn-primary">
               Import <ArrowRight size={12} />
             </button>
           </div>
@@ -313,13 +313,13 @@ export function JobImport() {
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => { setStep(1); setUploadedFile(null); setFileName(''); }}
-              className="px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors"
+              className="btn btn-secondary"
             >
               Import Another File
             </button>
             <button
               onClick={() => navigateTo('jobs')}
-              className="px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors"
+              className="btn btn-primary"
             >
               View Jobs
             </button>

@@ -74,12 +74,12 @@ export function Jobs() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateTo('job-import')}
-            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
+            className="btn btn-secondary h-8 px-3 text-xs"
           >
-            <Upload size={14} /> Import Jobs
+            <Upload size={13} /> Import Jobs
           </button>
-          <button className="btn-primary flex items-center gap-2 px-4 py-2 text-sm">
-            <Plus size={14} /> Add Job
+          <button className="btn btn-primary h-8 px-3 text-xs">
+            <Plus size={13} /> Add Job
           </button>
         </div>
       </div>
@@ -224,11 +224,11 @@ export function Jobs() {
             Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {filtered.length}
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Previous</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn btn-secondary btn-sm">Previous</button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-7 h-7 text-xs rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}>{i + 1}</button>
+              <button key={i + 1} onClick={() => setPage(i + 1)} className={`btn btn-sm w-7 px-0 ${page === i + 1 ? 'btn-primary' : 'btn-secondary'}`}>{i + 1}</button>
             ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Next</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn btn-secondary btn-sm">Next</button>
           </div>
         </div>
       )}

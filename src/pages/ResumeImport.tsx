@@ -175,7 +175,7 @@ export function ResumeImport() {
               <button
                 onClick={processAll}
                 disabled={isProcessing}
-                className="px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-sm"
               >
                 Process All
               </button>
@@ -200,27 +200,28 @@ export function ResumeImport() {
                       <p className="text-xs font-medium text-[var(--color-text-primary)] truncate">{f.file.name}</p>
                       <p className="text-[10px] text-[var(--color-text-tertiary)]">{formatSize(f.file.size)}</p>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       {f.status === 'completed' && (
                         <button
                           onClick={() => navigateTo('candidates')}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-[var(--color-info)] hover:bg-[var(--color-info-bg)] rounded transition-colors"
+                          className="btn btn-secondary btn-sm text-[var(--color-info)]"
                         >
-                          <Eye size={10} /> View
+                          <Eye size={11} /> View
                         </button>
                       )}
                       {f.status === 'failed' && (
                         <button
                           onClick={() => retryFile(f.id)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-tertiary)] rounded transition-colors"
+                          className="btn btn-secondary btn-sm"
                         >
-                          <RotateCcw size={10} /> Retry
+                          <RotateCcw size={11} /> Retry
                         </button>
                       )}
                       {(f.status === 'pending' || f.status === 'failed') && (
                         <button
                           onClick={() => removeFile(f.id)}
-                          className="w-5 h-5 flex items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)]"
+                          className="btn-icon btn-icon-sm"
+                          title="Remove file"
                         >
                           <X size={12} />
                         </button>

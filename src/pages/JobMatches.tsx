@@ -118,88 +118,96 @@ export function JobMatches() {
             className="card hover-lift overflow-hidden animate-fade-in"
             style={{ animationDelay: `${idx * 40}ms` }}
           >
-            {/* Main row - restructured for proper alignment */}
-            <div className="p-3">
-              {/* Top section: Score + Info + Status */}
-              <div className="flex items-center gap-3">
+            {/* Main row - compact, scannable, single line on desktop */}
+            <div className="p-3 sm:py-2.5 sm:px-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Score + Candidate/Job Info Hierarchy */}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 {/* Score */}
-                <div className="w-11 h-11 rounded-lg bg-[var(--color-surface-secondary)] flex items-center justify-center flex-shrink-0 border border-[var(--color-border)]">
-                  <span className={`text-sm font-bold ${getScoreColor(m.score)}`}>{m.score}</span>
+                <div 
+                  className="w-9 h-9 rounded-md bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex flex-col items-center justify-center flex-shrink-0"
+                  title={`Match Score: ${m.score}%`}
+                >
+                  <span className={`text-xs font-bold leading-none ${getScoreColor(m.score)}`}>{m.score}</span>
+                  <span className="text-[8px] text-[var(--color-text-tertiary)] font-medium leading-none mt-0.5">%</span>
                 </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                {/* Candidate & Job Info */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       onClick={() => navigateTo('candidate-profile', m.candidate!.id)}
-                      className="text-xs font-medium text-[var(--color-text-primary)] hover:underline transition-colors"
+                      className="text-xs font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-info)] truncate transition-colors text-left"
                     >
                       {m.candidate!.firstName} {m.candidate!.lastName}
                     </button>
                     <span className="text-[10px] text-[var(--color-text-tertiary)]">→</span>
                     <button
                       onClick={() => navigateTo('job-detail', undefined, m.job!.id)}
-                      className="text-xs font-medium text-[var(--color-text-primary)] hover:underline transition-colors"
+                      className="text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] truncate transition-colors text-left"
                     >
                       {m.job!.position}
                     </button>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)] hidden sm:inline">at</span>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)] truncate hidden sm:inline">{m.job!.facility}</span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-[10px] text-[var(--color-text-tertiary)]">
-                    <span>{m.candidate!.specialty} / {m.job!.specialty}</span>
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                    <span className="font-medium text-[var(--color-text-secondary)]">{m.candidate!.specialty}</span>
+                    <span>•</span>
                     <span>{m.job!.city}, {m.job!.state}</span>
+                    <span>•</span>
                     <span>{m.candidate!.experience} yrs exp</span>
                   </div>
                 </div>
-
-                {/* Status badge */}
-                <span className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${statusColors[m.status]}`}>
-                  <StatusIcon status={m.status} /> {m.status}
-                </span>
               </div>
 
-              {/* Action buttons row - properly aligned */}
-              <div className="flex items-center gap-2 mt-3">
-                <button
-                  onClick={() => setExpandedMatch(expandedMatch === m.id ? null : m.id)}
-                  className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
-                >
-                  {expandedMatch === m.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  Details
-                </button>
-                {m.status === 'pending' && (
-                  <>
+              {/* Action buttons + Status badge row */}
+              <div className="flex items-center justify-between md:justify-end gap-2 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--color-border)]/60">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setExpandedMatch(expandedMatch === m.id ? null : m.id)}
+                    className={`btn btn-secondary btn-sm ${expandedMatch === m.id ? 'bg-[var(--color-surface-tertiary)]' : ''}`}
+                    aria-expanded={expandedMatch === m.id}
+                  >
+                    {expandedMatch === m.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    <span>{expandedMatch === m.id ? 'Hide' : 'Details'}</span>
+                  </button>
+                  {m.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => updateMatchStatus(m.id, 'accepted')}
+                        className="btn btn-success btn-sm"
+                        title="Accept Match"
+                      >
+                        <CheckCircle size={12} />
+                        <span>Accept</span>
+                      </button>
+                      <button
+                        onClick={() => updateMatchStatus(m.id, 'rejected')}
+                        className="btn btn-destructive btn-sm"
+                        title="Reject Match"
+                      >
+                        <XCircle size={12} />
+                        <span>Reject</span>
+                      </button>
+                    </>
+                  )}
+                  {m.status === 'reviewed' && (
                     <button
                       onClick={() => updateMatchStatus(m.id, 'accepted')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:bg-[var(--color-success)] hover:text-white transition-all duration-150 btn-hover"
+                      className="btn btn-success btn-sm"
+                      title="Accept Match"
                     >
-                      <CheckCircle size={12} /> Accept
+                      <CheckCircle size={12} />
+                      <span>Accept</span>
                     </button>
-                    <button
-                      onClick={() => updateMatchStatus(m.id, 'rejected')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-error-bg)] text-[var(--color-error)] rounded-md hover:bg-[var(--color-error)] hover:text-white transition-all duration-150 btn-hover"
-                    >
-                      <XCircle size={12} /> Reject
-                    </button>
-                  </>
-                )}
-                {m.status === 'reviewed' && (
-                  <button
-                    onClick={() => updateMatchStatus(m.id, 'accepted')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] rounded-md hover:bg-[var(--color-success)] hover:text-white transition-all duration-150 btn-hover"
-                  >
-                    <CheckCircle size={12} /> Accept
-                  </button>
-                )}
-                {m.status === 'accepted' && (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-success)]">
-                    <CheckCircle size={12} /> Matched
-                  </span>
-                )}
-                {m.status === 'rejected' && (
-                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-error)]">
-                    <XCircle size={12} /> Rejected
-                  </span>
-                )}
+                  )}
+                </div>
+
+                {/* Status badge anchored on the far right */}
+                <span className={`badge flex items-center gap-1 text-[10px] font-medium h-6 px-2 rounded flex-shrink-0 ml-1 ${statusColors[m.status]}`}>
+                  <StatusIcon status={m.status} />
+                  <span className="capitalize">{m.status}</span>
+                </span>
               </div>
             </div>
 
@@ -240,15 +248,15 @@ export function JobMatches() {
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={() => navigateTo('candidate-profile', m.candidate!.id)}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface)] transition-all duration-150 btn-hover"
+                        className="btn btn-secondary btn-sm"
                       >
-                        <ExternalLink size={9} /> View Candidate
+                        <ExternalLink size={10} /> View Candidate
                       </button>
                       <button
                         onClick={() => navigateTo('job-detail', undefined, m.job!.id)}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface)] transition-all duration-150 btn-hover"
+                        className="btn btn-secondary btn-sm"
                       >
-                        <ExternalLink size={9} /> View Job
+                        <ExternalLink size={10} /> View Job
                       </button>
                     </div>
                     <p className="text-[10px] text-[var(--color-text-tertiary)] mt-3 italic">
@@ -269,11 +277,11 @@ export function JobMatches() {
             Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, enrichedMatches.length)} of {enrichedMatches.length}
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">Previous</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn btn-secondary btn-sm">Previous</button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-9 h-9 text-sm font-medium rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}>{i + 1}</button>
+              <button key={i + 1} onClick={() => setPage(i + 1)} className={`btn btn-sm w-7 px-0 ${page === i + 1 ? 'btn-primary' : 'btn-secondary'}`}>{i + 1}</button>
             ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="btn btn-secondary btn-sm">Next</button>
           </div>
         </div>
       )}

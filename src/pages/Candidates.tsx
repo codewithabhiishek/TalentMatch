@@ -71,12 +71,12 @@ export function Candidates() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateTo('resume-import')}
-            className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
+            className="btn btn-secondary h-8 px-3 text-xs"
           >
-            <Upload size={14} /> Import Resumes
+            <Upload size={13} /> Import Resumes
           </button>
-          <button className="btn-primary flex items-center gap-2 px-4 py-2 text-sm">
-            <Plus size={14} /> Add Candidate
+          <button className="btn btn-primary h-8 px-3 text-xs">
+            <Plus size={13} /> Add Candidate
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@ export function Candidates() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover"
+              className="btn btn-secondary btn-sm"
             >
               Previous
             </button>
@@ -232,7 +232,7 @@ export function Candidates() {
               <button
                 key={i + 1}
                 onClick={() => setPage(i + 1)}
-                className={`w-7 h-7 text-xs rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}
+                className={`btn btn-sm w-7 px-0 ${page === i + 1 ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {i + 1}
               </button>
@@ -240,7 +240,7 @@ export function Candidates() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover"
+              className="btn btn-secondary btn-sm"
             >
               Next
             </button>
