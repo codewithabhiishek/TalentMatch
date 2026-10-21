@@ -4,10 +4,19 @@
       <stop offset="0%" stop-color="#2563eb"/>
       <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
+    <linearGradient id="tfCheckBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8" fill="url(#tfFavBg)"/>
-  <circle cx="16" cy="11.5" r="4.2" fill="#ffffff"/>
-  <path d="M8.5 24c0-3.8 3.3-6.2 7.5-6.2s7.5 2.4 7.5 6.2" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/>
-  <circle cx="23.5" cy="21.5" r="4.8" fill="#10b981"/>
-  <path d="M21.8 21.5l1.2 1.3 2.5-2.6" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Perfectly circular background -->
+  <circle cx="16" cy="16" r="15" fill="url(#tfFavBg)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+  
+  <!-- Candidate talent silhouette -->
+  <circle cx="16" cy="11" r="4.2" fill="#ffffff"/>
+  <path d="M8.2 24.2 C8.2 19.8 11.6 17.4 16 17.4 C20.4 17.4 23.8 19.8 23.8 24.2" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Verification / match badge -->
+  <circle cx="22.5" cy="21.5" r="4.6" fill="url(#tfCheckBadge)" stroke="#0f172a" stroke-width="1.2"/>
+  <path d="M20.8 21.5l1.2 1.3 2.5-2.6" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
