@@ -181,9 +181,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150">
-          {/* Left section: mobile menu toggle, page title, global search */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-4">
+        <header className="flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-4">
+          {/* Left section: mobile menu toggle & page title */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors flex-shrink-0"
@@ -192,12 +192,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Menu size={18} />
             </button>
 
-            <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden sm:block whitespace-nowrap flex-shrink-0">
+            <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden sm:block whitespace-nowrap">
               {getPageTitle()}
             </h1>
+          </div>
 
-            {/* Global Search with constrained width and responsive adaptation */}
-            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md group">
+          {/* Center section: Global Search centered in the header */}
+          <div className="flex-1 flex justify-center max-w-xl mx-auto">
+            <div className="relative w-full max-w-sm sm:max-w-md group">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-text-primary)] transition-colors pointer-events-none" />
               <input
                 ref={searchInputRef}
@@ -219,7 +221,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Right section: Far-right anchored control group */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {/* Keyboard shortcuts trigger */}
             <button
               onClick={() => setShortcutsModalOpen(true)}
