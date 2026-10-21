@@ -1,15 +1,47 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
-  Search, Bell, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
-  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
+  Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
+  CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
   Keyboard
 } from 'lucide-react';
 import { useAppStore } from '../store';
-import { Page } from '../types';
+import { Page, Notification } from '../types';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
+
+function formatRelativeTime(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Recently';
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) return 'Yesterday';
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch {
+    return 'Recently';
+  }
+}
+
+function getNotificationDestination(n: Notification): Page | null {
+  const lowerTitle = n.title.toLowerCase();
+  const lowerMsg = n.message.toLowerCase();
+  
+  if (lowerTitle.includes('match') || lowerMsg.includes('matched')) return 'job-matches';
+  if (lowerTitle.includes('resume') || lowerMsg.includes('resume')) return 'resume-import';
+  if (lowerTitle.includes('job') || lowerMsg.includes('positions')) return 'jobs';
+  if (lowerTitle.includes('candidate') || lowerTitle.includes('interview')) return 'candidates';
+  return null;
+}
 
 const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: string }[] = [
   { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} />, shortcut: 'G O' },
@@ -23,7 +55,7 @@ const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: stri
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
     currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme,
-    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, toggleTheme,
+    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, markAllNotificationsRead, toggleTheme,
     setShortcutsModalOpen
   } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -36,6 +68,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { sequencePending, clearSequence, modifierLabel } = useKeyboardShortcuts(searchInputRef);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const sortedNotifications = useMemo(() => {
+    return [...notifications].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [notifications]);
+
+  const handleNotificationClick = (n: Notification) => {
+    markNotificationRead(n.id);
+    const dest = getNotificationDestination(n);
+    if (dest) {
+      navigateTo(dest);
+    }
+    setShowNotifications(false);
+  };
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -265,44 +310,114 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
               <button
+                type="button"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+                className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-150 cursor-pointer ${
+                  showNotifications
+                    ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-tertiary)] border border-transparent'
+                }`}
                 aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                aria-expanded={showNotifications}
+                aria-haspopup="true"
               >
-                <Bell size={17} />
+                <Bell size={16} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[var(--color-surface)] shadow-sm pointer-events-none">
+                  <span className="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] px-1 bg-[var(--color-info)] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[var(--color-surface)] shadow-xs pointer-events-none">
                     {unreadCount}
                   </span>
                 )}
               </button>
               {showNotifications && (
-                <div className="dropdown absolute right-0 top-full mt-2 w-80 z-50 max-h-96 overflow-y-auto animate-scale-in shadow-xl">
-                  <div className="p-3 border-b border-[var(--color-border)] flex items-center justify-between">
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Notifications</p>
-                    <span className="text-[10px] text-[var(--color-text-tertiary)]">{unreadCount} unread</span>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="dropdown absolute right-0 top-full mt-2 w-[380px] sm:w-[410px] max-w-[calc(100vw-1.5rem)] z-50 flex flex-col rounded-xl overflow-hidden animate-scale-in shadow-xl border border-[var(--color-border)]"
+                >
+                  {/* Panel Header */}
+                  <div className="px-4 py-3 border-b border-[var(--color-border)] flex items-center justify-between shrink-0 bg-[var(--color-surface)]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Notifications</span>
+                      {unreadCount > 0 ? (
+                        <span className="badge badge-info text-[10px] px-1.5 py-0 font-medium leading-none">
+                          {unreadCount} unread
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-[var(--color-text-tertiary)] font-normal">All caught up</span>
+                      )}
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAllNotificationsRead();
+                        }}
+                        className="text-[11px] font-medium text-[var(--color-info)] hover:underline transition-colors cursor-pointer"
+                        title="Mark all notifications as read"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
                   </div>
-                  {notifications.map(n => (
-                    <button
-                      key={n.id}
-                      onClick={() => markNotificationRead(n.id)}
-                      className={`w-full text-left p-3 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-secondary)] transition-colors ${!n.read ? 'bg-[var(--color-info-bg)]/30' : ''}`}
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className="mt-0.5 flex-shrink-0">
-                          {n.type === 'success' && <CheckCircle size={14} className="text-[var(--color-success)]" />}
-                          {n.type === 'warning' && <AlertTriangle size={14} className="text-[var(--color-warning)]" />}
-                          {n.type === 'error' && <XCircle size={14} className="text-[var(--color-error)]" />}
-                          {n.type === 'info' && <Info size={14} className="text-[var(--color-info)]" />}
+
+                  {/* Notification List / Empty State */}
+                  <div className="overflow-y-auto max-h-[380px] divide-y divide-[var(--color-border)]/50 notification-scroll">
+                    {sortedNotifications.length === 0 ? (
+                      <div className="p-8 text-center flex flex-col items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center text-[var(--color-text-tertiary)] mb-2.5">
+                          <BellOff size={18} />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-[var(--color-text-primary)]">{n.title}</p>
-                          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-2">{n.message}</p>
-                        </div>
-                        {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-info)] mt-1.5 flex-shrink-0" />}
+                        <p className="text-xs font-semibold text-[var(--color-text-primary)]">No notifications</p>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1 max-w-[220px]">
+                          You're all caught up! Updates regarding candidates, jobs, and matches will show up here.
+                        </p>
                       </div>
-                    </button>
-                  ))}
+                    ) : (
+                      sortedNotifications.map(n => (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => handleNotificationClick(n)}
+                          className={`w-full text-left p-3.5 transition-colors flex items-start gap-3 cursor-pointer group hover:bg-[var(--color-surface-secondary)] ${
+                            !n.read ? 'bg-[var(--color-surface-tertiary)]/35' : ''
+                          }`}
+                        >
+                          {/* Type Icon */}
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                            n.type === 'success' ? 'bg-[var(--color-success-bg)] text-[var(--color-success)]' :
+                            n.type === 'warning' ? 'bg-[var(--color-warning-bg)] text-[var(--color-warning)]' :
+                            n.type === 'error' ? 'bg-[var(--color-error-bg)] text-[var(--color-error)]' :
+                            'bg-[var(--color-info-bg)] text-[var(--color-info)]'
+                          }`}>
+                            {n.type === 'success' && <CheckCircle2 size={14} />}
+                            {n.type === 'warning' && <AlertTriangle size={14} />}
+                            {n.type === 'error' && <XCircle size={14} />}
+                            {n.type === 'info' && <Info size={14} />}
+                          </div>
+
+                          {/* Content */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline justify-between gap-2 mb-0.5">
+                              <p className={`text-xs ${!n.read ? 'font-semibold text-[var(--color-text-primary)]' : 'font-medium text-[var(--color-text-secondary)]'} truncate`}>
+                                {n.title}
+                              </p>
+                              <span className="text-[10px] text-[var(--color-text-tertiary)] shrink-0 font-medium">
+                                {formatRelativeTime(n.timestamp)}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed line-clamp-2 group-hover:text-[var(--color-text-primary)] transition-colors">
+                              {n.message}
+                            </p>
+                          </div>
+
+                          {/* Subtle Unread Dot */}
+                          {!n.read && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-info)] shrink-0 mt-2 self-start" title="Unread" />
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </div>

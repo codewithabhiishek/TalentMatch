@@ -31,6 +31,7 @@ interface AppState {
   updateCandidateStatus: (id: string, status: Candidate['status']) => void;
   updateMatchStatus: (id: string, status: JobMatch['status']) => void;
   markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
   addCandidate: (candidate: Candidate) => void;
   addJob: (job: Job) => void;
   toggleTheme: () => void;
@@ -83,6 +84,10 @@ export const useAppStore = create<AppState>((set) => ({
   
   markNotificationRead: (id) => set((state) => ({
     notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n)
+  })),
+  
+  markAllNotificationsRead: () => set((state) => ({
+    notifications: state.notifications.map(n => ({ ...n, read: true }))
   })),
   
   addCandidate: (candidate) => set((state) => ({

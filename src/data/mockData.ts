@@ -449,12 +449,13 @@ export const importedFiles: ImportedFile[] = [
   { id: 'f8', filename: 'chen_emily_rn_er.pdf', type: 'resume', uploadedAt: '2025-01-20', status: 'completed', recordCount: 1 },
 ];
 
+const now = Date.now();
 export const notifications: Notification[] = [
-  { id: 'n1', title: 'New candidate matched', message: 'Sarah Mitchell has been matched with ICU Nurse at Mercy General (94% score)', read: false, timestamp: '2025-01-22T14:30:00', type: 'success' },
-  { id: 'n2', title: 'Resume processing complete', message: 'David Kim\'s resume has been processed and profile created', read: false, timestamp: '2025-01-22T13:15:00', type: 'info' },
-  { id: 'n3', title: 'New jobs imported', message: '10 positions imported from pharmacy_staffing_2025.xlsx', read: true, timestamp: '2025-01-22T10:00:00', type: 'info' },
-  { id: 'n4', title: 'Match requires review', message: '3 new candidate-job matches pending your review', read: false, timestamp: '2025-01-22T09:45:00', type: 'warning' },
-  { id: 'n5', title: 'Interview scheduled', message: 'Amanda Foster interview confirmed for Jan 25 at Children\'s Healthcare of Atlanta', read: true, timestamp: '2025-01-21T16:20:00', type: 'success' },
+  { id: 'n1', title: 'New candidate matched', message: 'Sarah Mitchell has been matched with ICU Nurse at Mercy General (94% score)', read: false, timestamp: new Date(now - 8 * 60 * 1000).toISOString(), type: 'success' },
+  { id: 'n2', title: 'Resume processing complete', message: 'David Kim\'s resume has been processed and profile created', read: false, timestamp: new Date(now - 35 * 60 * 1000).toISOString(), type: 'info' },
+  { id: 'n3', title: 'New jobs imported', message: '10 positions imported from pharmacy_staffing_2025.xlsx', read: true, timestamp: new Date(now - 2 * 3600 * 1000).toISOString(), type: 'info' },
+  { id: 'n4', title: 'Match requires review', message: '3 new candidate-job matches pending your review', read: false, timestamp: new Date(now - 5 * 3600 * 1000).toISOString(), type: 'warning' },
+  { id: 'n5', title: 'Interview scheduled', message: 'Amanda Foster interview confirmed for next week at Children\'s Healthcare', read: true, timestamp: new Date(now - 26 * 3600 * 1000).toISOString(), type: 'success' },
 ];
 
 export const weeklyActivity = [
