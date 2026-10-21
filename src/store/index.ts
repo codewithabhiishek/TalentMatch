@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Candidate, Job, JobMatch, ImportedFile, Notification, Page } from '../types';
 import { candidates as mockCandidates, jobs as mockJobs, jobMatches as mockMatches, importedFiles as mockFiles, notifications as mockNotifications } from '../data/mockData';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'black';
 
 interface AppState {
   // Navigation
@@ -38,11 +38,11 @@ interface AppState {
 // Initialize theme from localStorage or system preference
 const getInitialTheme = (): Theme => {
   if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('talentflow-theme');
-    if (stored === 'dark' || stored === 'light') return stored;
+    const stored = localStorage.getItem('talentflow-theme') as Theme | null;
+    if (stored === 'dark' || stored === 'light' || stored === 'black') return stored;
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
   }
-  return 'light';
+  return 'dark'; // default to existing dark (blue) or light
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -90,7 +90,11 @@ export const useAppStore = create<AppState>((set) => ({
   })),
 
   toggleTheme: () => set((state) => {
-    const newTheme = state.theme === 'light' ? 'dark' : 'light';
+    let newTheme: Theme;
+    if (state.theme === 'dark') newTheme = 'black';
+    else if (state.theme === 'black') newTheme = 'light';
+    else newTheme = 'dark';
+    
     localStorage.setItem('talentflow-theme', newTheme);
     return { theme: newTheme };
   }),

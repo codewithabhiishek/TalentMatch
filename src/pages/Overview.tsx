@@ -37,9 +37,10 @@ export function Overview() {
     failed: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
   };
 
-  const barColor = theme === 'dark' ? '#a3a3a3' : '#6b7280';
-  const primaryBarColor = theme === 'dark' ? '#f5f5f5' : '#1a1a1a';
-  const textColor = theme === 'dark' ? '#737373' : '#6b7280';
+  const isDark = theme === 'dark' || theme === 'black';
+  const barColor = isDark ? '#64748b' : '#94a3b8';
+  const primaryBarColor = theme === 'black' ? '#ffffff' : isDark ? '#f8fafc' : '#0f172a';
+  const textColor = isDark ? '#94a3b8' : '#64748b';
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
@@ -232,21 +233,22 @@ function MetricCard({ label, value, icon, subtext, trend, onClick, delay }: {
   return (
     <button
       onClick={onClick}
-      className={`card hover-lift p-5 text-left animate-fade-in ${onClick ? 'cursor-pointer' : ''}`}
+      className={`card hover-lift p-4 sm:p-5 text-left animate-fade-in transition-all duration-150 ${onClick ? 'cursor-pointer hover:border-[var(--color-border-hover)]' : 'cursor-default'}`}
       style={{ animationDelay: `${delay || 0}ms` }}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)]">
+        <div className="w-9 h-9 rounded-lg bg-[var(--color-surface-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)]">
           {icon}
         </div>
         {trend === 'up' && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--color-success-bg)] text-[var(--color-success)]">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--color-success-bg)] text-[var(--color-success)] text-[10px] font-semibold">
             <ArrowUpRight size={12} />
-            <span className="text-[10px] font-semibold">+{value}</span>
+            <span>+{value}</span>
           </div>
         )}
       </div>
-      <p className="text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">{value}</p>
+      <p className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</p>
+      <p className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight mt-0.5">{value}</p>
       <p className="text-xs text-[var(--color-text-tertiary)] mt-1 font-medium">{subtext}</p>
     </button>
   );

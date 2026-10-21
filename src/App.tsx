@@ -16,10 +16,11 @@ function App() {
 
   useEffect(() => {
     const root = document.documentElement;
+    root.classList.remove('dark', 'theme-black');
     if (theme === 'dark') {
       root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
+    } else if (theme === 'black') {
+      root.classList.add('dark', 'theme-black');
     }
   }, [theme]);
 

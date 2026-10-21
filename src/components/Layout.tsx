@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
-  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon
+  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page } from '../types';
@@ -137,116 +137,140 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="flex items-center h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] gap-3 flex-shrink-0">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={18} />
-          </button>
+        <header className="flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150">
+          {/* Left section: mobile menu toggle, page title, global search */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors flex-shrink-0"
+              aria-label="Open menu"
+            >
+              <Menu size={18} />
+            </button>
 
-          <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden sm:block">{getPageTitle()}</h1>
+            <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden sm:block whitespace-nowrap flex-shrink-0">
+              {getPageTitle()}
+            </h1>
 
-          {/* Search */}
-          <div className="flex-1 max-w-md mx-auto lg:mx-0 lg:ml-4">
-            <div className="relative group">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-primary)] transition-colors" />
+            {/* Global Search with constrained width and responsive adaptation */}
+            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md group">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-text-primary)] transition-colors pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search candidates, jobs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input w-full h-9 pl-9 pr-3 text-sm placeholder:text-[var(--color-text-tertiary)]"
+                className="input w-full h-9 pl-9 pr-8 sm:pr-12 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface-secondary)] border-[var(--color-border)] focus:bg-[var(--color-surface)]"
               />
-              <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] rounded">⌘K</kbd>
+              <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded pointer-events-none">⌘K</kbd>
             </div>
           </div>
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-200 hover:scale-105 active:scale-95"
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            <div className="relative w-4 h-4">
-              {theme === 'light' ? (
-                <Moon size={16} className="absolute inset-0 animate-scale-in" />
-              ) : (
-                <Sun size={16} className="absolute inset-0 animate-scale-in" />
+          {/* Right section: Far-right anchored control group */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
+            {/* Theme toggle cycling light -> dark (blue) -> black */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+              title={
+                theme === 'light'
+                  ? 'Theme: White (Click for Dark Blue)'
+                  : theme === 'dark'
+                  ? 'Theme: Dark Blue (Click for Pure Black)'
+                  : 'Theme: Pure Black (Click for White)'
+              }
+              aria-label="Toggle theme mode"
+            >
+              <div className="relative w-4 h-4 flex items-center justify-center">
+                {theme === 'light' && <Sun size={16} className="text-amber-500 animate-scale-in" />}
+                {theme === 'dark' && <Moon size={16} className="text-sky-400 animate-scale-in" />}
+                {theme === 'black' && <Sparkles size={16} className="text-emerald-400 animate-scale-in" />}
+              </div>
+            </button>
+
+            {/* Notifications */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+              >
+                <Bell size={17} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[var(--color-surface)] shadow-sm pointer-events-none">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <div className="dropdown absolute right-0 top-full mt-2 w-80 z-50 max-h-96 overflow-y-auto animate-scale-in shadow-xl">
+                  <div className="p-3 border-b border-[var(--color-border)] flex items-center justify-between">
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Notifications</p>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)]">{unreadCount} unread</span>
+                  </div>
+                  {notifications.map(n => (
+                    <button
+                      key={n.id}
+                      onClick={() => markNotificationRead(n.id)}
+                      className={`w-full text-left p-3 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-secondary)] transition-colors ${!n.read ? 'bg-[var(--color-info-bg)]/30' : ''}`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className="mt-0.5 flex-shrink-0">
+                          {n.type === 'success' && <CheckCircle size={14} className="text-[var(--color-success)]" />}
+                          {n.type === 'warning' && <AlertTriangle size={14} className="text-[var(--color-warning)]" />}
+                          {n.type === 'error' && <XCircle size={14} className="text-[var(--color-error)]" />}
+                          {n.type === 'info' && <Info size={14} className="text-[var(--color-info)]" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-[var(--color-text-primary)]">{n.title}</p>
+                          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-2">{n.message}</p>
+                        </div>
+                        {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-info)] mt-1.5 flex-shrink-0" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          </button>
 
-          {/* Notifications */}
-          <div className="relative" ref={notifRef}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-150 hover:scale-105 active:scale-95"
-              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
-            >
-              <Bell size={17} />
-              {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            {showNotifications && (
-              <div className="dropdown absolute right-0 top-full mt-2 w-80 z-50 max-h-96 overflow-y-auto animate-scale-in">
-                <div className="p-3 border-b border-[var(--color-border)]">
-                  <p className="text-sm font-semibold">Notifications</p>
+            {/* User Profile Menu */}
+            <div className="relative" ref={userRef}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)]"
+                aria-label="User account menu"
+              >
+                <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-[var(--color-text-secondary)]">JR</span>
                 </div>
-                {notifications.map(n => (
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight">Jordan</span>
+                  <span className="text-[10px] text-[var(--color-text-tertiary)] leading-tight">Recruiter</span>
+                </div>
+                <ChevronDown size={12} className="hidden sm:block text-[var(--color-text-tertiary)] ml-0.5" />
+              </button>
+              {showUserMenu && (
+                <div className="dropdown absolute right-0 top-full mt-2 w-52 z-50 py-1.5 animate-scale-in shadow-xl">
+                  <div className="px-3.5 py-2.5 border-b border-[var(--color-border)]">
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Jordan Rivera</p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] truncate">jordan@talentflow.com</p>
+                  </div>
                   <button
-                    key={n.id}
-                    onClick={() => markNotificationRead(n.id)}
-                    className={`w-full text-left p-3 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-secondary)] transition-colors ${!n.read ? 'bg-[var(--color-info-bg)]/30' : ''}`}
+                    onClick={() => { setShowUserMenu(false); navigateTo('settings'); }}
+                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors"
                   >
-                    <div className="flex items-start gap-2">
-                      <div className="mt-0.5">
-                        {n.type === 'success' && <CheckCircle size={14} className="text-[var(--color-success)]" />}
-                        {n.type === 'warning' && <AlertTriangle size={14} className="text-[var(--color-warning)]" />}
-                        {n.type === 'error' && <XCircle size={14} className="text-[var(--color-error)]" />}
-                        {n.type === 'info' && <Info size={14} className="text-[var(--color-info)]" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-[var(--color-text-primary)]">{n.title}</p>
-                        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-2">{n.message}</p>
-                      </div>
-                      {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-info)] mt-1.5 flex-shrink-0" />}
-                    </div>
+                    <Settings size={13} /> Settings & Themes
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* User menu */}
-          <div className="relative" ref={userRef}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-md hover:bg-[var(--color-surface-tertiary)] transition-colors"
-            >
-              <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center">
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">JR</span>
-              </div>
-              <span className="hidden sm:block text-xs font-medium text-[var(--color-text-primary)]">Jordan</span>
-            </button>
-            {showUserMenu && (
-              <div className="dropdown absolute right-0 top-full mt-2 w-48 z-50 py-1 animate-scale-in">
-                <div className="px-3 py-2 border-b border-[var(--color-border)]">
-                  <p className="text-xs font-medium">Jordan Rivera</p>
-                  <p className="text-xs text-[var(--color-text-tertiary)]">jordan@talentflow.com</p>
+                  <button className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors">
+                    <User size={13} /> Profile
+                  </button>
+                  <div className="my-1 border-t border-[var(--color-border)]" />
+                  <button className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 transition-colors">
+                    <LogOut size={13} /> Sign Out
+                  </button>
                 </div>
-                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2 transition-colors">
-                  <User size={13} /> Profile Settings
-                </button>
-                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2 transition-colors">
-                  <LogOut size={13} /> Sign Out
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </header>
 

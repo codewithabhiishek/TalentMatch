@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Save, User, Bell, Database, Key } from 'lucide-react';
+import { Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles } from 'lucide-react';
+import { useAppStore } from '../store';
 
 export function Settings() {
+  const { theme, setTheme } = useAppStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [saved, setSaved] = useState(false);
 
@@ -12,6 +14,7 @@ export function Settings() {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: <User size={14} /> },
+    { id: 'appearance', label: 'Appearance & Themes', icon: <Palette size={14} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={14} /> },
     { id: 'integrations', label: 'Integrations', icon: <Database size={14} /> },
     { id: 'api', label: 'API Keys', icon: <Key size={14} /> },
@@ -73,6 +76,133 @@ export function Settings() {
                   <option>Central Time (CT)</option>
                   <option>Eastern Time (ET)</option>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'appearance' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Appearance & Themes</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  Select your interface theme. Your choice will be persisted across sessions.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {/* White Theme */}
+                <button
+                  type="button"
+                  onClick={() => setTheme('light')}
+                  className={`p-3.5 rounded-xl border text-left transition-all duration-150 relative group cursor-pointer ${
+                    theme === 'light'
+                      ? 'border-[var(--color-info)] ring-2 ring-[var(--color-info)]/20 bg-[var(--color-surface-secondary)]'
+                      : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] bg-[var(--color-surface)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Sun size={15} className="text-amber-500" />
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">White Theme</span>
+                    </div>
+                    {theme === 'light' && (
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-info)] text-white flex items-center justify-center text-[10px]">
+                        <Check size={12} />
+                      </span>
+                    )}
+                  </div>
+                  {/* Swatch Preview */}
+                  <div className="rounded-lg p-2.5 border border-slate-200 bg-white space-y-1.5 shadow-sm pointer-events-none">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                      <div className="w-12 h-2 rounded bg-slate-200" />
+                    </div>
+                    <div className="w-full h-2 rounded bg-slate-100" />
+                    <div className="flex gap-1">
+                      <div className="w-1/2 h-3 rounded bg-blue-50" />
+                      <div className="w-1/2 h-3 rounded bg-slate-50" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-2.5">
+                    Clean, high-clarity daylight theme with white cards.
+                  </p>
+                </button>
+
+                {/* Dark Blue Theme */}
+                <button
+                  type="button"
+                  onClick={() => setTheme('dark')}
+                  className={`p-3.5 rounded-xl border text-left transition-all duration-150 relative group cursor-pointer ${
+                    theme === 'dark'
+                      ? 'border-[var(--color-info)] ring-2 ring-[var(--color-info)]/20 bg-[var(--color-surface-secondary)]'
+                      : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] bg-[var(--color-surface)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Moon size={15} className="text-sky-400" />
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Dark Blue Theme</span>
+                    </div>
+                    {theme === 'dark' && (
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-info)] text-white flex items-center justify-center text-[10px]">
+                        <Check size={12} />
+                      </span>
+                    )}
+                  </div>
+                  {/* Swatch Preview */}
+                  <div className="rounded-lg p-2.5 border border-[#334155] bg-[#1e293b] space-y-1.5 shadow-sm pointer-events-none">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-sky-400" />
+                      <div className="w-12 h-2 rounded bg-[#334155]" />
+                    </div>
+                    <div className="w-full h-2 rounded bg-[#0f172a]" />
+                    <div className="flex gap-1">
+                      <div className="w-1/2 h-3 rounded bg-[#0f172a]/70" />
+                      <div className="w-1/2 h-3 rounded bg-[#334155]/50" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-2.5">
+                    Navy & slate dark palette with deep blue undertones.
+                  </p>
+                </button>
+
+                {/* Pure Black Theme */}
+                <button
+                  type="button"
+                  onClick={() => setTheme('black')}
+                  className={`p-3.5 rounded-xl border text-left transition-all duration-150 relative group cursor-pointer ${
+                    theme === 'black'
+                      ? 'border-[var(--color-info)] ring-2 ring-[var(--color-info)]/20 bg-[var(--color-surface-secondary)]'
+                      : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] bg-[var(--color-surface)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={15} className="text-emerald-400" />
+                      <span className="text-xs font-semibold text-[var(--color-text-primary)]">Pure Black Theme</span>
+                    </div>
+                    {theme === 'black' && (
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-info)] text-white flex items-center justify-center text-[10px]">
+                        <Check size={12} />
+                      </span>
+                    )}
+                  </div>
+                  {/* Swatch Preview */}
+                  <div className="rounded-lg p-2.5 border border-[#22242a] bg-[#0b0c0e] space-y-1.5 shadow-sm pointer-events-none">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                      <div className="w-12 h-2 rounded bg-[#202227]" />
+                    </div>
+                    <div className="w-full h-2 rounded bg-black" />
+                    <div className="flex gap-1">
+                      <div className="w-1/2 h-3 rounded bg-black" />
+                      <div className="w-1/2 h-3 rounded bg-[#16171b]" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-2.5">
+                    True OLED midnight black with ultra-deep surfaces.
+                  </p>
+                </button>
               </div>
             </div>
           )}
