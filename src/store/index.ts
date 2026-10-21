@@ -11,6 +11,7 @@ interface AppState {
   selectedJobId: string | null;
   sidebarCollapsed: boolean;
   mobileSidebarOpen: boolean;
+  shortcutsModalOpen: boolean;
   
   // Theme
   theme: Theme;
@@ -26,6 +27,7 @@ interface AppState {
   navigateTo: (page: Page, candidateId?: string, jobId?: string) => void;
   toggleSidebar: () => void;
   setMobileSidebarOpen: (open: boolean) => void;
+  setShortcutsModalOpen: (open: boolean) => void;
   updateCandidateStatus: (id: string, status: Candidate['status']) => void;
   updateMatchStatus: (id: string, status: JobMatch['status']) => void;
   markNotificationRead: (id: string) => void;
@@ -51,6 +53,7 @@ export const useAppStore = create<AppState>((set) => ({
   selectedJobId: null,
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
+  shortcutsModalOpen: false,
   theme: getInitialTheme(),
   
   candidates: mockCandidates,
@@ -68,6 +71,7 @@ export const useAppStore = create<AppState>((set) => ({
   
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
+  setShortcutsModalOpen: (open) => set({ shortcutsModalOpen: open }),
   
   updateCandidateStatus: (id, status) => set((state) => ({
     candidates: state.candidates.map(c => c.id === id ? { ...c, status } : c)

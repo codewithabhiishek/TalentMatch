@@ -2,30 +2,38 @@ import { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
-  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown
+  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
+  Keyboard
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page } from '../types';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
 
-const navItems: { id: Page; label: string; icon: React.ReactNode }[] = [
-  { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} /> },
-  { id: 'candidates', label: 'Candidates', icon: <Users size={18} /> },
-  { id: 'jobs', label: 'Jobs', icon: <Briefcase size={18} /> },
-  { id: 'job-matches', label: 'Job Matches', icon: <GitMerge size={18} /> },
-  { id: 'resume-import', label: 'Resume Imports', icon: <Upload size={18} /> },
-  { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
+const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: string }[] = [
+  { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} />, shortcut: 'G O' },
+  { id: 'candidates', label: 'Candidates', icon: <Users size={18} />, shortcut: 'G C' },
+  { id: 'jobs', label: 'Jobs', icon: <Briefcase size={18} />, shortcut: 'G J' },
+  { id: 'job-matches', label: 'Job Matches', icon: <GitMerge size={18} />, shortcut: 'G M' },
+  { id: 'resume-import', label: 'Resume Imports', icon: <Upload size={18} />, shortcut: 'G R' },
+  { id: 'settings', label: 'Settings', icon: <Settings size={18} />, shortcut: 'G S' },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
     currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme,
-    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, toggleTheme
+    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, toggleTheme,
+    setShortcutsModalOpen
   } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const { sequencePending, clearSequence, modifierLabel } = useKeyboardShortcuts(searchInputRef);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -99,17 +107,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
               onClick={() => navigateTo(item.id)}
               className={`
                 w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
-                transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]
+                transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group
                 ${isActive(item.id)
                   ? 'bg-[var(--color-primary)] text-[var(--color-surface)] shadow-sm'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-tertiary)] hover:text-[var(--color-text-primary)]'
                 }
                 ${sidebarCollapsed ? 'justify-center' : ''}
               `}
-              title={sidebarCollapsed ? item.label : undefined}
+              title={sidebarCollapsed ? `${item.label} (${item.shortcut})` : undefined}
             >
               {item.icon}
-              {!sidebarCollapsed && <span>{item.label}</span>}
+              {!sidebarCollapsed && (
+                <>
+                  <span className="truncate">{item.label}</span>
+                  <span className={`ml-auto text-[10px] font-mono px-1 py-0.2 rounded transition-opacity ${
+                    isActive(item.id)
+                      ? 'bg-[var(--color-surface)]/20 text-[var(--color-surface)]'
+                      : 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100'
+                  }`}>
+                    {item.shortcut}
+                  </span>
+                </>
+              )}
             </button>
           ))}
         </nav>
@@ -156,28 +175,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md group">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-text-primary)] transition-colors pointer-events-none" />
               <input
+                ref={searchInputRef}
                 type="text"
-                placeholder="Search candidates, jobs..."
+                placeholder="Search candidates, jobs... (press /)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input w-full h-9 pl-9 pr-8 sm:pr-12 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface-secondary)] border-[var(--color-border)] focus:bg-[var(--color-surface)]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigateTo('candidates');
+                  }
+                }}
+                className="input w-full h-9 pl-9 pr-14 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface-secondary)] border-[var(--color-border)] focus:bg-[var(--color-surface)]"
               />
-              <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded pointer-events-none">⌘K</kbd>
+              <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded pointer-events-none select-none">
+                {modifierLabel}K
+              </kbd>
             </div>
           </div>
 
           {/* Right section: Far-right anchored control group */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
+            {/* Keyboard shortcuts trigger */}
+            <button
+              onClick={() => setShortcutsModalOpen(true)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+              title={`Keyboard Shortcuts (${modifierLabel}K, ?, G+key)`}
+              aria-label="Keyboard Shortcuts"
+            >
+              <Keyboard size={16} />
+            </button>
+
             {/* Theme toggle cycling light -> dark (blue) -> black */}
             <button
               onClick={toggleTheme}
               className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
               title={
                 theme === 'light'
-                  ? 'Theme: White (Click for Dark Blue)'
+                  ? 'Theme: White (Click or press T for Dark Blue)'
                   : theme === 'dark'
-                  ? 'Theme: Dark Blue (Click for Pure Black)'
-                  : 'Theme: Pure Black (Click for White)'
+                  ? 'Theme: Dark Blue (Click or press T for Pure Black)'
+                  : 'Theme: Pure Black (Click or press T for White)'
               }
               aria-label="Toggle theme mode"
             >
@@ -261,6 +298,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Settings size={13} /> Settings & Themes
                   </button>
+                  <button
+                    onClick={() => { setShowUserMenu(false); setShortcutsModalOpen(true); }}
+                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors"
+                  >
+                    <Keyboard size={13} /> Keyboard Shortcuts
+                  </button>
                   <button className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors">
                     <User size={13} /> Profile
                   </button>
@@ -279,6 +322,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Floating Sequence Indicator */}
+      <ShortcutSequenceIndicator sequence={sequencePending} onCancel={clearSequence} />
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal />
     </div>
   );
 }

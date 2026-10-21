@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles } from 'lucide-react';
+import { Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles, Keyboard, Command, Navigation, Zap } from 'lucide-react';
 import { useAppStore } from '../store';
+import { SHORTCUT_DEFINITIONS, isMac, MODIFIER_LABEL, ALT_LABEL } from '../hooks/useKeyboardShortcuts';
 
 export function Settings() {
-  const { theme, setTheme } = useAppStore();
+  const { theme, setTheme, setShortcutsModalOpen } = useAppStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [saved, setSaved] = useState(false);
 
@@ -15,6 +16,7 @@ export function Settings() {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: <User size={14} /> },
     { id: 'appearance', label: 'Appearance & Themes', icon: <Palette size={14} /> },
+    { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: <Keyboard size={14} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={14} /> },
     { id: 'integrations', label: 'Integrations', icon: <Database size={14} /> },
     { id: 'api', label: 'API Keys', icon: <Key size={14} /> },
@@ -235,6 +237,65 @@ export function Settings() {
                     </label>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'shortcuts' && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Keyboard Shortcuts</h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                    Navigate and trigger actions across TalentFlow ATS with universal shortcuts for {isMac ? 'macOS' : 'Windows & Linux'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShortcutsModalOpen(true)}
+                  className="btn btn-secondary btn-sm self-start sm:self-auto"
+                >
+                  <Keyboard size={13} />
+                  <span>Open Quick Modal (?)</span>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {(['Navigation', 'General', 'Actions'] as const).map((cat) => {
+                  const items = SHORTCUT_DEFINITIONS.filter(s => s.category === cat);
+                  return (
+                    <div key={cat} className="space-y-2">
+                      <h4 className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        {cat}
+                      </h4>
+                      <div className="bg-[var(--color-surface-secondary)]/50 border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)] overflow-hidden">
+                        {items.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between py-2.5 px-3.5 hover:bg-[var(--color-surface-tertiary)]/40 transition-colors">
+                            <span className="text-xs text-[var(--color-text-primary)] font-medium">
+                              {item.description}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {item.keys.map((k, idx) => (
+                                <span key={idx} className="flex items-center gap-1">
+                                  {idx > 0 && item.keys.length === 2 && item.keys[0] === 'G' && (
+                                    <span className="text-[10px] text-[var(--color-text-tertiary)] font-medium">then</span>
+                                  )}
+                                  <kbd className="inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 text-[10px] font-mono font-medium text-[var(--color-text-primary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded shadow-xs select-none">
+                                    {k}
+                                  </kbd>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="p-3 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-lg text-xs text-[var(--color-text-tertiary)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <span>Active platform: <strong className="text-[var(--color-text-primary)]">{isMac ? 'macOS (⌘ Command)' : 'Windows / Linux (Ctrl)'}</strong></span>
+                <span className="flex items-center gap-1">Press <kbd className="px-1.5 py-0.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded font-mono text-[10px]">?</kbd> anywhere to open shortcut overlay</span>
               </div>
             </div>
           )}
