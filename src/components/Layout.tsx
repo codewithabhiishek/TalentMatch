@@ -54,7 +54,7 @@ const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: stri
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
-    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme,
+    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme, userProfile,
     navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, markAllNotificationsRead, toggleTheme,
     setShortcutsModalOpen
   } = useAppStore();
@@ -452,11 +452,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 aria-haspopup="true"
               >
                 <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--color-text-secondary)]">JR</span>
+                  <span className="text-xs font-bold text-[var(--color-text-secondary)]">
+                    {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
+                  </span>
                 </div>
                 <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight">Jordan</span>
-                  <span className="text-[10px] text-[var(--color-text-tertiary)] leading-tight">Recruiter</span>
+                  <span className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight">
+                    {userProfile?.firstName || 'Jordan'}
+                  </span>
+                  <span className="text-[10px] text-[var(--color-text-tertiary)] leading-tight">
+                    {userProfile?.role || 'Recruiter'}
+                  </span>
                 </div>
                 <ChevronDown size={12} className={`hidden sm:block text-[var(--color-text-tertiary)] ml-0.5 transition-transform duration-150 ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
@@ -470,16 +476,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <div className="px-3.5 py-2.5 border-b border-[var(--color-border)]">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-[var(--color-text-secondary)]">JR</span>
+                        <span className="text-xs font-bold text-[var(--color-text-secondary)]">
+                          {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
+                        </span>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight truncate">Jordan Rivera</p>
+                          <p className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight truncate">
+                            {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
+                          </p>
                           <span className="text-[9px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-secondary)] border border-[var(--color-border)] px-1 py-0.2 rounded leading-none shrink-0">
-                            Recruiter
+                            {userProfile?.role || 'Recruiter'}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5">jordan@talentflow.com</p>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5">
+                          {userProfile?.email || 'jordan@talentflow.com'}
+                        </p>
                       </div>
                     </div>
                   </div>

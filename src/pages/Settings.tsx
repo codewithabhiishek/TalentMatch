@@ -1,32 +1,140 @@
-import { useState } from 'react';
-import { Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles, Keyboard, Command, Navigation, Zap } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
+  Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
+  FileText, Briefcase, Users, GitMerge
+} from 'lucide-react';
 import { useAppStore } from '../store';
-import { SHORTCUT_DEFINITIONS, isMac, MODIFIER_LABEL, ALT_LABEL } from '../hooks/useKeyboardShortcuts';
+import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
 
 export function Settings() {
-  const { theme, setTheme, setShortcutsModalOpen } = useAppStore();
-  const [activeTab, setActiveTab] = useState('profile');
-  const [saved, setSaved] = useState(false);
+  const {
+    theme, setTheme, setShortcutsModalOpen,
+    userProfile, updateUserProfile,
+    candidates, jobs, jobMatches, importedFiles, notifications,
+    resetAllData, exportDataJSON, importDataJSON
+  } = useAppStore();
 
-  const handleSave = () => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'storage' | 'shortcuts' | 'notifications' | 'integrations' | 'api'>('profile');
+  const [saved, setSaved] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('Saved successfully');
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [storageSize, setStorageSize] = useState<string>('0 KB');
+
+  // Form local state synced with userProfile
+  const [formData, setFormData] = useState({
+    firstName: userProfile?.firstName || 'Jordan',
+    lastName: userProfile?.lastName || 'Rivera',
+    email: userProfile?.email || 'jordan@talentflow.com',
+    role: userProfile?.role || 'Senior Recruiter',
+    timezone: userProfile?.timezone || 'Pacific Time (PT)',
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync form when userProfile changes
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        firstName: userProfile.firstName || 'Jordan',
+        lastName: userProfile.lastName || 'Rivera',
+        email: userProfile.email || 'jordan@talentflow.com',
+        role: userProfile.role || 'Senior Recruiter',
+        timezone: userProfile.timezone || 'Pacific Time (PT)',
+      });
+    }
+  }, [userProfile]);
+
+  // Compute local storage size
+  const updateStorageSize = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        const item = localStorage.getItem('talentflow-storage') || '';
+        const bytes = new Blob([item]).size;
+        if (bytes < 1024) {
+          setStorageSize(`${bytes} B`);
+        } else {
+          setStorageSize(`${(bytes / 1024).toFixed(1)} KB`);
+        }
+      }
+    } catch {
+      setStorageSize('Available');
+    }
+  };
+
+  useEffect(() => {
+    updateStorageSize();
+  }, [candidates, jobs, jobMatches, importedFiles, notifications, userProfile]);
+
+  const handleSaveProfile = () => {
+    updateUserProfile(formData);
+    setSaveMessage('Profile saved to local storage!');
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2400);
+  };
+
+  const handleExportData = () => {
+    try {
+      const json = exportDataJSON();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `talentflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Could not export local storage data.');
+    }
+  };
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        const success = importDataJSON(content);
+        if (success) {
+          setSaveMessage('Data restored into local storage successfully!');
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2500);
+        } else {
+          alert('Failed to parse or restore JSON data. Please verify the backup file format.');
+        }
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleResetData = () => {
+    resetAllData();
+    setResetConfirmOpen(false);
+    setSaveMessage('Reset to factory demo data in local storage.');
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: <User size={14} /> },
-    { id: 'appearance', label: 'Appearance & Themes', icon: <Palette size={14} /> },
-    { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: <Keyboard size={14} /> },
-    { id: 'notifications', label: 'Notifications', icon: <Bell size={14} /> },
-    { id: 'integrations', label: 'Integrations', icon: <Database size={14} /> },
-    { id: 'api', label: 'API Keys', icon: <Key size={14} /> },
+    { id: 'profile' as const, label: 'Profile', icon: <User size={14} /> },
+    { id: 'appearance' as const, label: 'Appearance & Themes', icon: <Palette size={14} /> },
+    { id: 'storage' as const, label: 'Local Storage & Data', icon: <HardDrive size={14} /> },
+    { id: 'shortcuts' as const, label: 'Keyboard Shortcuts', icon: <Keyboard size={14} /> },
+    { id: 'notifications' as const, label: 'Notifications', icon: <Bell size={14} /> },
+    { id: 'integrations' as const, label: 'Integrations', icon: <Database size={14} /> },
+    { id: 'api' as const, label: 'API Keys', icon: <Key size={14} /> },
   ];
 
   return (
     <div className="p-3.5 sm:p-5 lg:p-6 max-w-4xl mx-auto">
       <div className="mb-4 sm:mb-5 animate-fade-in">
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Settings</h2>
-        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage your account and application preferences</p>
+        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage your account, appearance, and local device storage</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-5">
@@ -49,45 +157,92 @@ export function Settings() {
 
         {/* Content */}
         <div className="card flex-1 p-4 sm:p-6">
+          {/* PROFILE SETTINGS */}
           {activeTab === 'profile' && (
-            <div className="space-y-5">
-              <h3 className="text-base font-semibold">Profile Settings</h3>
+            <div className="space-y-5 animate-fade-in">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Profile Settings</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  Update your identity details. These are stored locally in your browser.
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">First Name</label>
-                  <input type="text" defaultValue="Jordan" className="input w-full h-10 px-3 text-sm" />
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="input w-full h-10 px-3 text-sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Last Name</label>
-                  <input type="text" defaultValue="Rivera" className="input w-full h-10 px-3 text-sm" />
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="input w-full h-10 px-3 text-sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Email</label>
-                  <input type="email" defaultValue="jordan@talentflow.com" className="input w-full h-10 px-3 text-sm" />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="input w-full h-10 px-3 text-sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Role</label>
-                  <input type="text" defaultValue="Senior Recruiter" className="input w-full h-10 px-3 text-sm" />
+                  <input
+                    type="text"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="input w-full h-10 px-3 text-sm"
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Timezone</label>
-                <select className="input w-full sm:w-auto h-10 px-3 text-sm cursor-pointer">
+                <select
+                  value={formData.timezone}
+                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  className="input w-full sm:w-auto h-10 px-3 text-sm cursor-pointer"
+                >
                   <option>Pacific Time (PT)</option>
                   <option>Mountain Time (MT)</option>
                   <option>Central Time (CT)</option>
                   <option>Eastern Time (ET)</option>
                 </select>
               </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
+                {saved && (
+                  <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium">
+                    <CheckCircle2 size={13} /> {saveMessage}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveProfile}
+                  className="btn btn-primary h-9 px-4 text-xs ml-auto cursor-pointer"
+                >
+                  <Save size={14} /> Save Profile
+                </button>
+              </div>
             </div>
           )}
 
+          {/* APPEARANCE */}
           {activeTab === 'appearance' && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fade-in">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Appearance & Themes</h3>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                  Select your interface theme. Your choice will be persisted across sessions.
+                  Select your interface theme. Your choice is automatically persisted to device storage.
                 </p>
               </div>
 
@@ -113,7 +268,6 @@ export function Settings() {
                       </span>
                     )}
                   </div>
-                  {/* Swatch Preview */}
                   <div className="rounded-lg p-2.5 border border-slate-200 bg-white space-y-1.5 shadow-sm pointer-events-none">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />
@@ -151,7 +305,6 @@ export function Settings() {
                       </span>
                     )}
                   </div>
-                  {/* Swatch Preview */}
                   <div className="rounded-lg p-2.5 border border-[#334155] bg-[#1e293b] space-y-1.5 shadow-sm pointer-events-none">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-sky-400" />
@@ -189,7 +342,6 @@ export function Settings() {
                       </span>
                     )}
                   </div>
-                  {/* Swatch Preview */}
                   <div className="rounded-lg p-2.5 border border-[#22242a] bg-[#0b0c0e] space-y-1.5 shadow-sm pointer-events-none">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
@@ -209,38 +361,171 @@ export function Settings() {
             </div>
           )}
 
-          {activeTab === 'notifications' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Notification Preferences</h3>
-                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                  Control how and when you receive candidate match and processing alerts.
-                </p>
+          {/* LOCAL STORAGE & DATA MANAGEMENT */}
+          {activeTab === 'storage' && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                    <HardDrive size={18} className="text-[var(--color-info)]" />
+                    Local Storage on Your Device
+                  </h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                    All application data is securely kept in your device's browser Local Storage.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[var(--color-success-bg)] text-[var(--color-success)] border border-[var(--color-success)]/30 self-start sm:self-auto">
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />
+                  Active on Local Device
+                </span>
               </div>
-              <div className="space-y-1 divide-y divide-[var(--color-border)]/60">
-                {[
-                  { label: 'New candidate matches', desc: 'Get notified when new candidate-job matches are found' },
-                  { label: 'Resume processing complete', desc: 'Notification when resume processing finishes' },
-                  { label: 'Job import results', desc: 'Summary after job file imports complete' },
-                  { label: 'Status changes', desc: 'Updates when candidate or job status changes' },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between gap-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.label}</p>
-                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">{item.desc}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input type="checkbox" defaultChecked={idx < 2} className="sr-only peer" />
-                      <div className="toggle-track">
-                        <div className="toggle-thumb" />
-                      </div>
-                    </label>
+
+              {/* Storage Stats Banner */}
+              <div className="p-4 bg-[var(--color-surface-secondary)]/60 border border-[var(--color-border)] rounded-xl space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div>
+                    <span className="text-[var(--color-text-tertiary)]">Storage Key: </span>
+                    <code className="text-xs font-mono font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded border border-[var(--color-border)]">
+                      talentflow-storage
+                    </code>
                   </div>
-                ))}
+                  <div className="text-[var(--color-text-secondary)]">
+                    Local Device Footprint: <strong className="text-[var(--color-text-primary)]">{storageSize}</strong>
+                  </div>
+                </div>
+
+                {/* Grid of records */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2">
+                  <div className="p-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-center">
+                    <Users size={14} className="mx-auto text-[var(--color-info)] mb-1" />
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{candidates.length}</p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">Candidates</p>
+                  </div>
+                  <div className="p-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-center">
+                    <Briefcase size={14} className="mx-auto text-[var(--color-primary)] mb-1" />
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{jobs.length}</p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">Job Openings</p>
+                  </div>
+                  <div className="p-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-center">
+                    <GitMerge size={14} className="mx-auto text-[var(--color-warning)] mb-1" />
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{jobMatches.length}</p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">Job Matches</p>
+                  </div>
+                  <div className="p-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-center">
+                    <FileText size={14} className="mx-auto text-emerald-400 mb-1" />
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{importedFiles.length}</p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">Imported Files</p>
+                  </div>
+                  <div className="p-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-center col-span-2 sm:col-span-1">
+                    <Bell size={14} className="mx-auto text-amber-400 mb-1" />
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{notifications.length}</p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">Notifications</p>
+                  </div>
+                </div>
               </div>
+
+              {/* Data Export & Backup Actions */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                  Backup & Portability
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={handleExportData}
+                    className="p-3.5 bg-[var(--color-surface-secondary)]/50 hover:bg-[var(--color-surface-tertiary)]/50 border border-[var(--color-border)] rounded-xl flex items-start gap-3 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="p-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-info)] group-hover:scale-105 transition-transform">
+                      <Download size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">Export Data Backup</p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                        Download your candidates, jobs, matches, and settings as a portable JSON file.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3.5 bg-[var(--color-surface-secondary)]/50 hover:bg-[var(--color-surface-tertiary)]/50 border border-[var(--color-border)] rounded-xl flex items-start gap-3 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="p-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-success)] group-hover:scale-105 transition-transform">
+                      <Upload size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">Restore from Backup</p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                        Load a previously exported JSON backup file directly into local storage.
+                      </p>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileImport}
+                      className="hidden"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Reset to Factory Data */}
+              <div className="pt-2">
+                <h4 className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
+                  Reset Data
+                </h4>
+                <div className="p-4 border border-[var(--color-border)] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[var(--color-surface)]">
+                  <div>
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                      <RefreshCw size={13} className="text-[var(--color-text-secondary)]" />
+                      Reset to Default Mock Data
+                    </p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                      Restore the original set of sample candidates, jobs, and match evaluations in Local Storage.
+                    </p>
+                  </div>
+
+                  {!resetConfirmOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setResetConfirmOpen(true)}
+                      className="btn btn-secondary btn-sm text-xs border-[var(--color-border)] hover:border-[var(--color-error)] hover:text-[var(--color-error)] transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+                    >
+                      Reset Data...
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handleResetData}
+                        className="btn btn-sm text-xs bg-[var(--color-error)] text-white hover:opacity-90 cursor-pointer"
+                      >
+                        Confirm Reset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResetConfirmOpen(false)}
+                        className="btn btn-secondary btn-sm text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {saved && (
+                <div className="p-3 bg-[var(--color-success-bg)] border border-[var(--color-success)]/30 rounded-lg text-xs text-[var(--color-success)] flex items-center gap-2">
+                  <CheckCircle2 size={14} />
+                  <span>{saveMessage}</span>
+                </div>
+              )}
             </div>
           )}
 
+          {/* KEYBOARD SHORTCUTS */}
           {activeTab === 'shortcuts' && (
             <div className="space-y-5 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
@@ -300,33 +585,74 @@ export function Settings() {
             </div>
           )}
 
-          {activeTab === 'integrations' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Integrations</h3>
-              <p className="text-xs text-[var(--color-text-tertiary)]">Connect external services. These will be available after backend integration.</p>
-              <div className="space-y-2">
+          {/* NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-4 animate-fade-in">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Notification Preferences</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  Control how and when you receive candidate match and processing alerts.
+                </p>
+              </div>
+              <div className="space-y-1 divide-y divide-[var(--color-border)]/60">
                 {[
-                  { name: 'PostgreSQL Database', status: 'Not connected', desc: 'Primary data store for candidates and jobs' },
-                  { name: 'FastAPI Backend', status: 'Not connected', desc: 'Application server for processing and matching' },
-                  { name: 'Ollama (Local LLM)', status: 'Not connected', desc: 'Local AI model for resume parsing and matching' },
-                  { name: 'Cloud LLM API', status: 'Not connected', desc: 'Optional cloud AI provider (OpenAI, Anthropic, etc.)' },
+                  { label: 'New candidate matches', desc: 'Get notified when new candidate-job matches are found' },
+                  { label: 'Resume processing complete', desc: 'Notification when resume processing finishes' },
+                  { label: 'Job import results', desc: 'Summary after job file imports complete' },
+                  { label: 'Status changes', desc: 'Updates when candidate or job status changes' },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 border border-[var(--color-border)] rounded-md">
-                    <div>
-                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.name}</p>
-                      <p className="text-[10px] text-[var(--color-text-tertiary)]">{item.desc}</p>
+                  <div key={idx} className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.label}</p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">{item.desc}</p>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] rounded">{item.status}</span>
+                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input type="checkbox" defaultChecked={idx < 2} className="sr-only peer" />
+                      <div className="toggle-track">
+                        <div className="toggle-thumb" />
+                      </div>
+                    </label>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
+          {/* INTEGRATIONS */}
+          {activeTab === 'integrations' && (
+            <div className="space-y-4 animate-fade-in">
+              <h3 className="text-sm font-medium">Integrations</h3>
+              <p className="text-xs text-[var(--color-text-tertiary)]">Connect external services. Currently running in client-side Local Storage mode.</p>
+              <div className="space-y-2">
+                {[
+                  { name: 'Browser Local Storage', status: 'Connected', desc: 'Client-side active persistence on this device' },
+                  { name: 'PostgreSQL Database', status: 'Optional', desc: 'Remote synchronization when connected to backend' },
+                  { name: 'FastAPI Backend', status: 'Standby', desc: 'Application server for AI batch processing' },
+                  { name: 'Ollama (Local LLM)', status: 'Standby', desc: 'Local AI model for offline resume embeddings' },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 border border-[var(--color-border)] rounded-md">
+                    <div>
+                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.name}</p>
+                      <p className="text-[10px] text-[var(--color-text-tertiary)]">{item.desc}</p>
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded ${
+                      item.status === 'Connected'
+                        ? 'bg-[var(--color-success-bg)] text-[var(--color-success)] font-medium'
+                        : 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)]'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* API */}
           {activeTab === 'api' && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-fade-in">
               <h3 className="text-sm font-medium">API Configuration</h3>
-              <p className="text-xs text-[var(--color-text-tertiary)]">Configure API keys for external services. Keys are stored securely on the server.</p>
+              <p className="text-xs text-[var(--color-text-tertiary)]">Configure API keys for external services.</p>
               <div className="space-y-3">
                 <div>
                   <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">Backend API URL</label>
@@ -346,25 +672,10 @@ export function Settings() {
                 </div>
               </div>
               <p className="text-[10px] text-[var(--color-text-tertiary)] italic">
-                Demo mode — settings are not persisted. In production, these connect to the FastAPI backend.
+                Device storage active — all data operates in offline-first mode on your machine.
               </p>
             </div>
           )}
-
-          {/* Save button */}
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--color-border)]">
-            {saved && (
-              <span className="text-xs text-[var(--color-success)] flex items-center gap-1">
-                <Save size={12} /> Saved successfully
-              </span>
-            )}
-            <button
-              onClick={handleSave}
-              className="btn btn-primary h-9 px-4 text-xs ml-auto"
-            >
-              <Save size={14} /> Save Changes
-            </button>
-          </div>
         </div>
       </div>
     </div>

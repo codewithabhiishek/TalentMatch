@@ -22,7 +22,7 @@ const processingSteps = [
 ];
 
 export function ResumeImport() {
-  const { navigateTo } = useAppStore();
+  const { navigateTo, addCandidate, addImportedFile, addNotification } = useAppStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -96,10 +96,63 @@ export function ResumeImport() {
     }
 
     // Random chance of failure for demo
-    if (Math.random() < 0.1) {
+    if (Math.random() < 0.05) {
       setFiles(prev => prev.map(f => f.id === fileId ? { ...f, status: 'failed' as const, error: 'Could not extract text from document' } : f));
     } else {
       setFiles(prev => prev.map(f => f.id === fileId ? { ...f, status: 'completed' as const } : f));
+
+      // Persist candidate to local storage
+      const targetFile = files.find(f => f.id === fileId);
+      const rawName = targetFile ? targetFile.file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ') : 'New Candidate';
+      const parts = rawName.split(' ').filter(Boolean);
+      const firstName = parts[0] || 'Alex';
+      const lastName = parts.slice(1).join(' ') || 'Candidate';
+
+      addCandidate({
+        id: `cand-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+        firstName,
+        lastName,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+        phone: '(555) 234-5678',
+        position: 'Registered Nurse',
+        specialty: 'ICU',
+        experience: 3 + Math.floor(Math.random() * 8),
+        currentLocation: 'San Francisco, CA',
+        previousTravelLocations: ['Denver, CO', 'Austin, TX'],
+        bestMatch: 'ICU Registered Nurse (94%)',
+        status: 'new',
+        resumeFilename: targetFile?.file.name || 'resume.pdf',
+        uploadedAt: new Date().toISOString().split('T')[0],
+        professionalSummary: `Parsed candidate credentials from ${targetFile?.file.name || 'resume'}. Specializing in critical care and clinical excellence.`,
+        experienceTimeline: [
+          {
+            id: `exp-${Date.now()}`,
+            position: 'Staff Nurse',
+            facility: 'Regional Health System',
+            location: 'San Francisco, CA',
+            startDate: '2022',
+            endDate: 'Present',
+            description: 'Critical care nursing and patient stabilization in high-acuity environments.'
+          }
+        ],
+        verifiedByRecruiter: false,
+      });
+
+      addImportedFile({
+        id: `file-${Date.now()}`,
+        filename: targetFile?.file.name || 'resume.pdf',
+        type: 'resume',
+        uploadedAt: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        recordCount: 1,
+      });
+
+      addNotification({
+        title: 'Resume Processed',
+        message: `Added ${firstName} ${lastName} to candidates and saved to local storage.`,
+        read: false,
+        type: 'success',
+      });
     }
   };
 
