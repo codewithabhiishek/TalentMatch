@@ -183,7 +183,7 @@ export function ResumeImport() {
           </div>
 
           {files.map(f => (
-            <div key={f.id} className="bg-white border border-[var(--color-border)] rounded-lg p-3">
+            <div key={f.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3">
               <div className="flex items-start gap-3">
                 <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${
                   f.status === 'completed' ? 'bg-[var(--color-success-bg)]' :
@@ -288,7 +288,7 @@ export function ResumeImport() {
       )}
 
       {files.length === 0 && (
-        <div className="mt-6 text-center py-8 bg-white border border-[var(--color-border)] rounded-lg">
+        <div className="mt-6 text-center py-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
           <p className="text-xs text-[var(--color-text-tertiary)]">No files uploaded yet. Drop resume files above to begin.</p>
         </div>
       )}

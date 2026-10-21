@@ -41,7 +41,7 @@ export function JobDetail() {
       </button>
 
       {/* Header */}
-      <div className="bg-white border border-[var(--color-border)] rounded-lg p-5 mb-4">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 mb-4 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -68,13 +68,13 @@ export function JobDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
           {/* Description */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Job Description</h3>
             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{job.description}</p>
           </div>
 
           {/* Requirements */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Requirements</h3>
             <div className="space-y-2">
               {job.requirements.map((req, idx) => (
@@ -89,7 +89,7 @@ export function JobDetail() {
 
         {/* Sidebar - Matched Candidates */}
         <div className="space-y-4">
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">
               Matched Candidates ({matchedCandidates.length})
             </h3>
@@ -120,7 +120,7 @@ export function JobDetail() {
             )}
           </div>
 
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Job Details</h3>
             <div className="space-y-2.5">
               <div>

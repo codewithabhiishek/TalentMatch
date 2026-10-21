@@ -4,7 +4,7 @@ import { useAppStore } from '../store';
 import { weeklyActivity } from '../data/mockData';
 
 export function Overview() {
-  const { candidates, jobs, jobMatches, importedFiles, navigateTo } = useAppStore();
+  const { candidates, jobs, jobMatches, importedFiles, navigateTo, theme } = useAppStore();
 
   const totalCandidates = candidates.length;
   const activeJobs = jobs.filter(j => j.status === 'active').length;
@@ -37,6 +37,10 @@ export function Overview() {
     failed: 'bg-[var(--color-error-bg)] text-[var(--color-error)]',
   };
 
+  const barColor = theme === 'dark' ? '#a3a3a3' : '#6b7280';
+  const primaryBarColor = theme === 'dark' ? '#f5f5f5' : '#1a1a1a';
+  const textColor = theme === 'dark' ? '#737373' : '#6b7280';
+
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-6">
       {/* Metrics */}
@@ -47,6 +51,7 @@ export function Overview() {
           icon={<Users size={16} />}
           subtext={`${newThisWeek} new this week`}
           onClick={() => navigateTo('candidates')}
+          delay={0}
         />
         <MetricCard
           label="Active Jobs"
@@ -54,6 +59,7 @@ export function Overview() {
           icon={<Briefcase size={16} />}
           subtext={`${jobs.length} total positions`}
           onClick={() => navigateTo('jobs')}
+          delay={60}
         />
         <MetricCard
           label="New This Week"
@@ -61,6 +67,7 @@ export function Overview() {
           icon={<UserPlus size={16} />}
           subtext="candidates added"
           trend="up"
+          delay={120}
         />
         <MetricCard
           label="Pending Matches"
@@ -68,36 +75,37 @@ export function Overview() {
           icon={<GitMerge size={16} />}
           subtext="awaiting review"
           onClick={() => navigateTo('job-matches')}
+          delay={180}
         />
       </div>
 
       {/* Charts and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Weekly Activity Chart */}
-        <div className="lg:col-span-2 bg-white border border-[var(--color-border)] rounded-lg p-4">
+        <div className="lg:col-span-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 hover-lift animate-fade-in" style={{ animationDelay: '200ms' }}>
           <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-4">Weekly Activity</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyActivity} barGap={2}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} width={24} />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: textColor }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: textColor }} width={24} />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                 />
-                <Bar dataKey="candidates" fill="#1a1a1a" radius={[2, 2, 0, 0]} name="Candidates" />
-                <Bar dataKey="matches" fill="#6b7280" radius={[2, 2, 0, 0]} name="Matches" />
+                <Bar dataKey="candidates" fill={primaryBarColor} radius={[3, 3, 0, 0]} name="Candidates" />
+                <Bar dataKey="matches" fill={barColor} radius={[3, 3, 0, 0]} name="Matches" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Processing Activity */}
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 hover-lift animate-fade-in" style={{ animationDelay: '260ms' }}>
           <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Recent Processing</h3>
           <div className="space-y-2.5">
-            {recentFiles.map(file => (
-              <div key={file.id} className="flex items-center gap-2.5 py-1.5">
+            {recentFiles.map((file, idx) => (
+              <div key={file.id} className="flex items-center gap-2.5 py-1.5 hover:bg-[var(--color-surface-secondary)] rounded-md px-1 -mx-1 transition-colors cursor-default" style={{ animationDelay: `${300 + idx * 50}ms` }}>
                 <FileText size={14} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-[var(--color-text-primary)] truncate">{file.filename}</p>
@@ -115,21 +123,21 @@ export function Overview() {
       {/* Recent Candidates & Top Matches */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Candidates */}
-        <div className="bg-white border border-[var(--color-border)] rounded-lg">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg hover-lift animate-fade-in" style={{ animationDelay: '320ms' }}>
           <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
             <h3 className="text-sm font-medium">Recent Candidates</h3>
-            <button onClick={() => navigateTo('candidates')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-colors">
+            <button onClick={() => navigateTo('candidates')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-all duration-150 hover:gap-1.5">
               View all <ArrowUpRight size={12} />
             </button>
           </div>
           <div className="divide-y divide-[var(--color-border)]">
-            {recentCandidates.map(c => (
+            {recentCandidates.map((c, idx) => (
               <button
                 key={c.id}
                 onClick={() => navigateTo('candidate-profile', c.id)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-[var(--color-surface-secondary)] transition-colors text-left"
+                className="w-full flex items-center gap-3 p-3 hover:bg-[var(--color-surface-secondary)] transition-all duration-150 text-left group"
               >
-                <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150">
                   <span className="text-xs font-medium text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
                 </div>
                 <div className="min-w-0 flex-1">
@@ -145,24 +153,24 @@ export function Overview() {
         </div>
 
         {/* Top Matches */}
-        <div className="bg-white border border-[var(--color-border)] rounded-lg">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg hover-lift animate-fade-in" style={{ animationDelay: '380ms' }}>
           <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
             <h3 className="text-sm font-medium">Top Candidate–Job Matches</h3>
-            <button onClick={() => navigateTo('job-matches')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-colors">
+            <button onClick={() => navigateTo('job-matches')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-all duration-150 hover:gap-1.5">
               View all <ArrowUpRight size={12} />
             </button>
           </div>
           <div className="divide-y divide-[var(--color-border)]">
-            {topMatches.map(m => {
+            {topMatches.map((m, idx) => {
               const candidate = candidates.find(c => c.id === m.candidateId);
               const job = jobs.find(j => j.id === m.jobId);
               return (
                 <button
                   key={m.id}
                   onClick={() => navigateTo('job-matches')}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-[var(--color-surface-secondary)] transition-colors text-left"
+                  className="w-full flex items-center gap-3 p-3 hover:bg-[var(--color-surface-secondary)] transition-all duration-150 text-left group"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150">
                     <span className="text-xs font-bold text-[var(--color-text-primary)]">{m.score}</span>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -180,10 +188,10 @@ export function Overview() {
       </div>
 
       {/* Recently Imported Jobs */}
-      <div className="bg-white border border-[var(--color-border)] rounded-lg">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg hover-lift animate-fade-in" style={{ animationDelay: '440ms' }}>
         <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
           <h3 className="text-sm font-medium">Recently Imported Jobs</h3>
-          <button onClick={() => navigateTo('jobs')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-colors">
+          <button onClick={() => navigateTo('jobs')} className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1 transition-all duration-150 hover:gap-1.5">
             View all <ArrowUpRight size={12} />
           </button>
         </div>
@@ -199,8 +207,8 @@ export function Overview() {
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
               {recentJobs.map(job => (
-                <tr key={job.id} className="hover:bg-[var(--color-surface-secondary)] transition-colors cursor-pointer" onClick={() => navigateTo('job-detail', undefined, job.id)}>
-                  <td className="px-4 py-2.5 font-medium text-[var(--color-text-primary)]">{job.position}</td>
+                <tr key={job.id} className="hover:bg-[var(--color-surface-secondary)] transition-colors cursor-pointer group" onClick={() => navigateTo('job-detail', undefined, job.id)}>
+                  <td className="px-4 py-2.5 font-medium text-[var(--color-text-primary)] group-hover:underline">{job.position}</td>
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden sm:table-cell">{job.city}, {job.state}</td>
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden md:table-cell">{job.facility}</td>
                   <td className="px-4 py-2.5">
@@ -218,13 +226,14 @@ export function Overview() {
   );
 }
 
-function MetricCard({ label, value, icon, subtext, trend, onClick }: {
-  label: string; value: number; icon: React.ReactNode; subtext: string; trend?: string; onClick?: () => void;
+function MetricCard({ label, value, icon, subtext, trend, onClick, delay }: {
+  label: string; value: number; icon: React.ReactNode; subtext: string; trend?: string; onClick?: () => void; delay?: number;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`bg-white border border-[var(--color-border)] rounded-lg p-4 text-left transition-all duration-150 ${onClick ? 'hover:border-[var(--color-border-hover)] hover:shadow-sm cursor-pointer' : ''}`}
+      className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 text-left transition-all duration-200 hover-lift animate-fade-in ${onClick ? 'cursor-pointer' : ''}`}
+      style={{ animationDelay: `${delay || 0}ms` }}
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-[var(--color-text-tertiary)]">{icon}</span>

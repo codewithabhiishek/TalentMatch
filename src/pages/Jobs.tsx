@@ -66,7 +66,7 @@ export function Jobs() {
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 animate-fade-in">
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Jobs</h2>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage imported job opportunities</p>
@@ -74,11 +74,11 @@ export function Jobs() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateTo('job-import')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors text-[var(--color-text-secondary)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover text-[var(--color-text-secondary)]"
           >
             <Upload size={13} /> Import Jobs
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-[var(--color-surface)] rounded-md hover:bg-[var(--color-primary-hover)] transition-all duration-150 btn-hover">
             <Plus size={13} /> Add Job
           </button>
         </div>
@@ -86,19 +86,19 @@ export function Jobs() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-3">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 hover-lift transition-all">
           <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider">Total Jobs</p>
           <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">{jobs.length}</p>
         </div>
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-3">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 hover-lift transition-all">
           <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider">Active</p>
           <p className="text-xl font-semibold text-[var(--color-success)] mt-1">{activeJobs}</p>
         </div>
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-3">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 hover-lift transition-all">
           <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider">Locations</p>
           <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">{locations}</p>
         </div>
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-3">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 hover-lift transition-all">
           <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider">Source Files</p>
           <p className="text-xl font-semibold text-[var(--color-text-primary)] mt-1">{jobFiles.length}</p>
         </div>
@@ -113,7 +113,7 @@ export function Jobs() {
             placeholder="Search by position, facility, city..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="w-full h-8 pl-8 pr-3 text-xs bg-white border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
+            className="w-full h-8 pl-8 pr-3 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function Jobs() {
             <select
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="h-8 px-2 text-xs bg-white border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+              className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
             >
               {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
@@ -130,7 +130,7 @@ export function Jobs() {
           <select
             value={stateFilter}
             onChange={e => { setStateFilter(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-xs bg-white border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+            className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
           >
             {states.map(s => <option key={s} value={s}>{s === 'All' ? 'All States' : s}</option>)}
           </select>
@@ -138,7 +138,7 @@ export function Jobs() {
       </div>
 
       {/* Table - Desktop */}
-      <div className="hidden lg:block bg-white border border-[var(--color-border)] rounded-lg overflow-hidden">
+      <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -179,7 +179,7 @@ export function Jobs() {
                       <MoreHorizontal size={14} />
                     </button>
                     {openMenu === j.id && (
-                      <div className="absolute right-4 top-8 w-36 bg-white border border-[var(--color-border)] rounded-md shadow-lg z-10 py-1">
+                      <div className="absolute right-4 top-8 w-36 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg z-10 py-1 animate-scale-in">
                         <button onClick={() => { navigateTo('job-detail', undefined, j.id); setOpenMenu(null); }} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">View Details</button>
                         <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">Edit Job</button>
                         <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">View Matches</button>
@@ -199,7 +199,7 @@ export function Jobs() {
           <button
             key={j.id}
             onClick={() => navigateTo('job-detail', undefined, j.id)}
-            className="w-full bg-white border border-[var(--color-border)] rounded-lg p-3 text-left hover:border-[var(--color-border-hover)] transition-colors"
+            className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 text-left hover:border-[var(--color-border-hover)] hover-lift transition-all"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -224,17 +224,17 @@ export function Jobs() {
             Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {filtered.length}
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Previous</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Previous</button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-7 h-7 text-xs rounded-md transition-colors ${page === i + 1 ? 'bg-[var(--color-primary)] text-white' : 'hover:bg-[var(--color-surface-secondary)]'}`}>{i + 1}</button>
+              <button key={i + 1} onClick={() => setPage(i + 1)} className={`w-7 h-7 text-xs rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}>{i + 1}</button>
             ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Next</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover">Next</button>
           </div>
         </div>
       )}
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 bg-white border border-[var(--color-border)] rounded-lg">
+        <div className="text-center py-12 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg animate-fade-in">
           <p className="text-sm text-[var(--color-text-secondary)]">No jobs match your filters</p>
           <button onClick={() => { setSearch(''); setStatusFilter('All'); setStateFilter('All'); }} className="mt-2 text-xs text-[var(--color-info)] hover:underline">Clear filters</button>
         </div>

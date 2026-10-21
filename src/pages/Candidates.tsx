@@ -63,7 +63,7 @@ export function Candidates() {
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 animate-fade-in">
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Candidates</h2>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage and review candidate profiles</p>
@@ -71,18 +71,18 @@ export function Candidates() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateTo('resume-import')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors text-[var(--color-text-secondary)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover text-[var(--color-text-secondary)]"
           >
             <Upload size={13} /> Import Resumes
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[var(--color-primary)] text-[var(--color-surface)] rounded-md hover:bg-[var(--color-primary-hover)] transition-all duration-150 btn-hover">
             <Plus size={13} /> Add Candidate
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4 animate-fade-in" style={{ animationDelay: '60ms' }}>
         <div className="relative flex-1 max-w-sm">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
           <input
@@ -90,7 +90,7 @@ export function Candidates() {
             placeholder="Search by name, position, specialty..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="w-full h-8 pl-8 pr-3 text-xs bg-white border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
+            className="w-full h-8 pl-8 pr-3 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] transition-colors"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export function Candidates() {
             <select
               value={specialtyFilter}
               onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
-              className="h-8 px-2 text-xs bg-white border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+              className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
             >
               {specialties.map(s => <option key={s} value={s}>{s === 'All' ? 'All Specialties' : s}</option>)}
             </select>
@@ -107,7 +107,7 @@ export function Candidates() {
           <select
             value={statusFilter}
             onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-xs bg-white border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
+            className="h-8 px-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:border-[var(--color-border-hover)]"
           >
             {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
@@ -115,17 +115,17 @@ export function Candidates() {
       </div>
 
       {/* Table - Desktop */}
-      <div className="hidden lg:block bg-white border border-[var(--color-border)] rounded-lg overflow-hidden">
+      <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden animate-fade-in" style={{ animationDelay: '120ms' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50">
-                <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5 cursor-pointer select-none" onClick={() => toggleSort('name')}>
+                <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5 cursor-pointer select-none hover:text-[var(--color-text-secondary)] transition-colors" onClick={() => toggleSort('name')}>
                   <span className="flex items-center gap-1">Candidate <SortIcon field="name" /></span>
                 </th>
                 <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5">Position</th>
                 <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5">Specialty</th>
-                <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5 cursor-pointer select-none" onClick={() => toggleSort('experience')}>
+                <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5 cursor-pointer select-none hover:text-[var(--color-text-secondary)] transition-colors" onClick={() => toggleSort('experience')}>
                   <span className="flex items-center gap-1">Experience <SortIcon field="experience" /></span>
                 </th>
                 <th className="text-left font-medium text-[var(--color-text-tertiary)] px-4 py-2.5">Location</th>
@@ -135,15 +135,15 @@ export function Candidates() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {paginated.map(c => (
-                <tr key={c.id} className="hover:bg-[var(--color-surface-secondary)] transition-colors group">
+              {paginated.map((c, idx) => (
+                <tr key={c.id} className="hover:bg-[var(--color-surface-secondary)] transition-colors group" style={{ animationDelay: `${idx * 30}ms` }}>
                   <td className="px-4 py-2.5">
-                    <button onClick={() => navigateTo('candidate-profile', c.id)} className="flex items-center gap-2.5 text-left">
-                      <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0">
+                    <button onClick={() => navigateTo('candidate-profile', c.id)} className="flex items-center gap-2.5 text-left group/cell">
+                      <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 group-hover/cell:scale-110 transition-transform duration-150">
                         <span className="text-[10px] font-medium text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-[var(--color-text-primary)]">{c.firstName} {c.lastName}</p>
+                        <p className="font-medium text-[var(--color-text-primary)] group-hover/cell:underline">{c.firstName} {c.lastName}</p>
                         <p className="text-[10px] text-[var(--color-text-tertiary)]">{c.email}</p>
                       </div>
                     </button>
@@ -161,15 +161,15 @@ export function Candidates() {
                   <td className="px-4 py-2.5 relative">
                     <button
                       onClick={() => setOpenMenu(openMenu === c.id ? null : c.id)}
-                      className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-150"
                     >
                       <MoreHorizontal size={14} />
                     </button>
                     {openMenu === c.id && (
-                      <div className="absolute right-4 top-8 w-36 bg-white border border-[var(--color-border)] rounded-md shadow-lg z-10 py-1">
-                        <button onClick={() => { navigateTo('candidate-profile', c.id); setOpenMenu(null); }} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">View Profile</button>
-                        <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">Edit Status</button>
-                        <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)]">Download Resume</button>
+                      <div className="absolute right-4 top-8 w-36 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg z-10 py-1 animate-scale-in">
+                        <button onClick={() => { navigateTo('candidate-profile', c.id); setOpenMenu(null); }} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)] transition-colors">View Profile</button>
+                        <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)] transition-colors">Edit Status</button>
+                        <button onClick={() => setOpenMenu(null)} className="w-full text-left px-3 py-1.5 text-xs hover:bg-[var(--color-surface-secondary)] transition-colors">Download Resume</button>
                       </div>
                     )}
                   </td>
@@ -182,11 +182,12 @@ export function Candidates() {
 
       {/* Cards - Mobile/Tablet */}
       <div className="lg:hidden space-y-2">
-        {paginated.map(c => (
+        {paginated.map((c, idx) => (
           <button
             key={c.id}
             onClick={() => navigateTo('candidate-profile', c.id)}
-            className="w-full bg-white border border-[var(--color-border)] rounded-lg p-3 text-left hover:border-[var(--color-border-hover)] transition-colors"
+            className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-3 text-left hover:border-[var(--color-border-hover)] hover-lift transition-all animate-fade-in"
+            style={{ animationDelay: `${idx * 40}ms` }}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5">
@@ -223,7 +224,7 @@ export function Candidates() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover"
             >
               Previous
             </button>
@@ -231,7 +232,7 @@ export function Candidates() {
               <button
                 key={i + 1}
                 onClick={() => setPage(i + 1)}
-                className={`w-7 h-7 text-xs rounded-md transition-colors ${page === i + 1 ? 'bg-[var(--color-primary)] text-white' : 'hover:bg-[var(--color-surface-secondary)]'}`}
+                className={`w-7 h-7 text-xs rounded-md transition-all duration-150 btn-hover ${page === i + 1 ? 'bg-[var(--color-primary)] text-[var(--color-surface)]' : 'hover:bg-[var(--color-surface-tertiary)]'}`}
               >
                 {i + 1}
               </button>
@@ -239,7 +240,7 @@ export function Candidates() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-2.5 py-1 text-xs border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 btn-hover"
             >
               Next
             </button>
@@ -248,7 +249,7 @@ export function Candidates() {
       )}
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 bg-white border border-[var(--color-border)] rounded-lg">
+        <div className="text-center py-12 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg animate-fade-in">
           <p className="text-sm text-[var(--color-text-secondary)]">No candidates match your filters</p>
           <button onClick={() => { setSearch(''); setSpecialtyFilter('All'); setStatusFilter('All'); }} className="mt-2 text-xs text-[var(--color-info)] hover:underline">Clear filters</button>
         </div>

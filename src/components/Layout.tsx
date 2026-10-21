@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
-  CheckCircle, AlertTriangle, Info, XCircle
+  CheckCircle, AlertTriangle, Info, XCircle, Sun, Moon
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page } from '../types';
@@ -18,8 +18,8 @@ const navItems: { id: Page; label: string; icon: React.ReactNode }[] = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
-    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications,
-    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead
+    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme,
+    navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, toggleTheme
   } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -63,25 +63,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden bg-[var(--color-surface-secondary)]">
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden animate-fade-in"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:relative z-50 flex flex-col h-full bg-white border-r border-[var(--color-border)]
+        fixed lg:relative z-50 flex flex-col h-full bg-[var(--color-surface)] border-r border-[var(--color-border)]
         transition-all duration-200 ease-in-out
         ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${sidebarCollapsed ? 'w-16' : 'w-60'}
       `}>
         {/* Logo */}
         <div className={`flex items-center h-14 px-4 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center' : 'gap-2.5'}`}>
-          <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">TF</span>
+          <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0 transition-colors">
+            <span className="text-[var(--color-surface)] text-xs font-bold">TF</span>
           </div>
           {!sidebarCollapsed && <span className="font-semibold text-sm text-[var(--color-text-primary)]">TalentFlow</span>}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:flex ml-auto w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)]"
+            className="hidden lg:flex ml-auto w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110"
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -96,7 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               onClick={() => navigateTo(item.id)}
               className={`
                 w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium
-                transition-colors duration-150
+                transition-all duration-150 btn-hover
                 ${isActive(item.id)
                   ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)]'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-tertiary)] hover:text-[var(--color-text-primary)]'
@@ -134,10 +137,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="flex items-center h-14 px-4 lg:px-6 bg-white border-b border-[var(--color-border)] gap-3 flex-shrink-0">
+        <header className="flex items-center h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] gap-3 flex-shrink-0">
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)]"
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors"
             aria-label="Open menu"
           >
             <Menu size={18} />
@@ -154,28 +157,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 placeholder="Search candidates, jobs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-8 pr-3 text-sm bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] focus:bg-white transition-colors"
+                className="w-full h-8 pl-8 pr-3 text-sm bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-md placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--color-border-hover)] focus:bg-[var(--color-surface)] transition-all duration-150"
               />
-              <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-white border border-[var(--color-border)] rounded">⌘K</kbd>
+              <kbd className="hidden lg:inline-flex absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded">⌘K</kbd>
             </div>
           </div>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-200 hover:scale-110 hover:rotate-12"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors"
+              className="relative w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-all duration-150 hover:scale-105"
               aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
             >
               <Bell size={17} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--color-error)] text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse-soft">
                   {unreadCount}
                 </span>
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 top-full mt-1 w-80 bg-white border border-[var(--color-border)] rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+              <div className="absolute right-0 top-full mt-1 w-80 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto animate-scale-in">
                 <div className="p-3 border-b border-[var(--color-border)]">
                   <p className="text-sm font-medium">Notifications</p>
                 </div>
@@ -216,15 +228,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="hidden sm:block text-xs font-medium text-[var(--color-text-primary)]">Jordan</span>
             </button>
             {showUserMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1 animate-scale-in">
                 <div className="px-3 py-2 border-b border-[var(--color-border)]">
                   <p className="text-xs font-medium">Jordan Rivera</p>
                   <p className="text-xs text-[var(--color-text-tertiary)]">jordan@talentflow.com</p>
                 </div>
-                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2">
+                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2 transition-colors">
                   <User size={13} /> Profile Settings
                 </button>
-                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2">
+                <button className="w-full text-left px-3 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2 transition-colors">
                   <LogOut size={13} /> Sign Out
                 </button>
               </div>

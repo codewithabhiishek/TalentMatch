@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { Candidate, Job, JobMatch, ImportedFile, Notification, Page } from '../types';
 import { candidates as mockCandidates, jobs as mockJobs, jobMatches as mockMatches, importedFiles as mockFiles, notifications as mockNotifications } from '../data/mockData';
 
+type Theme = 'light' | 'dark';
+
 interface AppState {
   // Navigation
   currentPage: Page;
@@ -9,6 +11,9 @@ interface AppState {
   selectedJobId: string | null;
   sidebarCollapsed: boolean;
   mobileSidebarOpen: boolean;
+  
+  // Theme
+  theme: Theme;
   
   // Data
   candidates: Candidate[];
@@ -26,7 +31,19 @@ interface AppState {
   markNotificationRead: (id: string) => void;
   addCandidate: (candidate: Candidate) => void;
   addJob: (job: Job) => void;
+  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 }
+
+// Initialize theme from localStorage or system preference
+const getInitialTheme = (): Theme => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('talentflow-theme');
+    if (stored === 'dark' || stored === 'light') return stored;
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+  }
+  return 'light';
+};
 
 export const useAppStore = create<AppState>((set) => ({
   currentPage: 'overview',
@@ -34,6 +51,7 @@ export const useAppStore = create<AppState>((set) => ({
   selectedJobId: null,
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
+  theme: getInitialTheme(),
   
   candidates: mockCandidates,
   jobs: mockJobs,
@@ -70,4 +88,15 @@ export const useAppStore = create<AppState>((set) => ({
   addJob: (job) => set((state) => ({
     jobs: [job, ...state.jobs]
   })),
+
+  toggleTheme: () => set((state) => {
+    const newTheme = state.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('talentflow-theme', newTheme);
+    return { theme: newTheme };
+  }),
+
+  setTheme: (theme) => {
+    localStorage.setItem('talentflow-theme', theme);
+    set({ theme });
+  },
 }));

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useAppStore } from './store';
 import { Layout } from './components/Layout';
 import { Overview } from './pages/Overview';
@@ -11,7 +12,16 @@ import { ResumeImport } from './pages/ResumeImport';
 import { Settings } from './pages/Settings';
 
 function App() {
-  const { currentPage } = useAppStore();
+  const { currentPage, theme } = useAppStore();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -30,7 +40,9 @@ function App() {
 
   return (
     <Layout>
-      {renderPage()}
+      <div className="page-enter" key={currentPage}>
+        {renderPage()}
+      </div>
     </Layout>
   );
 }

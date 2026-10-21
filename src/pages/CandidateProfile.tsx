@@ -40,7 +40,7 @@ export function CandidateProfile() {
       </button>
 
       {/* Header */}
-      <div className="bg-white border border-[var(--color-border)] rounded-lg p-5 mb-4">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 mb-4 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0">
@@ -60,10 +60,10 @@ export function CandidateProfile() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover">
               <Edit size={12} /> Edit Profile
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-secondary)] transition-colors">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-tertiary)] transition-all duration-150 btn-hover">
               <Eye size={12} /> Review Extraction
             </button>
           </div>
@@ -90,13 +90,13 @@ export function CandidateProfile() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-4">
           {/* Professional Summary */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Professional Summary</h3>
             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{candidate.professionalSummary}</p>
           </div>
 
           {/* Experience Timeline */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Experience Timeline</h3>
             <div className="space-y-4">
               {candidate.experienceTimeline.map((exp, idx) => (
@@ -117,7 +117,7 @@ export function CandidateProfile() {
           </div>
 
           {/* Travel/Work Locations */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Previous Travel/Work Locations</h3>
             <p className="text-[10px] text-[var(--color-text-tertiary)] mb-3">Locations where the candidate has worked or traveled in the past 5 years</p>
             <div className="flex flex-wrap gap-2">
@@ -133,7 +133,7 @@ export function CandidateProfile() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Classification */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Classification</h3>
             <div className="space-y-2.5">
               <div>
@@ -156,7 +156,7 @@ export function CandidateProfile() {
           </div>
 
           {/* Matched Jobs */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-3">Matched Opportunities</h3>
             {matchedJobs.length > 0 ? (
               <div className="space-y-2.5">
@@ -183,7 +183,7 @@ export function CandidateProfile() {
           </div>
 
           {/* Extraction Review */}
-          <div className="bg-white border border-[var(--color-border)] rounded-lg p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Extraction Review</h3>
             <div className="flex items-start gap-2 mb-3">
               {candidate.verifiedByRecruiter ? (

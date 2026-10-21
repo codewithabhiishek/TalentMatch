@@ -69,7 +69,7 @@ export function JobImport() {
 
       {/* Step 1 - Upload */}
       {step === 1 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-6">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 animate-fade-in">
           <h3 className="text-sm font-medium mb-1">Upload Job File</h3>
           <p className="text-xs text-[var(--color-text-tertiary)] mb-4">Accept .xlsx, .xls, and .csv files</p>
           <div
@@ -95,7 +95,7 @@ export function JobImport() {
 
       {/* Step 2 - Preview */}
       {step === 2 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-5">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 animate-fade-in">
           <h3 className="text-sm font-medium mb-1">File Preview</h3>
           <p className="text-xs text-[var(--color-text-tertiary)] mb-4">Review the detected content before mapping columns</p>
 
@@ -161,7 +161,7 @@ export function JobImport() {
 
       {/* Step 3 - Map columns */}
       {step === 3 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-5">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 animate-fade-in">
           <h3 className="text-sm font-medium mb-1">Map Columns</h3>
           <p className="text-xs text-[var(--color-text-tertiary)] mb-4">Map source columns to required fields. Auto-mapping has been applied where possible.</p>
 
@@ -176,7 +176,7 @@ export function JobImport() {
                   <select
                     value={mappings[field.key] || ''}
                     onChange={e => setMappings(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    className={`w-full h-8 px-2.5 text-xs bg-white border rounded-md appearance-none focus:outline-none focus:border-[var(--color-border-hover)] transition-colors ${
+                    className={`w-full h-8 px-2.5 text-xs bg-[var(--color-surface)] border rounded-md appearance-none focus:outline-none focus:border-[var(--color-border-hover)] transition-colors ${
                       !mappings[field.key] && field.required ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'
                     }`}
                   >
@@ -228,7 +228,7 @@ export function JobImport() {
 
       {/* Step 4 - Validate */}
       {step === 4 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-5">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 animate-fade-in">
           <h3 className="text-sm font-medium mb-1">Validation Results</h3>
           <p className="text-xs text-[var(--color-text-tertiary)] mb-4">Review data quality before importing</p>
 
@@ -284,7 +284,7 @@ export function JobImport() {
 
       {/* Step 5 - Summary */}
       {step === 5 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg p-5 text-center">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 text-center animate-fade-in">
           <div className="w-12 h-12 rounded-full bg-[var(--color-success-bg)] flex items-center justify-center mx-auto mb-3">
             <CheckCircle size={24} className="text-[var(--color-success)]" />
           </div>
