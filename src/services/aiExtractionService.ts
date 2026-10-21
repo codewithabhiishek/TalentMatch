@@ -207,13 +207,22 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   const phone = phoneMatch ? sanitizeString(phoneMatch[0]) : '(555) 000-0000';
 
   // 3. Name extraction: pick first non-title, non-empty line with 2-3 words
-  const ignoreWords = ['resume', 'curriculum', 'vitae', 'cv', 'profile', 'contact', 'summary', 'experience', 'education', 'skills'];
+  const ignoreWords = ['resume', 'curriculum', 'vitae', 'cv', 'profile', 'contact', 'summary', 'experience', 'education', 'skills', 'objective', 'work', 'history', 'certifications'];
+  const credentialSuffixes = /\b(BSN|MSN|DNP|RN|APRN|FNP|CCRN|CEN|TNCC|ENPC|PT|DPT|OCS|OT|OTR|RT|RRT|RRT-NPS|CRT|MD|DO|PA|CPhT|CNA|ARRT|BLS|ACLS|PALS|CPR|AED)\b/gi;
+
   let firstName = 'Candidate';
   let lastName = 'Profile';
 
   for (const line of lines.slice(0, 10)) {
-    const clean = line.replace(/[^a-zA-Z\s]/g, '').trim();
-    const words = clean.split(/\s+/).filter(w => w.length > 1);
+    // Skip lines with contact markers, emails, phone numbers or web links
+    if (/@|www\.|\.com|\.org|\.edu|\.net|\+?1?\s*\(?\d{3}\)?\s*[\d.-]{6,}|\|\s*\(?\d{3}\)?/i.test(line)) {
+      continue;
+    }
+    // Take part before comma if present (e.g. "Sarah Mitchell, BSN, RN" -> "Sarah Mitchell")
+    const preComma = line.split(',')[0].trim();
+    // Strip trailing clinical credentials and non-alpha chars
+    const cleanWithoutCreds = preComma.replace(credentialSuffixes, '').replace(/[^a-zA-Z\s]/g, '').trim();
+    const words = cleanWithoutCreds.split(/\s+/).filter(w => w.length > 1);
     const hasIgnored = words.some(w => ignoreWords.includes(w.toLowerCase()));
 
     if (words.length >= 2 && words.length <= 4 && !hasIgnored) {
@@ -233,25 +242,33 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     }
   }
 
-  // 4. Clinical Specialty Detection
-  const specialtyKeywords: Record<string, string[]> = {
-    'ICU': ['icu', 'intensive care', 'critical care', 'ccu', 'cvicu', 'neuro icu'],
-    'Emergency': ['emergency', 'er', 'ed', 'trauma', 'triage', 'resuscitation'],
-    'Orthopedics': ['orthopedic', 'ortho', 'bone', 'joint', 'musculoskeletal'],
-    'MRI': ['mri', 'magnetic resonance', 'radiology', 'imaging', 'radiologic'],
-    'Neonatal': ['neonatal', 'nicu', 'infant', 'newborn', 'neonatology'],
-    'Med-Surg': ['med-surg', 'medical surgical', 'telemetry', 'acute care'],
-    'Pediatrics': ['pediatric', 'peds', 'picu', 'children'],
-    'Oncology': ['oncology', 'cancer', 'chemotherapy', 'hematology'],
-    'Labor & Delivery': ['labor and delivery', 'l&d', 'postpartum', 'maternity', 'obstetrics'],
+  // 4. Clinical Specialty Detection via weighted frequency matching
+  const specialtyKeywords: Record<string, RegExp[]> = {
+    'ICU': [/\bicu\b/i, /\bintensive care\b/i, /\bcritical care\b/i, /\bccu\b/i, /\bcvicu\b/i, /\bneuro icu\b/i],
+    'Emergency': [/\bemergency\b/i, /\b(?!.*(?:post-op|surgery|clinic))\ber\b/i, /\bed\b/i, /\btrauma\b/i, /\btriage\b/i, /\bresuscitation\b/i, /\btncc\b/i, /\benpc\b/i],
+    'Orthopedics': [/\borthopedic\b/i, /\bortho\b/i, /\bbone\b/i, /\bjoint\b/i, /\bmusculoskeletal\b/i, /\barthroplasty\b/i, /\bocs\b/i, /\bsports\s+(?:spine|injury|rehab)/i],
+    'MRI': [/\bmri\b/i, /\bmagnetic resonance\b/i, /\bradiology\b/i, /\bradiologic\b/i, /\bimaging\b/i],
+    'Neonatal': [/\bneonatal\b/i, /\bnicu\b/i, /\binfant\b/i, /\bnewborn\b/i, /\bneonatology\b/i, /\brrt-nps\b/i, /\bnrp\b/i],
+    'Med-Surg': [/\bmed-surg\b/i, /\bmedical surgical\b/i, /\btelemetry\b/i, /\bstep-down\b/i],
+    'Pediatrics': [/\bpediatric\b/i, /\bpeds\b/i, /\bpicu\b/i, /\bchildren\b/i],
+    'Oncology': [/\boncology\b/i, /\bcancer\b/i, /\bchemotherapy\b/i],
+    'Labor & Delivery': [/\blabor and delivery\b/i, /\bl&d\b/i, /\bpostpartum\b/i, /\bmaternity\b/i],
   };
 
-  const textLower = resumeText.toLowerCase();
-  let detectedSpecialty = 'ICU';
-  for (const [specialty, keywords] of Object.entries(specialtyKeywords)) {
-    if (keywords.some(k => textLower.includes(k))) {
+  let maxScore = 0;
+  let detectedSpecialty = 'Med-Surg';
+
+  for (const [specialty, regexList] of Object.entries(specialtyKeywords)) {
+    let score = 0;
+    for (const rx of regexList) {
+      const matches = resumeText.match(new RegExp(rx.source, 'gi'));
+      if (matches) {
+        score += matches.length;
+      }
+    }
+    if (score > maxScore) {
+      maxScore = score;
       detectedSpecialty = specialty;
-      break;
     }
   }
 
@@ -262,12 +279,16 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     'staff nurse': 'Registered Nurse',
     'physical therapist': 'Physical Therapist',
     'respiratory therapist': 'Respiratory Therapist',
+    'respiratory care': 'Respiratory Therapist',
     'mri technologist': 'MRI Technologist',
     'radiologic technologist': 'Radiologic Technologist',
     'surgical technician': 'Surgical Technician',
     'physician assistant': 'Physician Assistant',
+    'occupational therapist': 'Occupational Therapist',
+    'pharmacy technician': 'Pharmacy Technician',
   };
 
+  const textLower = resumeText.toLowerCase();
   let detectedPosition = `${detectedSpecialty} Registered Nurse`;
   for (const [key, title] of Object.entries(positionKeywords)) {
     if (textLower.includes(key)) {
@@ -277,7 +298,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   }
 
   // 6. Experience Years Calculation
-  const yearsMentioned = resumeText.match(/(\d{1,2})\+?\s*years?(?:\s+of)?\s+(?:experience|clinical|nursing)/i);
+  const yearsMentioned = resumeText.match(/(\d{1,2})\+?\s*years?(?:\s+of)?\s+(?:experience|clinical|nursing|critical care|orthopedic|acute|respiratory|pediatric)/i);
   let experienceYears = 4;
   if (yearsMentioned && parseInt(yearsMentioned[1], 10)) {
     experienceYears = Math.min(25, Math.max(1, parseInt(yearsMentioned[1], 10)));
@@ -293,11 +314,20 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   }
 
   // 7. Clinical Certifications
-  const knownCerts = ['BLS', 'ACLS', 'PALS', 'TNCC', 'CCRN', 'CEN', 'NRP', 'ARRT', 'CRT', 'RRT', 'Compact RN', 'BSN', 'MSN', 'NIHSS'];
+  const knownCerts = [
+    'BLS', 'ACLS', 'PALS', 'TNCC', 'ENPC', 'CCRN', 'CEN', 'NRP', 'ARRT',
+    'CRT', 'RRT', 'RRT-NPS', 'OCS', 'CPR', 'AED', 'NIHSS', 'PTCB', 'CPhT',
+    'PCCN', 'BSN', 'MSN', 'Compact RN'
+  ];
   const detectedCerts: string[] = [];
   for (const cert of knownCerts) {
-    const regex = new RegExp(`\\b${cert}\\b`, 'i');
-    if (regex.test(resumeText)) {
+    let rx: RegExp;
+    if (cert === 'Compact RN') {
+      rx = /\b(compact\s+(?:multi-state\s+)?(?:state\s+)?(?:rn|registered nurse|license))\b/i;
+    } else {
+      rx = new RegExp(`\\b${cert}\\b`, 'i');
+    }
+    if (rx.test(resumeText)) {
       detectedCerts.push(cert);
     }
   }

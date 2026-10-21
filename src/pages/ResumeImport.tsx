@@ -1,12 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, X, FileText, CheckCircle, AlertCircle, Loader2, Eye, RotateCcw,
-  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download
+  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { extractDocumentText } from '../services/documentParser';
 import { parseResumeWithAI } from '../services/aiExtractionService';
 import { downloadCandidateReport } from '../services/downloadService';
+import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
 
 interface UploadFile {
   id: string;
@@ -38,6 +39,7 @@ export function ResumeImport() {
   const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig, candidates } = useAppStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [benchmarkOpen, setBenchmarkOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -200,8 +202,16 @@ export function ResumeImport() {
           </p>
         </div>
 
-        {/* Active AI Engine Badge */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        {/* Active AI Engine Badge & Self-Test Trigger */}
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setBenchmarkOpen(true)}
+            className="btn btn-secondary btn-sm text-xs flex items-center gap-1.5 cursor-pointer shadow-xs hover:border-[var(--color-primary)]"
+            title="Run Automated Diagnostic Benchmark without uploading files"
+          >
+            <Sparkles size={12} className="text-[var(--color-primary)]" />
+            <span>Run Self-Test Benchmark</span>
+          </button>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
             <Cpu size={12} className="text-[var(--color-info)]" />
             <span className="text-[11px]">
@@ -251,6 +261,16 @@ export function ResumeImport() {
           <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">Text (.txt)</span>
           <span className="text-[10px] text-[var(--color-text-tertiary)] ml-1">Up to 15MB</span>
         </div>
+        <p className="text-[11px] text-[var(--color-text-tertiary)] mt-3">
+          Want to test extraction speed & accuracy without uploading files?{' '}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setBenchmarkOpen(true); }}
+            className="text-[var(--color-primary)] hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
+          >
+            <Play size={10} /> Run Self-Test Benchmark
+          </button>
+        </p>
       </div>
 
       {/* File list */}
@@ -434,6 +454,12 @@ export function ResumeImport() {
           <p className="text-xs text-[var(--color-text-tertiary)]">No files queued. Drop your real resume files above to extract candidates.</p>
         </div>
       )}
+
+      {/* Live Diagnostic Benchmark Modal */}
+      <DiagnosticBenchmarkModal
+        isOpen={benchmarkOpen}
+        onClose={() => setBenchmarkOpen(false)}
+      />
     </div>
   );
 }

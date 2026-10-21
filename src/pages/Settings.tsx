@@ -7,6 +7,7 @@ import {
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
 import { testAIConnection, AIConfig } from '../services/aiExtractionService';
+import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
 
 export function Settings() {
   const {
@@ -38,6 +39,7 @@ export function Settings() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [benchmarkOpen, setBenchmarkOpen] = useState(false);
 
   // Sync AI form if store changes
   useEffect(() => {
@@ -854,59 +856,76 @@ export function Settings() {
 
               {/* Action buttons */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)]">
-                <button
-                  type="button"
-                  disabled={testingConnection}
-                  onClick={async () => {
-                    setTestingConnection(true);
-                    setConnectionTestResult(null);
-                    try {
-                      const res = await testAIConnection(aiForm);
-                      setConnectionTestResult({
-                        tested: true,
-                        success: res.success,
-                        message: res.message,
-                      });
-                    } catch (err: any) {
-                      setConnectionTestResult({
-                        tested: true,
-                        success: false,
-                        message: err.message || 'Connection test failed',
-                      });
-                    } finally {
-                      setTestingConnection(false);
-                    }
-                  }}
-                  className="btn btn-secondary btn-sm text-xs cursor-pointer"
-                >
-                  <RefreshCw size={12} className={testingConnection ? 'animate-spin' : ''} />
-                  {testingConnection ? 'Testing Connection...' : 'Test Connection'}
-                </button>
-
-                <div className="flex items-center gap-3">
-                  {saved && (
-                    <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium">
-                      <CheckCircle2 size={13} /> {saveMessage}
-                    </span>
-                  )}
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      updateAIConfig(aiForm);
-                      setSaveMessage('AI configuration saved to local storage!');
-                      setSaved(true);
-                      setTimeout(() => setSaved(false), 2400);
-                    }}
-                    className="btn btn-primary h-9 px-4 text-xs cursor-pointer"
-                  >
-                    <Save size={13} /> Save AI Configuration
-                  </button>
+                      disabled={testingConnection}
+                      onClick={async () => {
+                        setTestingConnection(true);
+                        setConnectionTestResult(null);
+                        try {
+                          const res = await testAIConnection(aiForm);
+                          setConnectionTestResult({
+                            tested: true,
+                            success: res.success,
+                            message: res.message,
+                          });
+                        } catch (err: any) {
+                          setConnectionTestResult({
+                            tested: true,
+                            success: false,
+                            message: err.message || 'Connection test failed',
+                          });
+                        } finally {
+                          setTestingConnection(false);
+                        }
+                      }}
+                      className="btn btn-secondary btn-sm text-xs cursor-pointer"
+                    >
+                      <RefreshCw size={12} className={testingConnection ? 'animate-spin' : ''} />
+                      {testingConnection ? 'Testing...' : 'Test Connection'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBenchmarkOpen(true)}
+                      className="btn btn-secondary btn-sm text-xs cursor-pointer flex items-center gap-1.5"
+                      title="Run automated accuracy and speed benchmark"
+                    >
+                      <Sparkles size={12} className="text-[var(--color-primary)]" />
+                      <span>Self-Test Benchmark</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {saved && (
+                      <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium">
+                        <CheckCircle2 size={13} /> {saveMessage}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateAIConfig(aiForm);
+                        setSaveMessage('AI configuration saved to local storage!');
+                        setSaved(true);
+                        setTimeout(() => setSaved(false), 2400);
+                      }}
+                      className="btn btn-primary h-9 px-4 text-xs cursor-pointer"
+                    >
+                      <Save size={13} /> Save AI Configuration
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
           )}
         </div>
       </div>
+
+      {/* Live Diagnostic Benchmark Modal */}
+      <DiagnosticBenchmarkModal
+        isOpen={benchmarkOpen}
+        onClose={() => setBenchmarkOpen(false)}
+      />
     </div>
   );
 }
