@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, Eye, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, ExternalLink, X } from 'lucide-react';
+import { Search, Filter, Eye, CheckCircle, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ExternalLink, X, MapPin, User, Briefcase } from 'lucide-react';
 import { useAppStore } from '../store';
 
 const matchStatuses = ['All', 'pending', 'reviewed', 'accepted', 'rejected'];
@@ -255,55 +255,124 @@ export function JobMatches() {
 
             {/* Expanded details */}
             {expandedMatch === m.id && (
-              <div className="border-t border-[var(--color-border)] p-4 bg-[var(--color-surface-secondary)]/50 animate-fade-in">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {/* Match breakdown */}
-                  <div>
-                    <h4 className="text-xs font-medium text-[var(--color-text-primary)] mb-2">Match Breakdown</h4>
-                    <div className="space-y-2">
-                      {m.reasons.map((r, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <div className="w-12 flex-shrink-0">
-                            <div className="h-1.5 bg-[var(--color-surface-tertiary)] rounded-full overflow-hidden">
+              <div className="border-t border-[var(--color-border)] p-4 sm:p-5 bg-[var(--color-surface-secondary)]/40 animate-fade-in">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
+                  {/* Left Column: Match Breakdown */}
+                  <div className="lg:col-span-7 space-y-3">
+                    <div className="flex items-center justify-between pb-1.5 border-b border-[var(--color-border)]/50">
+                      <h4 className="text-xs font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                        <span>Match Breakdown</span>
+                        <span className="text-[10px] font-normal text-[var(--color-text-tertiary)]">({m.reasons.length} criteria)</span>
+                      </h4>
+                      <span className="text-[11px] font-medium text-[var(--color-text-tertiary)]">Fit Score</span>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {m.reasons.map((r, idx) => {
+                        const isStrong = r.score >= 85;
+                        const isPartial = r.score >= 70 && r.score < 85;
+                        const barColor = isStrong ? 'bg-[var(--color-success)]' : isPartial ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-error)]';
+                        const scoreTextColor = isStrong ? 'text-[var(--color-success)]' : isPartial ? 'text-[var(--color-warning)]' : 'text-[var(--color-error)]';
+
+                        return (
+                          <div key={idx} className="bg-[var(--color-surface)] border border-[var(--color-border)]/70 rounded-lg p-2.5 transition-colors">
+                            <div className="flex items-center justify-between text-xs font-medium mb-1.5">
+                              <span className="text-[var(--color-text-primary)]">{r.factor}</span>
+                              <span className={`font-semibold tabular-nums text-xs ${scoreTextColor}`}>{r.score}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-[var(--color-surface-tertiary)] rounded-full overflow-hidden mb-1.5">
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${r.score >= 85 ? 'bg-[var(--color-success)]' : r.score >= 60 ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-error)]'}`}
-                                style={{ width: `${r.score}%` }}
+                                className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+                                style={{ width: `${Math.min(100, Math.max(0, r.score))}%` }}
                               />
                             </div>
+                            <p className="text-[11px] text-[var(--color-text-tertiary)] leading-tight">{r.detail}</p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-medium text-[var(--color-text-primary)]">{r.factor}</span>
-                              <span className="text-[10px] text-[var(--color-text-tertiary)]">{r.score}%</span>
-                            </div>
-                            <p className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5">{r.detail}</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Explanation */}
-                  <div>
-                    <h4 className="text-xs font-medium text-[var(--color-text-primary)] mb-2">Explanation</h4>
-                    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{m.explanation}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => navigateTo('candidate-profile', m.candidate!.id)}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        <ExternalLink size={10} /> View Candidate
-                      </button>
-                      <button
-                        onClick={() => navigateTo('job-detail', undefined, m.job!.id)}
-                        className="btn btn-secondary btn-sm"
-                      >
-                        <ExternalLink size={10} /> View Job
-                      </button>
+                  {/* Right Column: Decision Analysis, Highlights & Actions */}
+                  <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      <div className="pb-1.5 border-b border-[var(--color-border)]/50">
+                        <h4 className="text-xs font-semibold text-[var(--color-text-primary)]">
+                          Recruiter Decision Analysis
+                        </h4>
+                      </div>
+
+                      {/* Reasoning Text Block */}
+                      <div className="bg-[var(--color-surface)] border border-[var(--color-border)]/70 rounded-lg p-3">
+                        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                          {m.explanation}
+                        </p>
+                      </div>
+
+                      {/* Key Highlights / Callouts */}
+                      <div className="space-y-2">
+                        {/* Top Strength Callout */}
+                        {(() => {
+                          const topStrength = [...m.reasons].sort((a, b) => b.score - a.score)[0];
+                          if (!topStrength || topStrength.score < 85) return null;
+                          return (
+                            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-[var(--color-success-bg)]/50 border border-[var(--color-success)]/20 text-xs">
+                              <CheckCircle2 size={14} className="text-[var(--color-success)] shrink-0 mt-0.5" />
+                              <div className="min-w-0">
+                                <span className="font-semibold text-[var(--color-text-primary)]">Key Strength: </span>
+                                <span className="text-[var(--color-text-secondary)]">{topStrength.factor} ({topStrength.detail})</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Location & Travel Relevance Callout */}
+                        {(() => {
+                          const locReason = m.reasons.find(r => r.factor.toLowerCase().includes('location') || r.factor.toLowerCase().includes('travel'));
+                          if (!locReason) return null;
+                          const isStrong = locReason.score >= 80;
+                          return (
+                            <div className={`flex items-start gap-2 p-2.5 rounded-lg text-xs border ${
+                              isStrong
+                                ? 'bg-[var(--color-info-bg)]/40 border-[var(--color-info)]/20'
+                                : 'bg-[var(--color-warning-bg)]/40 border-[var(--color-warning)]/20'
+                            }`}>
+                              <MapPin size={14} className={`shrink-0 mt-0.5 ${isStrong ? 'text-[var(--color-info)]' : 'text-[var(--color-warning)]'}`} />
+                              <div className="min-w-0">
+                                <span className="font-semibold text-[var(--color-text-primary)]">Location & Mobility: </span>
+                                <span className="text-[var(--color-text-secondary)]">{locReason.detail}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
-                    <p className="text-[10px] text-[var(--color-text-tertiary)] mt-3 italic">
-                      These scores are generated from demo data for illustration purposes. They do not represent validated predictions.
-                    </p>
+
+                    {/* Bottom Area: Secondary Actions & Understated Disclaimer */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => navigateTo('candidate-profile', m.candidate!.id)}
+                          className="btn btn-secondary btn-sm flex-1"
+                        >
+                          <User size={12} className="text-[var(--color-text-tertiary)]" />
+                          <span>View Candidate</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigateTo('job-detail', undefined, m.job!.id)}
+                          className="btn btn-secondary btn-sm flex-1"
+                        >
+                          <Briefcase size={12} className="text-[var(--color-text-tertiary)]" />
+                          <span>View Job</span>
+                        </button>
+                      </div>
+
+                      <p className="text-[10px] text-[var(--color-text-tertiary)] leading-tight italic">
+                        Scores are generated from demo data for illustration purposes. They do not represent validated predictions.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
