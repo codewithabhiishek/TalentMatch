@@ -441,6 +441,210 @@ input:focus-visible + .toggle-track {
   box-shadow: 0 0 0 3px rgba(248, 250, 252, 0.1);
 }
 
+/* ==========================================================================
+   Standardized Toolbar Controls (Candidates, Jobs, Job Matches)
+   Consistent 42px height, 8px radius, balanced spacing, cohesive dark theme
+   ========================================================================== */
+.toolbar-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem; /* 10px */
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .toolbar-root {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6875rem; /* 11px */
+  }
+}
+
+.toolbar-search-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-search-icon {
+  position: absolute;
+  left: 0.875rem; /* 14px */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.toolbar-input {
+  height: 42px;
+  width: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 400;
+  color: var(--color-text-primary);
+  padding-left: 2.375rem; /* 38px */
+  padding-right: 2.25rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.toolbar-input::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+.toolbar-input:hover {
+  border-color: var(--color-border-hover);
+}
+
+.toolbar-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.dark .toolbar-input:focus,
+.theme-black .toolbar-input:focus {
+  box-shadow: 0 0 0 2px rgba(248, 250, 252, 0.12);
+}
+
+.toolbar-clear-btn {
+  position: absolute;
+  right: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 4px;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.toolbar-clear-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-tertiary);
+}
+
+.toolbar-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem; /* 10px */
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .toolbar-controls-group {
+    flex-wrap: nowrap;
+  }
+}
+
+.toolbar-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  width: 42px;
+  min-width: 42px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+
+.toolbar-filter-btn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
+  background-color: var(--color-surface-tertiary);
+}
+
+.toolbar-filter-btn.is-active {
+  color: var(--color-info);
+  border-color: var(--color-info);
+  background-color: var(--color-info-bg);
+  cursor: pointer;
+}
+
+.toolbar-filter-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: var(--color-info);
+}
+
+.toolbar-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .toolbar-select-wrapper {
+    flex: 1 1 calc(50% - 0.3125rem);
+    min-width: 120px;
+  }
+}
+
+.toolbar-select {
+  height: 42px;
+  width: 100%;
+  min-width: 135px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 500;
+  color: var(--color-text-primary);
+  padding-left: 0.875rem; /* 14px */
+  padding-right: 2.125rem; /* 34px for chevron */
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.toolbar-select:hover {
+  border-color: var(--color-border-hover);
+}
+
+.toolbar-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.dark .toolbar-select:focus,
+.theme-black .toolbar-select:focus {
+  box-shadow: 0 0 0 2px rgba(248, 250, 252, 0.12);
+}
+
+.toolbar-chevron-icon {
+  position: absolute;
+  right: 0.75rem; /* 12px */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
 /* Professional table styles */
 .table-header {
   border-bottom: 1px solid var(--color-border);

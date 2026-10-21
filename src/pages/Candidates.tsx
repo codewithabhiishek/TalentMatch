@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X } from 'lucide-react';
 import { useAppStore } from '../store';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
@@ -15,6 +15,14 @@ export function Candidates() {
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const perPage = 8;
+
+  const hasActiveFilters = specialtyFilter !== 'All' || statusFilter !== 'All';
+
+  const resetFilters = () => {
+    setSpecialtyFilter('All');
+    setStatusFilter('All');
+    setPage(1);
+  };
 
   const filtered = useMemo(() => {
     let result = [...candidates];
@@ -86,24 +94,44 @@ export function Candidates() {
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mb-4 animate-fade-in" style={{ animationDelay: '60ms' }}>
-        <div className="relative flex-1 max-w-md">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] pointer-events-none" />
+      <div className="toolbar-root animate-fade-in" style={{ animationDelay: '60ms' }}>
+        <div className="toolbar-search-wrapper">
+          <Search size={15} className="toolbar-search-icon" />
           <input
             type="text"
             placeholder="Search candidates by name, position, specialty..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="input w-full h-9 pl-9 pr-3 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)]"
+            className="toolbar-input"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setPage(1); }}
+              className="toolbar-clear-btn"
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <div className="relative flex items-center">
-            <Filter size={13} className="absolute left-2.5 text-[var(--color-text-tertiary)] pointer-events-none" />
+        <div className="toolbar-controls-group">
+          <button
+            type="button"
+            onClick={hasActiveFilters ? resetFilters : undefined}
+            className={`toolbar-filter-btn ${hasActiveFilters ? 'is-active' : ''}`}
+            title={hasActiveFilters ? 'Filters active — click to reset' : 'Filter options'}
+            aria-label={hasActiveFilters ? 'Reset active filters' : 'Filter options'}
+          >
+            <Filter size={15} />
+            {hasActiveFilters && <span className="toolbar-filter-badge" />}
+          </button>
+          <div className="toolbar-select-wrapper">
             <select
               value={specialtyFilter}
               onChange={e => { setSpecialtyFilter(e.target.value); setPage(1); }}
-              className="input h-9 pl-8 pr-7 text-xs font-medium cursor-pointer appearance-none bg-transparent"
+              className="toolbar-select"
               aria-label="Filter by specialty"
             >
               {specialties.map(s => (
@@ -112,13 +140,13 @@ export function Candidates() {
                 </option>
               ))}
             </select>
-            <ChevronDown size={12} className="absolute right-2 text-[var(--color-text-tertiary)] pointer-events-none" />
+            <ChevronDown size={14} className="toolbar-chevron-icon" />
           </div>
-          <div className="relative flex items-center">
+          <div className="toolbar-select-wrapper">
             <select
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-              className="input h-9 px-3 pr-7 text-xs font-medium cursor-pointer appearance-none bg-transparent"
+              className="toolbar-select"
               aria-label="Filter by status"
             >
               {statuses.map(s => (
@@ -127,7 +155,7 @@ export function Candidates() {
                 </option>
               ))}
             </select>
-            <ChevronDown size={12} className="absolute right-2 text-[var(--color-text-tertiary)] pointer-events-none" />
+            <ChevronDown size={14} className="toolbar-chevron-icon" />
           </div>
         </div>
       </div>
