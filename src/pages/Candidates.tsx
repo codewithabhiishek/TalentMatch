@@ -79,7 +79,7 @@ export function Candidates() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto">
+    <div className="p-3.5 sm:p-6 lg:p-7 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 animate-fade-in">
         <div>
@@ -318,7 +318,7 @@ export function Candidates() {
           <p className="text-xs text-[var(--color-text-tertiary)]">
             Showing <span className="font-medium text-[var(--color-text-secondary)]">{(page - 1) * perPage + 1}</span>–<span className="font-medium text-[var(--color-text-secondary)]">{Math.min(page * perPage, filtered.length)}</span> of <span className="font-medium text-[var(--color-text-secondary)]">{filtered.length}</span> candidates
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center flex-wrap justify-center sm:justify-end gap-1">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}

@@ -130,26 +130,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-surface-secondary)]">
+    <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[var(--color-surface-secondary)]">
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden animate-fade-in"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden animate-fade-in"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:relative z-50 flex flex-col h-full bg-[var(--color-surface)] border-r border-[var(--color-border)]
+        fixed lg:relative z-50 flex flex-col h-full max-h-[100dvh] bg-[var(--color-surface)] border-r border-[var(--color-border)]
         transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]
         ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        ${sidebarCollapsed ? 'w-16' : 'w-60'}
+        ${sidebarCollapsed ? 'w-16' : 'w-64 max-w-[85vw] sm:w-60'}
+        safe-area-top safe-area-bottom
       `}>
         {/* Logo */}
         <div className={`flex items-center h-14 px-4 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           <button
-            onClick={() => navigateTo('overview')}
+            onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
             className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0"
             title="TalentFlow ATS (G then O)"
           >
@@ -167,13 +168,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {!sidebarCollapsed && (
             <button
               onClick={toggleSidebar}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 ml-auto"
+              className="hidden lg:flex w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 ml-auto"
               aria-label="Collapse sidebar"
               title={`Toggle Sidebar (${modifierLabel}B)`}
             >
               <ChevronLeft size={14} />
             </button>
           )}
+          {/* Mobile close button */}
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors ml-auto cursor-pointer"
+            aria-label="Close sidebar menu"
+          >
+            <X size={16} />
+          </button>
           {sidebarCollapsed && (
             <button
               onClick={toggleSidebar}
@@ -187,14 +196,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
           {navItems.map(item => (
             <button
               key={item.id}
-              onClick={() => navigateTo(item.id)}
+              onClick={() => {
+                navigateTo(item.id);
+                setMobileSidebarOpen(false);
+              }}
               className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
-                transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group
+                w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] rounded-lg text-sm font-medium
+                transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group cursor-pointer
                 ${isActive(item.id)
                   ? 'bg-[var(--color-primary)] text-[var(--color-surface)] shadow-sm'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-tertiary)] hover:text-[var(--color-text-primary)]'
@@ -243,31 +255,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="relative flex items-center justify-between h-14 px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-4">
+        <header className="relative flex items-center justify-between h-14 px-3 sm:px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-2 sm:gap-4">
           {isNavigating && <div className="top-nav-loader" />}
           {/* Left section: mobile menu toggle & page title */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors flex-shrink-0"
+              className="lg:hidden w-9 h-9 min-w-[36px] flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors flex-shrink-0 cursor-pointer active:scale-95"
               aria-label="Open menu"
             >
               <Menu size={18} />
             </button>
 
-            <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden sm:block whitespace-nowrap">
+            <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden md:block whitespace-nowrap">
               {getPageTitle()}
             </h1>
           </div>
 
           {/* Center section: Global Search centered in the header */}
-          <div className="flex-1 flex justify-center max-w-xl mx-auto">
-            <div className="relative w-full max-w-sm sm:max-w-md group">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-text-primary)] transition-colors pointer-events-none" />
+          <div className="flex-1 flex justify-center max-w-xl mx-auto min-w-0 px-1">
+            <div className="relative w-full max-w-sm sm:max-w-md group min-w-0">
+              <Search size={14} className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] group-focus-within:text-[var(--color-text-primary)] transition-colors pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search candidates, jobs... (press /)"
+                placeholder="Search candidates, jobs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -275,7 +287,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     navigateTo('candidates');
                   }
                 }}
-                className="input w-full h-9 pl-9 pr-14 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface-secondary)] border-[var(--color-border)] focus:bg-[var(--color-surface)]"
+                className="input w-full h-8.5 sm:h-9 pl-8 sm:pl-9 pr-2 sm:pr-14 text-xs sm:text-sm placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface-secondary)] border-[var(--color-border)] focus:bg-[var(--color-surface)] truncate"
               />
               <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-medium text-[var(--color-text-tertiary)] bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded pointer-events-none select-none">
                 {modifierLabel}K
@@ -284,11 +296,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Right section: Far-right anchored control group */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Keyboard shortcuts trigger */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* Keyboard shortcuts trigger - hidden on mobile screens, accessible from user menu */}
             <button
               onClick={() => setShortcutsModalOpen(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+              className="hidden sm:flex w-9 h-9 items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150 cursor-pointer"
               title={`Keyboard Shortcuts (${modifierLabel}K, ?, G+key)`}
               aria-label="Keyboard Shortcuts"
             >
@@ -298,7 +310,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Theme toggle cycling light -> dark (blue) -> black */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150"
+              className="w-8.5 h-8.5 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all duration-150 cursor-pointer active:scale-95"
               title={
                 theme === 'light'
                   ? 'Theme: White (Click or press T for Dark Blue)'
@@ -320,7 +332,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-150 cursor-pointer ${
+                className={`relative w-8.5 h-8.5 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-all duration-150 cursor-pointer active:scale-95 ${
                   showNotifications
                     ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-tertiary)] border border-transparent'
@@ -339,7 +351,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {showNotifications && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="dropdown absolute right-0 top-full mt-2 w-[380px] sm:w-[410px] max-w-[calc(100vw-1.5rem)] z-50 flex flex-col rounded-xl overflow-hidden animate-scale-in shadow-xl border border-[var(--color-border)]"
+                  className="dropdown fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-auto sm:w-[400px] max-w-[calc(100vw-1rem)] z-50 flex flex-col rounded-xl overflow-hidden animate-scale-in shadow-2xl border border-[var(--color-border)]"
                 >
                   {/* Panel Header */}
                   <div className="px-4 py-3 border-b border-[var(--color-border)] flex items-center justify-between shrink-0 bg-[var(--color-surface)]">
@@ -452,7 +464,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div
                   role="menu"
                   aria-orientation="vertical"
-                  className="dropdown absolute right-0 top-full mt-2 w-56 z-50 py-1.5 animate-scale-in shadow-xl"
+                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-56 max-w-[calc(100vw-1rem)] z-50 py-1.5 animate-scale-in shadow-2xl border border-[var(--color-border)]"
                 >
                   {/* User Identity Section: Avatar, Name, Role, Email */}
                   <div className="px-3.5 py-2.5 border-b border-[var(--color-border)]">
@@ -516,7 +528,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto no-overflow-x safe-area-bottom">
           {children}
         </main>
       </div>

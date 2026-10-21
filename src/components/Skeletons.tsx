@@ -25,45 +25,70 @@ export function MetricCardsSkeleton({ count = 4 }: { count?: number }) {
 
 export function TableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden shadow-xs">
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50">
-              {Array.from({ length: cols }).map((_, i) => (
-                <th key={i} className="p-3">
-                  <Skeleton className="h-3 w-16" />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--color-border)]/40">
-            {Array.from({ length: rows }).map((_, r) => (
-              <tr key={r} className="p-3">
-                <td className="p-3">
-                  <div className="flex items-center gap-2.5">
-                    <Skeleton className="w-7 h-7 rounded-full shrink-0" />
-                    <div className="space-y-1.5 min-w-0">
-                      <Skeleton className="h-3.5 w-28" />
-                      <Skeleton className="h-2.5 w-36" />
-                    </div>
-                  </div>
-                </td>
-                <td className="p-3"><Skeleton className="h-3 w-24" /></td>
-                <td className="p-3"><Skeleton className="h-3 w-20" /></td>
-                <td className="p-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                <td className="p-3 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
-                    <Skeleton className="h-7 w-14 rounded" />
-                    <Skeleton className="h-7 w-7 rounded" />
-                  </div>
-                </td>
+    <>
+      {/* Desktop Skeleton Table */}
+      <div className="hidden lg:block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50">
+                {Array.from({ length: cols }).map((_, i) => (
+                  <th key={i} className="p-3">
+                    <Skeleton className="h-3 w-16" />
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[var(--color-border)]/40">
+              {Array.from({ length: rows }).map((_, r) => (
+                <tr key={r} className="p-3">
+                  <td className="p-3">
+                    <div className="flex items-center gap-2.5">
+                      <Skeleton className="w-7 h-7 rounded-full shrink-0" />
+                      <div className="space-y-1.5 min-w-0">
+                        <Skeleton className="h-3.5 w-28" />
+                        <Skeleton className="h-2.5 w-36" />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-3"><Skeleton className="h-3 w-24" /></td>
+                  <td className="p-3"><Skeleton className="h-3 w-20" /></td>
+                  <td className="p-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                  <td className="p-3 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Skeleton className="h-7 w-14 rounded" />
+                      <Skeleton className="h-7 w-7 rounded" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* Mobile Skeleton Cards */}
+      <div className="lg:hidden space-y-2.5">
+        {Array.from({ length: Math.min(rows, 5) }).map((_, i) => (
+          <div key={i} className="card p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                <div className="space-y-1.5 min-w-0">
+                  <Skeleton className="h-3.5 w-32" />
+                  <Skeleton className="h-2.5 w-24" />
+                </div>
+              </div>
+              <Skeleton className="h-5 w-16 rounded-full shrink-0" />
+            </div>
+            <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-border)]/50">
+              <Skeleton className="h-2.5 w-16" />
+              <Skeleton className="h-2.5 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

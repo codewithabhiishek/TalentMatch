@@ -122,8 +122,8 @@ export function ResumeImport() {
   const isProcessing = files.some(f => f.status === 'uploading' || f.status === 'processing');
 
   return (
-    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-      <div className="mb-5">
+    <div className="p-3.5 sm:p-5 lg:p-6 max-w-4xl mx-auto">
+      <div className="mb-4 sm:mb-5 animate-fade-in">
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Resume Imports</h2>
         <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Upload resumes to create candidate profiles. Demo processing — no actual AI extraction is performed.</p>
       </div>
@@ -135,7 +135,7 @@ export function ResumeImport() {
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`
-          border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
+          border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-200
           ${isDragging
             ? 'border-[var(--color-primary)] bg-[var(--color-surface-secondary)]'
             : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-secondary)]/50'

@@ -23,22 +23,22 @@ export function Settings() {
   ];
 
   return (
-    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-      <div className="mb-5">
+    <div className="p-3.5 sm:p-5 lg:p-6 max-w-4xl mx-auto">
+      <div className="mb-4 sm:mb-5 animate-fade-in">
         <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Settings</h2>
         <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage your account and application preferences</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-5">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5">
         {/* Tabs */}
-        <div className="lg:w-48 flex lg:flex-col gap-1 overflow-x-auto">
+        <div className="lg:w-48 flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)]'
+                  ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-semibold'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)]'
               }`}
             >
@@ -48,7 +48,7 @@ export function Settings() {
         </div>
 
         {/* Content */}
-        <div className="card flex-1 p-6">
+        <div className="card flex-1 p-4 sm:p-6">
           {activeTab === 'profile' && (
             <div className="space-y-5">
               <h3 className="text-base font-semibold">Profile Settings</h3>

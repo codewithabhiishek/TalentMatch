@@ -44,41 +44,41 @@ export function CandidateProfile() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
+    <div className="p-3.5 sm:p-5 lg:p-6 max-w-5xl mx-auto">
       {/* Back nav */}
       <button
         onClick={() => navigateTo('candidates')}
-        className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] mb-4 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] mb-3 sm:mb-4 transition-colors cursor-pointer py-1"
       >
         <ArrowLeft size={14} /> Back to Candidates
       </button>
 
       {/* Header */}
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 mb-4 animate-fade-in">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 sm:p-5 mb-4 animate-fade-in shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0">
-              <span className="text-lg font-medium text-[var(--color-text-secondary)]">{candidate.firstName[0]}{candidate.lastName[0]}</span>
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 border border-[var(--color-border)]">
+              <span className="text-base sm:text-lg font-medium text-[var(--color-text-secondary)]">{candidate.firstName[0]}{candidate.lastName[0]}</span>
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">{candidate.firstName} {candidate.lastName}</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] truncate">{candidate.firstName} {candidate.lastName}</h2>
                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${statusColors[candidate.status]}`}>{candidate.status}</span>
               </div>
               <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{candidate.position} · {candidate.specialty}</p>
-              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-[var(--color-text-tertiary)]">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-[var(--color-text-tertiary)]">
                 <span className="flex items-center gap-1"><Mail size={11} />{candidate.email}</span>
                 <span className="flex items-center gap-1"><Phone size={11} />{candidate.phone}</span>
                 <span className="flex items-center gap-1"><MapPin size={11} />{candidate.currentLocation}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="btn btn-secondary">
+          <div className="flex items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
+            <button className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8">
               <Edit size={12} /> Edit Profile
             </button>
-            <button className="btn btn-secondary">
-              <Eye size={12} /> Review Extraction
+            <button className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8">
+              <Eye size={12} /> Review
             </button>
           </div>
         </div>

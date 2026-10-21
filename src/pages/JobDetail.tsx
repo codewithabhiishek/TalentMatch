@@ -46,16 +46,16 @@ export function JobDetail() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
+    <div className="p-3.5 sm:p-5 lg:p-6 max-w-5xl mx-auto">
       <button
         onClick={() => navigateTo('jobs')}
-        className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] mb-4 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] mb-3 sm:mb-4 transition-colors cursor-pointer py-1"
       >
         <ArrowLeft size={14} /> Back to Jobs
       </button>
 
       {/* Header */}
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-5 mb-4 animate-fade-in">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 sm:p-5 mb-4 animate-fade-in shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">

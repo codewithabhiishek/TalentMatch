@@ -82,7 +82,7 @@ export function Jobs() {
   const locations = Array.from(new Set(jobs.map(j => `${j.city}, ${j.state}`))).length;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-5">
+    <div className="p-3.5 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-4 sm:space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
         <div>
@@ -105,8 +105,8 @@ export function Jobs() {
       </div>
 
       {/* Standardized Summary Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-in" style={{ animationDelay: '40ms' }}>
-        <div className="card p-3.5 sm:p-4 flex flex-col justify-between min-h-[96px] hover-lift transition-all">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 animate-fade-in" style={{ animationDelay: '40ms' }}>
+        <div className="card p-3 sm:p-4 flex flex-col justify-between min-h-[88px] sm:min-h-[96px] hover-lift transition-all">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">Total Jobs</span>
             <div className="w-7 h-7 rounded-md bg-[var(--color-surface-tertiary)] flex items-center justify-center text-[var(--color-text-secondary)]">
@@ -354,7 +354,7 @@ export function Jobs() {
           <p className="text-xs text-[var(--color-text-tertiary)]">
             Showing <span className="font-medium text-[var(--color-text-secondary)]">{(page - 1) * perPage + 1}</span>–<span className="font-medium text-[var(--color-text-secondary)]">{Math.min(page * perPage, filtered.length)}</span> of <span className="font-medium text-[var(--color-text-secondary)]">{filtered.length}</span> jobs
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center flex-wrap justify-center sm:justify-end gap-1">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}

@@ -80,7 +80,7 @@ export function JobMatches() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-5">
+    <div className="p-3.5 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-4 sm:space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)] tracking-tight">Job Matches</h2>
@@ -399,7 +399,7 @@ export function JobMatches() {
           <p className="text-xs text-[var(--color-text-tertiary)]">
             Showing <span className="font-medium text-[var(--color-text-secondary)]">{(page - 1) * perPage + 1}</span>–<span className="font-medium text-[var(--color-text-secondary)]">{Math.min(page * perPage, enrichedMatches.length)}</span> of <span className="font-medium text-[var(--color-text-secondary)]">{enrichedMatches.length}</span> matches
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center flex-wrap justify-center sm:justify-end gap-1">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}

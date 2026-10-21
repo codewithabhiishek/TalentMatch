@@ -99,14 +99,14 @@ export function KeyboardShortcutsModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shortcuts-dialog-title"
     >
       <div
         ref={modalRef}
-        className="w-full max-w-3xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]"
+        className="w-full max-w-3xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90dvh]"
       >
         {/* Header with Search and Title */}
         <div className="px-5 pt-5 pb-4 border-b border-[var(--color-border)] bg-[var(--color-surface-secondary)]/30 flex-shrink-0 space-y-3.5">

@@ -20,6 +20,10 @@
   --color-error-bg: #fef2f2;
   --color-info: #3b82f6;
   --color-info-bg: #eff6ff;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -28,6 +32,9 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
+  height: 100dvh;
+  overflow-x: hidden;
 }
 
 body {
@@ -38,6 +45,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 /* Dark mode */
@@ -538,13 +549,14 @@ input:focus-visible + .toggle-track {
   display: flex;
   align-items: center;
   gap: 0.625rem; /* 10px */
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 639px) {
   .toolbar-controls-group {
-    flex-wrap: nowrap;
+    width: 100%;
+    gap: 0.5rem;
   }
 }
 
@@ -563,6 +575,14 @@ input:focus-visible + .toggle-track {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   user-select: none;
+}
+
+@media (max-width: 639px) {
+  .toolbar-filter-btn {
+    height: 40px;
+    width: 40px;
+    min-width: 40px;
+  }
 }
 
 .toolbar-filter-btn:hover {
@@ -597,8 +617,8 @@ input:focus-visible + .toggle-track {
 
 @media (max-width: 639px) {
   .toolbar-select-wrapper {
-    flex: 1 1 calc(50% - 0.3125rem);
-    min-width: 120px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 }
 
@@ -618,7 +638,16 @@ input:focus-visible + .toggle-track {
   appearance: none;
   -webkit-appearance: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .toolbar-select {
+    height: 40px;
+    min-width: 0;
+    font-size: 0.75rem; /* 12px */
+    padding-left: 0.625rem;
+    padding-right: 1.75rem;
+  }
 }
 
 .toolbar-select:hover {
@@ -879,4 +908,37 @@ input:focus-visible + .toggle-track {
   border-color: #272a33;
   border-bottom-color: #3f4452;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive Viewport & Safe Area Utilities for iOS / Android */
+.safe-area-top {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-area-left {
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+}
+
+.safe-area-right {
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+/* Touch-friendly ergonomics for Android & iOS */
+@media (pointer: coarse) {
+  button, 
+  a, 
+  input, 
+  select {
+    touch-action: manipulation;
+  }
+}
+
+/* Prevent horizontal overflow on mobile viewports */
+.no-overflow-x {
+  overflow-x: hidden;
+  max-width: 100vw;
 }

@@ -63,9 +63,9 @@ export function Overview() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-6">
+    <div className="p-3 sm:p-5 lg:p-7 max-w-7xl mx-auto space-y-4 sm:space-y-6">
       {/* Standardized 4 Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
         <MetricCard
           label="Total Candidates"
           value={totalCandidates}
@@ -103,8 +103,8 @@ export function Overview() {
       {/* Activity Chart & Recent Processing Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Weekly Activity Chart */}
-        <div className="lg:col-span-2 card p-4 sm:p-5 flex flex-col justify-between hover-lift animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--color-border)]">
+        <div className="lg:col-span-2 card p-3.5 sm:p-5 flex flex-col justify-between hover-lift animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-[var(--color-border)]">
             <div>
               <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Weekly Activity</h3>
               <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">Candidates and match operations</p>
@@ -328,26 +328,26 @@ function MetricCard({ label, value, icon, subtext, trend, onClick, delay }: {
   return (
     <button
       onClick={onClick}
-      className={`card p-4 sm:p-5 text-left animate-fade-in transition-all duration-150 h-full min-h-[136px] flex flex-col justify-between ${
+      className={`card p-3 sm:p-4 lg:p-5 text-left animate-fade-in transition-all duration-150 h-full min-h-[118px] sm:min-h-[136px] flex flex-col justify-between ${
         onClick ? 'cursor-pointer hover:border-[var(--color-border-hover)] hover-lift focus-visible:outline-none' : 'cursor-default'
       }`}
       style={{ animationDelay: `${delay || 0}ms` }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="w-8 h-8 rounded-md bg-[var(--color-surface-tertiary)] border border-[var(--color-border)]/60 flex items-center justify-center text-[var(--color-text-secondary)]">
+      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[var(--color-surface-tertiary)] border border-[var(--color-border)]/60 flex items-center justify-center text-[var(--color-text-secondary)] flex-shrink-0">
           {icon}
         </div>
         {trend === 'up' && (
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[var(--color-success-bg)] text-[var(--color-success)] text-[10px] font-semibold border border-[var(--color-success)]/20">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[var(--color-success-bg)] text-[var(--color-success)] text-[9px] sm:text-[10px] font-semibold border border-[var(--color-success)]/20">
             <ArrowUpRight size={11} />
             <span>+{value}</span>
           </div>
         )}
       </div>
-      <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">{label}</p>
-        <p className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight leading-none mt-1">{value}</p>
-        <p className="text-xs text-[var(--color-text-secondary)] mt-1.5 font-medium">{subtext}</p>
+      <div className="min-w-0">
+        <p className="text-[10px] sm:text-[11px] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider truncate">{label}</p>
+        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight leading-none mt-0.5 sm:mt-1">{value}</p>
+        <p className="text-[10px] sm:text-xs text-[var(--color-text-secondary)] mt-1 sm:mt-1.5 font-medium truncate">{subtext}</p>
       </div>
     </button>
   );
