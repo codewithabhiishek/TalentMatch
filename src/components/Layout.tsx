@@ -85,18 +85,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
         ${sidebarCollapsed ? 'w-16' : 'w-60'}
       `}>
         {/* Logo */}
-        <div className={`flex items-center h-14 px-4 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center' : 'gap-2.5'}`}>
-          <div className="w-7 h-7 rounded-md bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0 transition-colors">
-            <span className="text-[var(--color-surface)] text-xs font-bold">TF</span>
-          </div>
-          {!sidebarCollapsed && <span className="font-semibold text-sm text-[var(--color-text-primary)]">TalentFlow</span>}
+        <div className={`flex items-center h-14 px-4 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           <button
-            onClick={toggleSidebar}
-            className="hidden lg:flex ml-auto w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => navigateTo('overview')}
+            className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0"
+            title="TalentFlow ATS (G then O)"
           >
-            {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            <img
+              src="/logo.svg"
+              alt="TalentFlow Logo"
+              className="w-7 h-7 rounded-md flex-shrink-0 object-contain shadow-xs hover:scale-105 transition-transform"
+            />
+            {!sidebarCollapsed && (
+              <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
+                TalentFlow
+              </span>
+            )}
           </button>
+          {!sidebarCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 ml-auto"
+              aria-label="Collapse sidebar"
+              title={`Toggle Sidebar (${modifierLabel}B)`}
+            >
+              <ChevronLeft size={14} />
+            </button>
+          )}
+          {sidebarCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="hidden lg:flex w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 mt-2"
+              aria-label="Expand sidebar"
+              title={`Toggle Sidebar (${modifierLabel}B)`}
+            >
+              <ChevronRight size={14} />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}

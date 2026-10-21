@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="tfBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="tfCyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="tfEmeraldBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="tfShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background container with smooth rounded rect -->
+  <rect x="8" y="8" width="104" height="104" rx="26" fill="url(#tfBgGrad)" filter="url(#tfShadow)" />
+  <rect x="8.5" y="8.5" width="103" height="103" rx="25.5" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+
+  <!-- Abstract Clinical Cross & Flow Lines behind avatar -->
+  <path d="M60 26 V94 M26 60 H94" stroke="url(#tfCyanGlow)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 6" opacity="0.35" />
+
+  <!-- Stylized Candidate / Talent Silhouette -->
+  <!-- Head -->
+  <circle cx="60" cy="46" r="15" fill="#ffffff" />
+  
+  <!-- Shoulders / Torso with dynamic flow -->
+  <path d="M36 86 C36 71 47 65 60 65 C73 65 84 71 84 86" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" />
+
+  <!-- Inner talent spark / star badge on top right -->
+  <g transform="translate(76, 26)">
+    <circle cx="10" cy="10" r="12" fill="url(#tfEmeraldBadge)" filter="url(#tfShadow)" />
+    <circle cx="10" cy="10" r="11" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.3" />
+    <!-- Checkmark -->
+    <path d="M6.5 10 L8.8 12.5 L13.5 7.5" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>
