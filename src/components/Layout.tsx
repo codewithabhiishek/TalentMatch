@@ -42,8 +42,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifications(false);
       if (userRef.current && !userRef.current.contains(e.target as Node)) setShowUserMenu(false);
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setShowUserMenu(false);
+        setShowNotifications(false);
+      }
+    }
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const getPageTitle = () => {
@@ -301,8 +311,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="relative" ref={userRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)]"
+                className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)] cursor-pointer"
                 aria-label="User account menu"
+                aria-expanded={showUserMenu}
+                aria-haspopup="true"
               >
                 <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-[var(--color-text-secondary)]">JR</span>
@@ -311,32 +323,68 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <span className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight">Jordan</span>
                   <span className="text-[10px] text-[var(--color-text-tertiary)] leading-tight">Recruiter</span>
                 </div>
-                <ChevronDown size={12} className="hidden sm:block text-[var(--color-text-tertiary)] ml-0.5" />
+                <ChevronDown size={12} className={`hidden sm:block text-[var(--color-text-tertiary)] ml-0.5 transition-transform duration-150 ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
               {showUserMenu && (
-                <div className="dropdown absolute right-0 top-full mt-2 w-52 z-50 py-1.5 animate-scale-in shadow-xl">
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  className="dropdown absolute right-0 top-full mt-2 w-56 z-50 py-1.5 animate-scale-in shadow-xl"
+                >
+                  {/* User Identity Section: Avatar, Name, Role, Email */}
                   <div className="px-3.5 py-2.5 border-b border-[var(--color-border)]">
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Jordan Rivera</p>
-                    <p className="text-[11px] text-[var(--color-text-tertiary)] truncate">jordan@talentflow.com</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-[var(--color-text-secondary)]">JR</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight truncate">Jordan Rivera</p>
+                          <span className="text-[9px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-secondary)] border border-[var(--color-border)] px-1 py-0.2 rounded leading-none shrink-0">
+                            Recruiter
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5">jordan@talentflow.com</p>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Dropdown Items */}
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setShowUserMenu(false); navigateTo('settings'); }}
+                      className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <Settings size={13} className="text-[var(--color-text-tertiary)]" />
+                      <span>Settings & Themes</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setShowUserMenu(false); setShortcutsModalOpen(true); }}
+                      className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <Keyboard size={13} className="text-[var(--color-text-tertiary)]" />
+                      <span>Keyboard Shortcuts</span>
+                    </button>
+                  </div>
+
+                  {/* Sign out demo action */}
+                  <div className="border-t border-[var(--color-border)] my-1" />
                   <button
-                    onClick={() => { setShowUserMenu(false); navigateTo('settings'); }}
-                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors"
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      navigateTo('overview');
+                    }}
+                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 transition-colors cursor-pointer"
+                    title="Reset demo session to Overview"
                   >
-                    <Settings size={13} /> Settings & Themes
-                  </button>
-                  <button
-                    onClick={() => { setShowUserMenu(false); setShortcutsModalOpen(true); }}
-                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors"
-                  >
-                    <Keyboard size={13} /> Keyboard Shortcuts
-                  </button>
-                  <button className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors">
-                    <User size={13} /> Profile
-                  </button>
-                  <div className="my-1 border-t border-[var(--color-border)]" />
-                  <button className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 transition-colors">
-                    <LogOut size={13} /> Sign Out
+                    <LogOut size={13} />
+                    <span>Sign Out</span>
                   </button>
                 </div>
               )}
