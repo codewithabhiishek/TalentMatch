@@ -821,3 +821,62 @@ input:focus-visible + .toggle-track {
 .notification-scroll::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-border-hover);
 }
+
+/* Restrained Shortcuts Dialog Scrollbar */
+.shortcuts-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.shortcuts-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.shortcuts-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shortcuts-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+
+.shortcuts-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
+}
+
+/* Tactile Keycap (KBD) component */
+.shortcut-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.45rem;
+  padding: 0 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border-hover);
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.dark .shortcut-kbd {
+  background-color: var(--color-surface-secondary);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-bottom-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.theme-black .shortcut-kbd {
+  background-color: #16181d;
+  border-color: #272a33;
+  border-bottom-color: #3f4452;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
