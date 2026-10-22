@@ -78,7 +78,7 @@ export interface AppState {
 
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'> & { read?: boolean }) => void;
   clearNotifications: () => void;
 
   toggleTheme: () => void;
@@ -226,6 +226,7 @@ export const useAppStore = create<AppState>()(
       addNotification: (notif) => set((state) => ({
         notifications: [
           {
+            read: notif.read ?? false,
             ...notif,
             id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             timestamp: new Date().toISOString(),

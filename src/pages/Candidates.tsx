@@ -1,14 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download, Check, Trash2, UserPlus } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport } from '../services/downloadService';
+import { Candidate } from '../types';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
 
 export function Candidates() {
-  const { candidates, navigateTo } = useAppStore();
+  const { candidates, navigateTo, addCandidateWithMatches, updateCandidateStatus, deleteCandidate, addNotification } = useAppStore();
   const [search, setSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -17,6 +18,19 @@ export function Candidates() {
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newCandidate, setNewCandidate] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    position: 'Registered Nurse',
+    specialty: 'ICU',
+    experience: 3,
+    currentLocation: '',
+    certifications: 'BLS, ACLS',
+    professionalSummary: '',
+  });
   const perPage = 8;
 
   const hasActiveFilters = specialtyFilter !== 'All' || statusFilter !== 'All';
@@ -95,7 +109,10 @@ export function Candidates() {
             <Upload size={13} className="flex-shrink-0" />
             <span>Import Resumes</span>
           </button>
-          <button className="btn btn-primary h-8 px-3 text-xs">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn btn-primary h-8 px-3 text-xs cursor-pointer flex items-center gap-1.5 shadow-xs"
+          >
             <Plus size={13} className="flex-shrink-0" />
             <span>Add Candidate</span>
           </button>
@@ -246,26 +263,67 @@ export function Candidates() {
                       <MoreHorizontal size={14} />
                     </button>
                     {openMenu === c.id && (
-                      <div className="absolute right-4 top-8 w-38 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg z-20 py-1 animate-scale-in text-left">
-                        <button
-                          onClick={() => { navigateTo('candidate-profile', c.id); setOpenMenu(null); }}
-                          className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors"
-                        >
-                          View Profile
-                        </button>
-                        <button
-                          onClick={() => setOpenMenu(null)}
-                          className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors"
-                        >
-                          Edit Status
-                        </button>
-                        <button
-                          onClick={() => { downloadCandidateReport(c); setOpenMenu(null); }}
-                          className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors flex items-center justify-between"
-                        >
-                          <span>Download Dossier</span>
-                          <Download size={11} className="text-[var(--color-text-tertiary)]" />
-                        </button>
+                      <div className="absolute right-4 top-8 w-44 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-xl z-20 py-1.5 animate-scale-in text-left divide-y divide-[var(--color-border)]/50">
+                        <div>
+                          <button
+                            onClick={() => { navigateTo('candidate-profile', c.id); setOpenMenu(null); }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors flex items-center justify-between cursor-pointer"
+                          >
+                            <span>View Profile</span>
+                            <ArrowRight size={11} className="text-[var(--color-text-tertiary)]" />
+                          </button>
+                          <button
+                            onClick={() => { downloadCandidateReport(c); setOpenMenu(null); }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors flex items-center justify-between cursor-pointer"
+                          >
+                            <span>Download Dossier</span>
+                            <Download size={11} className="text-[var(--color-text-tertiary)]" />
+                          </button>
+                        </div>
+
+                        <div className="pt-1">
+                          <p className="px-3 py-1 text-[9px] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                            Set Status
+                          </p>
+                          {(['new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'] as const).map(st => (
+                            <button
+                              key={st}
+                              onClick={() => {
+                                updateCandidateStatus(c.id, st);
+                                setOpenMenu(null);
+                                addNotification({
+                                  type: 'info',
+                                  title: 'Candidate Status Updated',
+                                  message: `${c.firstName} ${c.lastName} status changed to ${st}`,
+                                });
+                              }}
+                              className={`w-full text-left px-3 py-1 text-xs hover:bg-[var(--color-surface-secondary)] transition-colors flex items-center justify-between cursor-pointer ${
+                                c.status === st ? 'font-semibold text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]'
+                              }`}
+                            >
+                              <span className="capitalize">{st}</span>
+                              {c.status === st && <Check size={11} className="text-[var(--color-primary)]" />}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="pt-1">
+                          <button
+                            onClick={() => {
+                              deleteCandidate(c.id);
+                              setOpenMenu(null);
+                              addNotification({
+                                type: 'warning',
+                                title: 'Candidate Removed',
+                                message: `${c.firstName} ${c.lastName} was removed from the database`,
+                              });
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors flex items-center justify-between cursor-pointer"
+                          >
+                            <span>Delete Candidate</span>
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </td>
@@ -357,6 +415,236 @@ export function Candidates() {
           >
             Clear all filters
           </button>
+        </div>
+      )}
+
+      {/* Add Candidate Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-scale-in">
+            <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center">
+                  <UserPlus size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Add New Candidate</h3>
+                  <p className="text-[11px] text-[var(--color-text-tertiary)]">Create candidate and calculate job matches</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="btn-icon btn-icon-sm cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newCandidate.firstName || !newCandidate.lastName) return;
+
+                const cand: Candidate = {
+                  id: `c-${Date.now()}`,
+                  firstName: newCandidate.firstName.trim(),
+                  lastName: newCandidate.lastName.trim(),
+                  email: newCandidate.email.trim() || `${newCandidate.firstName.toLowerCase()}.${newCandidate.lastName.toLowerCase()}@health.org`,
+                  phone: newCandidate.phone.trim() || '(555) 123-4567',
+                  position: newCandidate.position,
+                  specialty: newCandidate.specialty,
+                  experience: Number(newCandidate.experience) || 1,
+                  currentLocation: newCandidate.currentLocation.trim() || 'Sacramento, CA',
+                  previousTravelLocations: [newCandidate.currentLocation.trim() || 'Sacramento, CA', 'Phoenix, AZ'],
+                  bestMatch: 'Evaluating opportunities...',
+                  status: 'new',
+                  resumeFilename: `${newCandidate.firstName.toLowerCase()}_${newCandidate.lastName.toLowerCase()}_resume.pdf`,
+                  uploadedAt: new Date().toISOString().split('T')[0],
+                  professionalSummary: newCandidate.professionalSummary.trim() || `Dedicated ${newCandidate.position} specializing in ${newCandidate.specialty} with ${newCandidate.experience} years of clinical experience.`,
+                  certifications: newCandidate.certifications.split(',').map(s => s.trim()).filter(Boolean),
+                  confidenceScore: 98,
+                  experienceTimeline: [
+                    {
+                      id: `exp-${Date.now()}-1`,
+                      position: newCandidate.position,
+                      facility: 'Regional Medical Center',
+                      location: newCandidate.currentLocation.trim() || 'Sacramento, CA',
+                      startDate: `${new Date().getFullYear() - (Number(newCandidate.experience) || 1)}`,
+                      endDate: 'Present',
+                      description: `High-acuity ${newCandidate.specialty} patient care and multidisciplinary protocols.`,
+                    },
+                  ],
+                  verifiedByRecruiter: true,
+                };
+
+                addCandidateWithMatches(cand);
+                addNotification({
+                  type: 'success',
+                  title: 'Candidate Created',
+                  message: `${cand.firstName} ${cand.lastName} was added to the talent pool with AI job matches evaluated`,
+                });
+                setIsAddModalOpen(false);
+                setNewCandidate({
+                  firstName: '',
+                  lastName: '',
+                  email: '',
+                  phone: '',
+                  position: 'Registered Nurse',
+                  specialty: 'ICU',
+                  experience: 3,
+                  currentLocation: '',
+                  certifications: 'BLS, ACLS',
+                  professionalSummary: '',
+                });
+              }}
+              className="p-5 space-y-3.5"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">First Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCandidate.firstName}
+                    onChange={e => setNewCandidate({ ...newCandidate, firstName: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="e.g. Rachel"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Last Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCandidate.lastName}
+                    onChange={e => setNewCandidate({ ...newCandidate, lastName: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="e.g. Miller"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={newCandidate.email}
+                    onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="rachel.miller@health.org"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={newCandidate.phone}
+                    onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="(555) 234-5678"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Position</label>
+                  <select
+                    value={newCandidate.position}
+                    onChange={e => setNewCandidate({ ...newCandidate, position: e.target.value })}
+                    className="input w-full h-8.5 px-2 text-xs"
+                  >
+                    <option value="Registered Nurse">Registered Nurse</option>
+                    <option value="Physical Therapist">Physical Therapist</option>
+                    <option value="Respiratory Therapist">Respiratory Therapist</option>
+                    <option value="MRI Technologist">MRI Technologist</option>
+                    <option value="Radiologic Technologist">Radiologic Tech</option>
+                    <option value="Occupational Therapist">Occupational Therapist</option>
+                    <option value="Nurse Practitioner">Nurse Practitioner</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Specialty</label>
+                  <select
+                    value={newCandidate.specialty}
+                    onChange={e => setNewCandidate({ ...newCandidate, specialty: e.target.value })}
+                    className="input w-full h-8.5 px-2 text-xs"
+                  >
+                    <option value="ICU">ICU</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="MRI">MRI</option>
+                    <option value="Neonatal">Neonatal</option>
+                    <option value="Med-Surg">Med-Surg</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Years Exp</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="40"
+                    value={newCandidate.experience}
+                    onChange={e => setNewCandidate({ ...newCandidate, experience: Number(e.target.value) })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Location (City, State)</label>
+                  <input
+                    type="text"
+                    value={newCandidate.currentLocation}
+                    onChange={e => setNewCandidate({ ...newCandidate, currentLocation: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="e.g. Seattle, WA"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Certifications (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={newCandidate.certifications}
+                    onChange={e => setNewCandidate({ ...newCandidate, certifications: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                    placeholder="BLS, ACLS, CCRN"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Professional Summary</label>
+                <textarea
+                  rows={2}
+                  value={newCandidate.professionalSummary}
+                  onChange={e => setNewCandidate({ ...newCandidate, professionalSummary: e.target.value })}
+                  className="input w-full p-2.5 text-xs"
+                  placeholder="Summary of acute clinical patient care, ICU assignments, or special skills..."
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--color-border)]">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="btn btn-secondary text-xs h-8 px-3 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary text-xs h-8 px-4 cursor-pointer"
+                >
+                  Save Candidate
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

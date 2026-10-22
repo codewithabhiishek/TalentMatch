@@ -129,6 +129,7 @@ export function Overview() {
           icon={<UserPlus size={16} />}
           subtext="candidates added"
           trend="up"
+          onClick={() => navigateTo('candidates')}
           delay={120}
         />
         <MetricCard

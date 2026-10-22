@@ -1,12 +1,26 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase, Download, Sparkles, Award, FileJson } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase, Download, Sparkles, Award, FileJson, X, Check, Save } from 'lucide-react';
 import { useAppStore } from '../store';
 import { ProfileViewSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport, downloadCandidateJSON } from '../services/downloadService';
 
 export function CandidateProfile() {
-  const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo } = useAppStore();
+  const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo, updateCandidate, updateCandidateStatus, addNotification } = useAppStore();
   const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    position: '',
+    specialty: '',
+    experience: 0,
+    currentLocation: '',
+    certifications: '',
+    professionalSummary: '',
+    status: 'new' as any,
+  });
 
   useEffect(() => {
     setLoading(true);
@@ -64,7 +78,27 @@ export function CandidateProfile() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] truncate">{candidate.firstName} {candidate.lastName}</h2>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${statusColors[candidate.status]}`}>{candidate.status}</span>
+                <select
+                  value={candidate.status}
+                  onChange={(e) => {
+                    const newStatus = e.target.value as any;
+                    updateCandidateStatus(candidate.id, newStatus);
+                    addNotification({
+                      type: 'info',
+                      title: 'Candidate Status Changed',
+                      message: `${candidate.firstName} ${candidate.lastName} updated to ${newStatus}`,
+                    });
+                  }}
+                  className={`text-[10px] font-medium px-2 py-0.5 rounded cursor-pointer border border-transparent hover:border-[var(--color-border)] ${statusColors[candidate.status]}`}
+                  title="Change candidate status"
+                >
+                  <option value="new">new</option>
+                  <option value="reviewing">reviewing</option>
+                  <option value="matched">matched</option>
+                  <option value="interview">interview</option>
+                  <option value="placed">placed</option>
+                  <option value="rejected">rejected</option>
+                </select>
               </div>
               <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{candidate.position} · {candidate.specialty}</p>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-[var(--color-text-tertiary)]">
@@ -89,8 +123,26 @@ export function CandidateProfile() {
             >
               <FileJson size={12} /> JSON
             </button>
-            <button className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8">
-              <Edit size={12} /> Edit
+            <button
+              onClick={() => {
+                setEditForm({
+                  firstName: candidate.firstName,
+                  lastName: candidate.lastName,
+                  email: candidate.email,
+                  phone: candidate.phone,
+                  position: candidate.position,
+                  specialty: candidate.specialty,
+                  experience: candidate.experience,
+                  currentLocation: candidate.currentLocation,
+                  certifications: (candidate.certifications || []).join(', '),
+                  professionalSummary: candidate.professionalSummary,
+                  status: candidate.status,
+                });
+                setIsEditModalOpen(true);
+              }}
+              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Edit size={12} /> Edit Profile
             </button>
           </div>
         </div>
@@ -264,6 +316,198 @@ export function CandidateProfile() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-scale-in">
+            <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center">
+                  <Edit size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Edit Candidate Profile</h3>
+                  <p className="text-[11px] text-[var(--color-text-tertiary)]">Update details and clinical credentials</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="btn-icon btn-icon-sm cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateCandidate(candidate.id, {
+                  firstName: editForm.firstName.trim() || candidate.firstName,
+                  lastName: editForm.lastName.trim() || candidate.lastName,
+                  email: editForm.email.trim() || candidate.email,
+                  phone: editForm.phone.trim() || candidate.phone,
+                  position: editForm.position || candidate.position,
+                  specialty: editForm.specialty || candidate.specialty,
+                  experience: Number(editForm.experience) || candidate.experience,
+                  currentLocation: editForm.currentLocation.trim() || candidate.currentLocation,
+                  certifications: editForm.certifications.split(',').map(s => s.trim()).filter(Boolean),
+                  professionalSummary: editForm.professionalSummary.trim() || candidate.professionalSummary,
+                  status: editForm.status,
+                });
+                addNotification({
+                  type: 'success',
+                  title: 'Profile Updated',
+                  message: `${editForm.firstName || candidate.firstName}'s profile details have been saved`,
+                });
+                setIsEditModalOpen(false);
+              }}
+              className="p-5 space-y-3.5"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">First Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.firstName}
+                    onChange={e => setEditForm({ ...editForm, firstName: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.lastName}
+                    onChange={e => setEditForm({ ...editForm, lastName: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Position</label>
+                  <input
+                    type="text"
+                    value={editForm.position}
+                    onChange={e => setEditForm({ ...editForm, position: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Specialty</label>
+                  <input
+                    type="text"
+                    value={editForm.specialty}
+                    onChange={e => setEditForm({ ...editForm, specialty: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Years Exp</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="45"
+                    value={editForm.experience}
+                    onChange={e => setEditForm({ ...editForm, experience: Number(e.target.value) })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Current Location</label>
+                  <input
+                    type="text"
+                    value={editForm.currentLocation}
+                    onChange={e => setEditForm({ ...editForm, currentLocation: e.target.value })}
+                    className="input w-full h-8.5 px-3 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Status</label>
+                  <select
+                    value={editForm.status}
+                    onChange={e => setEditForm({ ...editForm, status: e.target.value as any })}
+                    className="input w-full h-8.5 px-2 text-xs"
+                  >
+                    <option value="new">new</option>
+                    <option value="reviewing">reviewing</option>
+                    <option value="matched">matched</option>
+                    <option value="interview">interview</option>
+                    <option value="placed">placed</option>
+                    <option value="rejected">rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Clinical Certifications</label>
+                <input
+                  type="text"
+                  value={editForm.certifications}
+                  onChange={e => setEditForm({ ...editForm, certifications: e.target.value })}
+                  className="input w-full h-8.5 px-3 text-xs"
+                  placeholder="BLS, ACLS, CCRN, PALS"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Professional Summary</label>
+                <textarea
+                  rows={3}
+                  value={editForm.professionalSummary}
+                  onChange={e => setEditForm({ ...editForm, professionalSummary: e.target.value })}
+                  className="input w-full p-2.5 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--color-border)]">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="btn btn-secondary text-xs h-8 px-3 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary text-xs h-8 px-4 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Save size={12} /> Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
