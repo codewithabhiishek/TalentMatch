@@ -12,4 +12,16 @@ export default defineConfig({
       port: 3000,
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-charts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-pdf': ['pdfjs-dist'],
+          'vendor-mammoth': ['mammoth'],
+        },
+      },
+    },
+  },
 });
