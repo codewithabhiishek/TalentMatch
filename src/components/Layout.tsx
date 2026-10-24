@@ -343,7 +343,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] px-1 bg-[var(--color-info)] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[var(--color-surface)] shadow-xs pointer-events-none">
+                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-[var(--color-info)] text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-[var(--color-surface)] shadow-xs pointer-events-none">
                     {unreadCount}
                   </span>
                 )}
@@ -446,80 +446,91 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="relative" ref={userRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)] cursor-pointer"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)] cursor-pointer select-none active:scale-98"
                 aria-label="User account menu"
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
               >
-                <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-[var(--color-text-secondary)]">
+                <div className="w-7.5 h-7.5 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs shrink-0 ring-1 ring-white/10">
+                  <span>
                     {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
                   </span>
                 </div>
-                <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight">
+                <div className="hidden sm:flex flex-col text-left leading-tight">
+                  <span className="text-xs font-semibold text-[var(--color-text-primary)]">
                     {userProfile?.firstName || 'Jordan'}
                   </span>
-                  <span className="text-[10px] text-[var(--color-text-tertiary)] leading-tight">
-                    {userProfile?.role || 'Recruiter'}
+                  <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                    {userProfile?.role || 'Senior Recruiter'}
                   </span>
                 </div>
-                <ChevronDown size={12} className={`hidden sm:block text-[var(--color-text-tertiary)] ml-0.5 transition-transform duration-150 ${showUserMenu ? 'rotate-180' : ''}`} />
+                <ChevronDown size={13} className={`hidden sm:block text-[var(--color-text-tertiary)] transition-transform duration-150 ${showUserMenu ? 'rotate-180 text-[var(--color-text-primary)]' : ''}`} />
               </button>
+
               {showUserMenu && (
                 <div
                   role="menu"
                   aria-orientation="vertical"
-                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-56 max-w-[calc(100vw-1rem)] z-50 py-1.5 animate-scale-in shadow-2xl border border-[var(--color-border)]"
+                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-72 max-w-[calc(100vw-1.5rem)] z-50 p-2 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)]"
                 >
-                  {/* User Identity Section: Avatar, Name, Role, Email */}
-                  <div className="px-3.5 py-2.5 border-b border-[var(--color-border)]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-[var(--color-text-secondary)]">
+                  {/* User Identity Header Card */}
+                  <div className="p-3 bg-[var(--color-surface-secondary)]/70 border border-[var(--color-border)]/60 rounded-lg mb-1.5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0 ring-2 ring-white/10">
+                        <span>
                           {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-semibold text-[var(--color-text-primary)] leading-tight truncate">
-                            {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
-                          </p>
-                          <span className="text-[9px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-secondary)] border border-[var(--color-border)] px-1 py-0.2 rounded leading-none shrink-0">
-                            {userProfile?.role || 'Recruiter'}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5">
+                        <p className="text-xs font-bold text-[var(--color-text-primary)] leading-snug">
+                          {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
+                        </p>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
                           {userProfile?.email || 'jordan@talentflow.com'}
                         </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
+                            {userProfile?.role || 'Senior Recruiter'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Dropdown Items */}
-                  <div className="py-1">
+                  {/* Menu Items */}
+                  <div className="space-y-0.5">
                     <button
                       type="button"
                       role="menuitem"
                       onClick={() => { setShowUserMenu(false); navigateTo('settings'); }}
-                      className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
-                      <Settings size={13} className="text-[var(--color-text-tertiary)]" />
-                      <span>Settings & Themes</span>
+                      <div className="flex items-center gap-2.5">
+                        <Settings size={14} className="text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors" />
+                        <span>Settings & Themes</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity">G S</span>
                     </button>
+
                     <button
                       type="button"
                       role="menuitem"
                       onClick={() => { setShowUserMenu(false); setShortcutsModalOpen(true); }}
-                      className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
-                      <Keyboard size={13} className="text-[var(--color-text-tertiary)]" />
-                      <span>Keyboard Shortcuts</span>
+                      <div className="flex items-center gap-2.5">
+                        <Keyboard size={14} className="text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors" />
+                        <span>Keyboard Shortcuts</span>
+                      </div>
+                      <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)]">?</kbd>
                     </button>
                   </div>
 
-                  {/* Sign out demo action */}
-                  <div className="border-t border-[var(--color-border)] my-1" />
+                  {/* Divider */}
+                  <div className="border-t border-[var(--color-border)]/70 my-1.5" />
+
+                  {/* Sign Out */}
                   <button
                     type="button"
                     role="menuitem"
@@ -527,10 +538,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       setShowUserMenu(false);
                       navigateTo('overview');
                     }}
-                    className="w-full text-left px-3.5 py-2 text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 transition-colors cursor-pointer"
-                    title="Reset demo session to Overview"
+                    className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 rounded-lg transition-colors cursor-pointer"
+                    title="Reset session to Overview"
                   >
-                    <LogOut size={13} />
+                    <LogOut size={14} className="text-[var(--color-error)]" />
                     <span>Sign Out</span>
                   </button>
                 </div>
