@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Briefcase, UserPlus, GitMerge, ArrowUpRight, FileText, Clock } from 'lucide-react';
+import { Users, Briefcase, UserPlus, GitMerge, ArrowUpRight, FileText, Clock, Sparkles, Upload } from 'lucide-react';
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '../store';
 import { weeklyActivity } from '../data/mockData';
@@ -46,7 +46,7 @@ function ActivityTooltip({ active, payload, label }: ActivityTooltipProps) {
 }
 
 export function Overview() {
-  const { candidates, jobs, jobMatches, importedFiles, navigateTo, theme } = useAppStore();
+  const { candidates, jobs, jobMatches, importedFiles, navigateTo, theme, loadSampleData } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
@@ -105,6 +105,42 @@ export function Overview() {
 
   return (
     <div className="p-3 sm:p-5 lg:p-7 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      {/* First-Time User Quick-Start Banner */}
+      {totalCandidates === 0 && jobs.length === 0 && (
+        <div className="card p-5 sm:p-6 bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-purple-500/10 border border-sky-500/25 rounded-2xl animate-fade-in shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="badge badge-info text-[10px] font-semibold tracking-wider uppercase">Fresh Workspace</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">• Ready for your data</span>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] tracking-tight">
+                Welcome to TalentMatch ATS
+              </h2>
+              <p className="text-xs text-[var(--color-text-secondary)] max-w-xl leading-relaxed">
+                Your workspace is clean and ready. Upload candidate resumes and job requisitions, or load realistic clinical sample demo data to see the matching engine in action.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button
+                onClick={loadSampleData}
+                className="btn btn-primary h-9.5 px-4 text-xs font-semibold shadow-sm flex items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform"
+              >
+                <Sparkles size={14} className="text-amber-300" />
+                <span>Load Sample Demo Data</span>
+              </button>
+              <button
+                onClick={() => navigateTo('resume-import')}
+                className="btn btn-secondary h-9.5 px-3.5 text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:border-[var(--color-border-hover)]"
+              >
+                <Upload size={14} />
+                <span>Import Resumes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Standardized 4 Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
         <MetricCard
@@ -254,26 +290,42 @@ export function Overview() {
             </button>
           </div>
           <div className="space-y-2 flex-1 flex flex-col justify-around">
-            {recentFiles.map((file, idx) => (
-              <div
-                key={file.id}
-                className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-[var(--color-surface-secondary)]/70 rounded-md transition-colors cursor-default"
-                style={{ animationDelay: `${300 + idx * 40}ms` }}
-              >
-                <div className="w-6 h-6 rounded-md bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 text-[var(--color-text-secondary)]">
-                  <FileText size={13} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-[var(--color-text-primary)] truncate" title={file.filename}>
-                    {file.filename}
-                  </p>
-                  <p className="text-[10px] text-[var(--color-text-tertiary)]">{file.recordCount} records</p>
-                </div>
-                <span className={`badge ${statusBadgeClass[file.status] || 'badge-neutral'} flex-shrink-0`}>
-                  {file.status}
-                </span>
+            {recentFiles.length === 0 ? (
+              <div className="py-6 text-center text-[var(--color-text-tertiary)] space-y-2">
+                <FileText size={20} className="mx-auto opacity-40 text-[var(--color-text-tertiary)]" />
+                <p className="text-xs font-medium text-[var(--color-text-secondary)]">No files imported yet</p>
+                <p className="text-[11px] text-[var(--color-text-tertiary)] max-w-xs mx-auto">
+                  Drag & drop candidate resumes or job spreadsheets.
+                </p>
+                <button
+                  onClick={() => navigateTo('resume-import')}
+                  className="mt-1 text-xs text-[var(--color-info)] hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>Upload resume files</span> →
+                </button>
               </div>
-            ))}
+            ) : (
+              recentFiles.map((file, idx) => (
+                <div
+                  key={file.id}
+                  className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-[var(--color-surface-secondary)]/70 rounded-md transition-colors cursor-default"
+                  style={{ animationDelay: `${300 + idx * 40}ms` }}
+                >
+                  <div className="w-6 h-6 rounded-md bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 text-[var(--color-text-secondary)]">
+                    <FileText size={13} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-[var(--color-text-primary)] truncate" title={file.filename}>
+                      {file.filename}
+                    </p>
+                    <p className="text-[10px] text-[var(--color-text-tertiary)]">{file.recordCount} records</p>
+                  </div>
+                  <span className={`badge ${statusBadgeClass[file.status] || 'badge-neutral'} flex-shrink-0`}>
+                    {file.status}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -295,26 +347,44 @@ export function Overview() {
             </button>
           </div>
           <div className="divide-y divide-[var(--color-border)]">
-            {recentCandidates.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => navigateTo('candidate-profile', c.id)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-surface-secondary)]/60 transition-colors text-left group focus-visible:outline-none"
-              >
-                <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150">
-                  <span className="text-xs font-semibold text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
+            {recentCandidates.length === 0 ? (
+              <div className="p-7 text-center text-[var(--color-text-tertiary)] space-y-2">
+                <Users size={22} className="mx-auto opacity-40 text-[var(--color-text-tertiary)]" />
+                <p className="text-xs font-medium text-[var(--color-text-secondary)]">No candidates in your database</p>
+                <p className="text-[11px] text-[var(--color-text-tertiary)] max-w-xs mx-auto">
+                  Import PDF/Word resumes or load sample healthcare candidates to explore.
+                </p>
+                <div className="pt-2 flex justify-center gap-2">
+                  <button
+                    onClick={loadSampleData}
+                    className="btn btn-secondary btn-sm text-xs cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Sparkles size={12} className="text-sky-400" /> Load Sample Candidates
+                  </button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors truncate">
-                    {c.firstName} {c.lastName}
-                  </p>
-                  <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">{c.position} · {c.specialty}</p>
-                </div>
-                <span className={`badge ${statusBadgeClass[c.status] || 'badge-neutral'} flex-shrink-0`}>
-                  {c.status}
-                </span>
-              </button>
-            ))}
+              </div>
+            ) : (
+              recentCandidates.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => navigateTo('candidate-profile', c.id)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-surface-secondary)]/60 transition-colors text-left group focus-visible:outline-none"
+                >
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150">
+                    <span className="text-xs font-semibold text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors truncate">
+                      {c.firstName} {c.lastName}
+                    </p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">{c.position} · {c.specialty}</p>
+                  </div>
+                  <span className={`badge ${statusBadgeClass[c.status] || 'badge-neutral'} flex-shrink-0`}>
+                    {c.status}
+                  </span>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -333,33 +403,51 @@ export function Overview() {
             </button>
           </div>
           <div className="divide-y divide-[var(--color-border)]">
-            {topMatches.map((m) => {
-              const candidate = candidates.find(c => c.id === m.candidateId);
-              const job = jobs.find(j => j.id === m.jobId);
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => navigateTo('job-matches')}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-surface-secondary)]/60 transition-colors text-left group focus-visible:outline-none"
-                >
-                  <div
-                    className="w-8 h-8 rounded-md bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150"
-                    title={`Match score: ${m.score}%`}
+            {topMatches.length === 0 ? (
+              <div className="p-7 text-center text-[var(--color-text-tertiary)] space-y-2">
+                <GitMerge size={22} className="mx-auto opacity-40 text-[var(--color-text-tertiary)]" />
+                <p className="text-xs font-medium text-[var(--color-text-secondary)]">No clinical matches calculated</p>
+                <p className="text-[11px] text-[var(--color-text-tertiary)] max-w-xs mx-auto">
+                  Matches are evaluated automatically as candidates and requisitions are added.
+                </p>
+                <div className="pt-2 flex justify-center gap-2">
+                  <button
+                    onClick={loadSampleData}
+                    className="btn btn-secondary btn-sm text-xs cursor-pointer flex items-center gap-1.5"
                   >
-                    <span className={`text-xs font-bold ${getScoreColor(m.score)}`}>{m.score}%</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors truncate">
-                      {candidate?.firstName} {candidate?.lastName}
-                    </p>
-                    <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">
-                      → {job?.position} at {job?.facility}
-                    </p>
-                  </div>
-                  <Clock size={12} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
-                </button>
-              );
-            })}
+                    <Sparkles size={12} className="text-sky-400" /> Load Sample Matches
+                  </button>
+                </div>
+              </div>
+            ) : (
+              topMatches.map((m) => {
+                const candidate = candidates.find(c => c.id === m.candidateId);
+                const job = jobs.find(j => j.id === m.jobId);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => navigateTo('job-matches')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[var(--color-surface-secondary)]/60 transition-colors text-left group focus-visible:outline-none"
+                  >
+                    <div
+                      className="w-8 h-8 rounded-md bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-150"
+                      title={`Match score: ${m.score}%`}
+                    >
+                      <span className={`text-xs font-bold ${getScoreColor(m.score)}`}>{m.score}%</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors truncate">
+                        {candidate?.firstName} {candidate?.lastName}
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">
+                        → {job?.position} at {job?.facility}
+                      </p>
+                    </div>
+                    <Clock size={12} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -389,28 +477,48 @@ export function Overview() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {recentJobs.map(job => (
-                <tr
-                  key={job.id}
-                  className="hover:bg-[var(--color-surface-secondary)]/60 transition-colors cursor-pointer group"
-                  onClick={() => navigateTo('job-detail', undefined, job.id)}
-                >
-                  <td className="px-4 py-2.5 font-semibold text-xs text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors align-middle">
-                    {job.position}
-                  </td>
-                  <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden sm:table-cell align-middle">
-                    {job.city}, {job.state}
-                  </td>
-                  <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden md:table-cell align-middle max-w-[200px] truncate" title={job.facility}>
-                    {job.facility}
-                  </td>
-                  <td className="px-4 py-2.5 align-middle">
-                    <span className={`badge ${statusBadgeClass[job.status] || 'badge-neutral'}`}>
-                      {job.status}
-                    </span>
+              {recentJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-7 text-center text-[var(--color-text-tertiary)]">
+                    <Briefcase size={20} className="mx-auto opacity-40 mb-1.5" />
+                    <p className="text-xs font-medium text-[var(--color-text-secondary)]">No job postings created yet</p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] max-w-xs mx-auto mt-0.5">
+                      Import requisitions via spreadsheet or load demo jobs to start matching.
+                    </p>
+                    <div className="pt-2 flex justify-center gap-2">
+                      <button
+                        onClick={loadSampleData}
+                        className="btn btn-secondary btn-sm text-xs cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Sparkles size={12} className="text-sky-400" /> Load Sample Jobs
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentJobs.map(job => (
+                  <tr
+                    key={job.id}
+                    className="hover:bg-[var(--color-surface-secondary)]/60 transition-colors cursor-pointer group"
+                    onClick={() => navigateTo('job-detail', undefined, job.id)}
+                  >
+                    <td className="px-4 py-2.5 font-semibold text-xs text-[var(--color-text-primary)] group-hover:text-[var(--color-info)] transition-colors align-middle">
+                      {job.position}
+                    </td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden sm:table-cell align-middle">
+                      {job.city}, {job.state}
+                    </td>
+                    <td className="px-4 py-2.5 text-[var(--color-text-secondary)] hidden md:table-cell align-middle max-w-[200px] truncate" title={job.facility}>
+                      {job.facility}
+                    </td>
+                    <td className="px-4 py-2.5 align-middle">
+                      <span className={`badge ${statusBadgeClass[job.status] || 'badge-neutral'}`}>
+                        {job.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

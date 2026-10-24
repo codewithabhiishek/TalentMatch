@@ -85,6 +85,8 @@ export interface AppState {
   setTheme: (theme: Theme) => void;
 
   // Local Storage Management
+  loadSampleData: () => void;
+  clearAllData: () => void;
   resetAllData: () => void;
   exportDataJSON: () => string;
   importDataJSON: (jsonString: string) => boolean;
@@ -124,11 +126,12 @@ export const useAppStore = create<AppState>()(
       userProfile: defaultProfile,
       aiConfig: defaultAIConfig,
 
-      candidates: mockCandidates,
-      jobs: mockJobs,
-      jobMatches: mockMatches,
-      importedFiles: mockFiles,
-      notifications: mockNotifications,
+      // Default to empty workspace so new installations start clean and blank
+      candidates: [],
+      jobs: [],
+      jobMatches: [],
+      importedFiles: [],
+      notifications: [],
 
       navigateTo: (page, candidateId, jobId) => set({
         currentPage: page,
@@ -256,13 +259,33 @@ export const useAppStore = create<AppState>()(
         set({ theme });
       },
 
-      resetAllData: () => {
+      loadSampleData: () => {
         set({
           candidates: mockCandidates,
           jobs: mockJobs,
           jobMatches: mockMatches,
           importedFiles: mockFiles,
           notifications: mockNotifications,
+        });
+      },
+
+      clearAllData: () => {
+        set({
+          candidates: [],
+          jobs: [],
+          jobMatches: [],
+          importedFiles: [],
+          notifications: [],
+        });
+      },
+
+      resetAllData: () => {
+        set({
+          candidates: [],
+          jobs: [],
+          jobMatches: [],
+          importedFiles: [],
+          notifications: [],
           userProfile: defaultProfile,
           aiConfig: defaultAIConfig,
         });

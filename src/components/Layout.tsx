@@ -55,6 +55,7 @@ const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: stri
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
     currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme, userProfile,
+    candidates, jobs, loadSampleData,
     navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, markAllNotificationsRead, toggleTheme,
     setShortcutsModalOpen
   } = useAppStore();
@@ -331,6 +332,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Right section: Far-right anchored control group */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* Quick Demo Data loader when workspace is blank */}
+            {candidates.length === 0 && jobs.length === 0 && (
+              <button
+                onClick={loadSampleData}
+                className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] hover:border-[var(--color-info)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Populate workspace with sample clinical candidates & jobs"
+              >
+                <Sparkles size={12} className="text-sky-400" />
+                <span>Load Sample Data</span>
+              </button>
+            )}
+
             {/* Keyboard shortcuts trigger - hidden on mobile screens, accessible from user menu */}
             <button
               onClick={() => setShortcutsModalOpen(true)}

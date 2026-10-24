@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, Plus, Upload, MapPin, MoreHorizontal, Briefcase, CheckCircle2, FileText, ArrowRight, X, Edit, Trash2, Check } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, Plus, Upload, MapPin, MoreHorizontal, Briefcase, CheckCircle2, FileText, ArrowRight, X, Edit, Trash2, Check, Sparkles } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { Job } from '../types';
@@ -7,7 +7,7 @@ import { Job } from '../types';
 const statuses = ['All', 'active', 'draft', 'closed', 'filled'];
 
 export function Jobs() {
-  const { jobs, navigateTo, importedFiles, addJob, updateJob, deleteJob, addNotification } = useAppStore();
+  const { jobs, navigateTo, importedFiles, addJob, updateJob, deleteJob, addNotification, loadSampleData } = useAppStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [stateFilter, setStateFilter] = useState('All');
@@ -589,7 +589,37 @@ export function Jobs() {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {jobs.length === 0 ? (
+        <div className="card p-8 sm:p-12 text-center animate-fade-in border border-dashed border-[var(--color-border)]">
+          <div className="w-12 h-12 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center mx-auto mb-3.5 text-[var(--color-text-secondary)]">
+            <Briefcase size={22} />
+          </div>
+          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">No Job Requisitions Yet</h3>
+          <p className="text-xs text-[var(--color-text-secondary)] max-w-md mx-auto mt-1 mb-5 leading-relaxed">
+            Create hospital job openings or import spreadsheet requisitions (.xlsx/.csv), or load realistic clinical sample jobs to explore matching.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn btn-primary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus size={14} /> Add Job Requisition
+            </button>
+            <button
+              onClick={() => navigateTo('job-import')}
+              className="btn btn-secondary h-9 px-3.5 text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Upload size={14} /> Import Spreadsheet
+            </button>
+            <button
+              onClick={loadSampleData}
+              className="btn btn-secondary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer hover:border-[var(--color-info)]"
+            >
+              <Sparkles size={14} className="text-sky-400" /> Load Sample Jobs
+            </button>
+          </div>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-12 card animate-fade-in">
           <p className="text-sm font-medium text-[var(--color-text-secondary)]">No jobs match your filters</p>
           <button
@@ -599,7 +629,7 @@ export function Jobs() {
             Clear all filters
           </button>
         </div>
-      )}
+      ) : null}
 
       {/* Add Job Modal */}
       {isAddModalOpen && (

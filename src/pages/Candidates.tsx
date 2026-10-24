@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download, Check, Trash2, UserPlus } from 'lucide-react';
+import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download, Check, Trash2, UserPlus, Sparkles, Users } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport } from '../services/downloadService';
@@ -9,7 +9,7 @@ const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal'
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
 
 export function Candidates() {
-  const { candidates, navigateTo, addCandidateWithMatches, updateCandidateStatus, deleteCandidate, addNotification } = useAppStore();
+  const { candidates, navigateTo, addCandidateWithMatches, updateCandidateStatus, deleteCandidate, addNotification, loadSampleData } = useAppStore();
   const [search, setSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -406,17 +406,41 @@ export function Candidates() {
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {candidates.length === 0 ? (
+        <div className="card p-8 sm:p-12 text-center animate-fade-in border border-dashed border-[var(--color-border)]">
+          <div className="w-12 h-12 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center mx-auto mb-3.5 text-[var(--color-text-secondary)]">
+            <Users size={22} />
+          </div>
+          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Your Candidate Database is Empty</h3>
+          <p className="text-xs text-[var(--color-text-secondary)] max-w-md mx-auto mt-1 mb-5 leading-relaxed">
+            Start by importing resumes (PDF, Word, or plain text) to populate your candidates, or load realistic sample healthcare candidates to test the features.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => navigateTo('resume-import')}
+              className="btn btn-primary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Upload size={14} /> Import Candidate Resumes
+            </button>
+            <button
+              onClick={loadSampleData}
+              className="btn btn-secondary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer hover:border-[var(--color-info)]"
+            >
+              <Sparkles size={14} className="text-sky-400" /> Load Sample Candidates
+            </button>
+          </div>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-12 card animate-fade-in">
           <p className="text-sm font-medium text-[var(--color-text-secondary)]">No candidates match your filters</p>
           <button
             onClick={() => { setSearch(''); setSpecialtyFilter('All'); setStatusFilter('All'); }}
-            className="mt-2 text-xs text-[var(--color-info)] hover:underline font-medium"
+            className="mt-2 text-xs text-[var(--color-info)] hover:underline font-medium cursor-pointer"
           >
             Clear all filters
           </button>
         </div>
-      )}
+      ) : null}
 
       {/* Add Candidate Modal */}
       {isAddModalOpen && (

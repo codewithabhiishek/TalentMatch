@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
   Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
-  FileText, Briefcase, Users, GitMerge, Globe, ChevronDown
+  FileText, Briefcase, Users, GitMerge, Globe, ChevronDown, Trash2
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
@@ -15,7 +15,7 @@ export function Settings() {
     userProfile, updateUserProfile,
     aiConfig, updateAIConfig,
     candidates, jobs, jobMatches, importedFiles, notifications,
-    resetAllData, exportDataJSON, importDataJSON
+    loadSampleData, clearAllData, resetAllData, exportDataJSON, importDataJSON
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'storage' | 'shortcuts' | 'notifications' | 'integrations' | 'api'>('profile');
@@ -145,10 +145,17 @@ export function Settings() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleResetData = () => {
-    resetAllData();
+  const handleLoadSampleData = () => {
+    loadSampleData();
+    setSaveMessage('Loaded sample clinical candidates, jobs & matches into Local Storage.');
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const handleClearAllData = () => {
+    clearAllData();
     setResetConfirmOpen(false);
-    setSaveMessage('Reset to factory demo data in local storage.');
+    setSaveMessage('Cleared all candidates, jobs & matches. Workspace is now completely blank.');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -519,19 +526,42 @@ export function Settings() {
                 </div>
               </div>
 
-              {/* Reset to Factory Data */}
-              <div className="pt-2">
+              {/* Workspace Data Management */}
+              <div className="pt-2 space-y-3">
                 <h4 className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                  Reset Data
+                  Sample Data & Workspace Reset
                 </h4>
+
+                {/* Option 1: Load Sample Demo Data */}
                 <div className="p-4 border border-[var(--color-border)] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[var(--color-surface)]">
                   <div>
                     <p className="text-xs font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                      <RefreshCw size={13} className="text-[var(--color-text-secondary)]" />
-                      Reset to Default Mock Data
+                      <Sparkles size={14} className="text-sky-400" />
+                      Load Sample Clinical Demo Data
                     </p>
                     <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
-                      Restore the original set of sample candidates, jobs, and match evaluations in Local Storage.
+                      Populate your workspace with realistic healthcare candidates, hospital requisitions, and match scores to explore all platform features.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLoadSampleData}
+                    className="btn btn-secondary btn-sm text-xs border-[var(--color-border)] hover:border-[var(--color-info)] text-[var(--color-text-primary)] transition-colors cursor-pointer self-start sm:self-auto shrink-0 flex items-center gap-1.5"
+                  >
+                    <Sparkles size={12} className="text-sky-400" />
+                    Load Demo Data
+                  </button>
+                </div>
+
+                {/* Option 2: Clear All Data (Start Blank) */}
+                <div className="p-4 border border-[var(--color-border)] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[var(--color-surface)]">
+                  <div>
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                      <Trash2 size={13} className="text-[var(--color-error)]" />
+                      Clear All Workspace Data (Start Blank)
+                    </p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                      Wipe all candidates, jobs, and matches from local storage to start completely fresh for your real organization data.
                     </p>
                   </div>
 
@@ -541,16 +571,16 @@ export function Settings() {
                       onClick={() => setResetConfirmOpen(true)}
                       className="btn btn-secondary btn-sm text-xs border-[var(--color-border)] hover:border-[var(--color-error)] hover:text-[var(--color-error)] transition-colors cursor-pointer self-start sm:self-auto shrink-0"
                     >
-                      Reset Data...
+                      Clear Data...
                     </button>
                   ) : (
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={handleResetData}
+                        onClick={handleClearAllData}
                         className="btn btn-sm text-xs bg-[var(--color-error)] text-white hover:opacity-90 cursor-pointer"
                       >
-                        Confirm Reset
+                        Confirm Wipe (Blank)
                       </button>
                       <button
                         type="button"

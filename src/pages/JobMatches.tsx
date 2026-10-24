@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Eye, CheckCircle, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ExternalLink, X, MapPin, User, Briefcase } from 'lucide-react';
+import { Search, Filter, Eye, CheckCircle, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, ExternalLink, X, MapPin, User, Briefcase, Sparkles, GitMerge, Upload } from 'lucide-react';
 import { useAppStore } from '../store';
 import { MatchCardsSkeleton } from '../components/Skeletons';
 
 const matchStatuses = ['All', 'pending', 'reviewed', 'accepted', 'rejected'];
 
 export function JobMatches() {
-  const { jobMatches, candidates, jobs, navigateTo, updateMatchStatus } = useAppStore();
+  const { jobMatches, candidates, jobs, navigateTo, updateMatchStatus, loadSampleData } = useAppStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
@@ -427,17 +427,41 @@ export function JobMatches() {
         </div>
       )}
 
-      {enrichedMatches.length === 0 && (
+      {jobMatches.length === 0 ? (
+        <div className="card p-8 sm:p-12 text-center animate-fade-in border border-dashed border-[var(--color-border)]">
+          <div className="w-12 h-12 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center mx-auto mb-3.5 text-[var(--color-text-secondary)]">
+            <GitMerge size={22} />
+          </div>
+          <h3 className="text-base font-semibold text-[var(--color-text-primary)]">No Matches Calculated Yet</h3>
+          <p className="text-xs text-[var(--color-text-secondary)] max-w-md mx-auto mt-1 mb-5 leading-relaxed">
+            Clinical matches are calculated automatically when you add candidates and job requisitions. Load sample data to see the multi-attribute fit scores and recruiter explanations.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => navigateTo('resume-import')}
+              className="btn btn-primary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Upload size={14} /> Import Candidate Resumes
+            </button>
+            <button
+              onClick={loadSampleData}
+              className="btn btn-secondary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer hover:border-[var(--color-info)]"
+            >
+              <Sparkles size={14} className="text-sky-400" /> Load Sample Matches
+            </button>
+          </div>
+        </div>
+      ) : enrichedMatches.length === 0 ? (
         <div className="text-center py-12 card animate-fade-in">
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">No matches found</p>
+          <p className="text-sm font-medium text-[var(--color-text-secondary)]">No matches match your filters</p>
           <button
             onClick={() => { setSearch(''); setStatusFilter('All'); setSpecialtyFilter('All'); }}
-            className="mt-2 text-xs text-[var(--color-info)] hover:underline font-medium"
+            className="mt-2 text-xs text-[var(--color-info)] hover:underline font-medium cursor-pointer"
           >
             Clear all filters
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
