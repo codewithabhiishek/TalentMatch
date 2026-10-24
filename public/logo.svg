@@ -1,26 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="tfLogoBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563eb" />
-      <stop offset="100%" stop-color="#0f172a" />
+    <linearGradient id="tmLogoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#090d16"/>
     </linearGradient>
-    <linearGradient id="tfLogoBadge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#059669" />
+    <linearGradient id="tmLogoGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
     </linearGradient>
-    <filter id="tfLogoShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.3" />
+    <linearGradient id="tmLogoAccent" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <filter id="tmLogoShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#38bdf8" flood-opacity="0.3"/>
     </filter>
   </defs>
 
-  <!-- Circular background matching circular favicon -->
-  <circle cx="60" cy="60" r="56" fill="url(#tfLogoBg)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2" filter="url(#tfLogoShadow)" />
+  <!-- Container -->
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#tmLogoBg)" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
 
-  <!-- Candidate talent silhouette -->
-  <circle cx="60" cy="42" r="16" fill="#ffffff" />
-  <path d="M30 90 C30 74 43 65 60 65 C77 65 90 74 90 90" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" />
-
-  <!-- Verification match badge -->
-  <circle cx="85" cy="81" r="17" fill="url(#tfLogoBadge)" stroke="#0f172a" stroke-width="3" />
-  <path d="M78.5 81 L83 85.5 L91.5 76" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Emblem -->
+  <g filter="url(#tmLogoShadow)">
+    <path d="M30 38 h68 c3.2 0 6 2.8 6 6 v4 c0 3.2-2.8 6-6 6 h-24 v42 c0 3.2-2.8 6-6 6 h-8 c-3.2 0-6-2.8-6-6 V54 h-24 c-3.2 0-6-2.8-6-6 v-4 c0-3.2 2.8-6 6-6 z" fill="url(#tmLogoGlow)"/>
+    <path d="M64 26 L78 40 L64 54 L50 40 Z" fill="url(#tmLogoAccent)"/>
+    <circle cx="64" cy="40" r="4.5" fill="#ffffff"/>
+  </g>
 </svg>

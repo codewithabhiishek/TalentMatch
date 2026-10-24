@@ -147,51 +147,63 @@ export function Layout({ children }: { children: React.ReactNode }) {
         ${sidebarCollapsed ? 'w-16' : 'w-64 max-w-[85vw] sm:w-60'}
         safe-area-top safe-area-bottom
       `}>
-        {/* Logo */}
-        <div className={`flex items-center h-14 px-4 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-          <button
-            onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
-            className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0"
-            title="TalentFlow ATS (G then O)"
-          >
-            <img
-              src="/favicon.svg"
-              alt="TalentFlow Logo"
-              className="w-7 h-7 rounded-full flex-shrink-0 object-contain shadow-xs hover:scale-105 transition-transform"
-            />
-            {!sidebarCollapsed && (
-              <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
-                TalentFlow
-              </span>
-            )}
-          </button>
-          {!sidebarCollapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="hidden lg:flex w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 ml-auto"
-              aria-label="Collapse sidebar"
-              title={`Toggle Sidebar (${modifierLabel}B)`}
-            >
-              <ChevronLeft size={14} />
-            </button>
-          )}
-          {/* Mobile close button */}
-          <button
-            onClick={() => setMobileSidebarOpen(false)}
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors ml-auto cursor-pointer"
-            aria-label="Close sidebar menu"
-          >
-            <X size={16} />
-          </button>
-          {sidebarCollapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="hidden lg:flex w-6 h-6 items-center justify-center rounded hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] transition-all duration-150 hover:scale-110 mt-2"
-              aria-label="Expand sidebar"
-              title={`Toggle Sidebar (${modifierLabel}B)`}
-            >
-              <ChevronRight size={14} />
-            </button>
+        {/* Logo & Header */}
+        <div className={`flex items-center h-14 border-b border-[var(--color-border)] relative ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
+          {sidebarCollapsed ? (
+            <div className="relative group/toggle flex items-center justify-center w-full">
+              <button
+                onClick={() => { navigateTo('overview'); }}
+                className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-transform hover:scale-105 focus-visible:outline-none cursor-pointer"
+                title="TalentMatch ATS — Click to go to Overview"
+              >
+                <img
+                  src="/favicon.svg"
+                  alt="TalentMatch Logo"
+                  className="w-7 h-7 rounded-lg flex-shrink-0 object-contain shadow-xs"
+                />
+              </button>
+              {/* Floating expand handle centered on the sidebar edge */}
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] shadow-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-accent)] hover:bg-[var(--color-surface-tertiary)] hover:scale-110 active:scale-95 items-center justify-center transition-all z-30 cursor-pointer"
+                aria-label="Expand sidebar"
+                title={`Expand Sidebar (${modifierLabel}B)`}
+              >
+                <ChevronRight size={12} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
+                className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0 group cursor-pointer"
+                title="TalentMatch ATS (G then O)"
+              >
+                <img
+                  src="/favicon.svg"
+                  alt="TalentMatch Logo"
+                  className="w-7 h-7 rounded-lg flex-shrink-0 object-contain shadow-xs group-hover:scale-105 transition-transform"
+                />
+                <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
+                  TalentMatch
+                </span>
+              </button>
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex w-6 h-6 items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-all ml-auto cursor-pointer"
+                aria-label="Collapse sidebar"
+                title={`Collapse Sidebar (${modifierLabel}B)`}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors ml-auto cursor-pointer"
+                aria-label="Close sidebar menu"
+              >
+                <X size={16} />
+              </button>
+            </>
           )}
         </div>
 
@@ -235,17 +247,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* User section */}
         <div className={`border-t border-[var(--color-border)] p-3 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
           {sidebarCollapsed ? (
-            <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center">
-              <User size={14} className="text-[var(--color-text-secondary)]" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs ring-1 ring-white/10 shrink-0" title="Jordan Rivera (Senior Recruiter)">
+              <span>{userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center">
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">JR</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs ring-1 ring-white/10 shrink-0">
+                <span>{userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}</span>
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium text-[var(--color-text-primary)] truncate">Jordan Rivera</p>
-                <p className="text-xs text-[var(--color-text-tertiary)]">Senior Recruiter</p>
+                <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}</p>
+                <p className="text-[11px] text-[var(--color-text-tertiary)] truncate">{userProfile?.role || 'Senior Recruiter'}</p>
               </div>
             </div>
           )}

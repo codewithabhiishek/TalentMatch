@@ -1,22 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <defs>
-    <linearGradient id="tfFavBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+    <linearGradient id="tmBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#090d16"/>
     </linearGradient>
-    <linearGradient id="tfCheckBadge" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#059669"/>
+    <linearGradient id="tmGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
     </linearGradient>
+    <linearGradient id="tmAccent" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <filter id="tmShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#38bdf8" flood-opacity="0.25"/>
+    </filter>
   </defs>
-  <!-- Perfectly circular background -->
-  <circle cx="16" cy="16" r="15" fill="url(#tfFavBg)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
-  
-  <!-- Candidate talent silhouette -->
-  <circle cx="16" cy="11" r="4.2" fill="#ffffff"/>
-  <path d="M8.2 24.2 C8.2 19.8 11.6 17.4 16 17.4 C20.4 17.4 23.8 19.8 23.8 24.2" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
-  
-  <!-- Verification / match badge -->
-  <circle cx="22.5" cy="21.5" r="4.6" fill="url(#tfCheckBadge)" stroke="#0f172a" stroke-width="1.2"/>
-  <path d="M20.8 21.5l1.2 1.3 2.5-2.6" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Premium rounded container -->
+  <rect x="1" y="1" width="30" height="30" rx="7.5" fill="url(#tmBg)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+
+  <!-- Sleek geometric Talent Convergence emblem (T & M) -->
+  <g filter="url(#tmShadow)">
+    <!-- Top crossbar of T with modern chamfered ends -->
+    <path d="M7.5 9.5 h17 c0.8 0 1.5 0.7 1.5 1.5 v1 c0 0.8-0.7 1.5-1.5 1.5 h-6 v10.5 c0 0.8-0.7 1.5-1.5 1.5 h-2 c-0.8 0-1.5-0.7-1.5-1.5 V13.5 h-6 c-0.8 0-1.5-0.7-1.5-1.5 v-1 c0-0.8 0.7-1.5 1.5-1.5 z" fill="url(#tmGlow)"/>
+
+    <!-- Dynamic AI Match Convergence Diamond / Apex Spark -->
+    <path d="M16 6.5 L19.5 10 L16 13.5 L12.5 10 Z" fill="url(#tmAccent)"/>
+
+    <!-- Subtle central core light -->
+    <circle cx="16" cy="10" r="1.2" fill="#ffffff"/>
+  </g>
 </svg>
