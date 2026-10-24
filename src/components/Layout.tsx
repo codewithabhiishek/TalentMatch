@@ -179,14 +179,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </span>
               </button>
               <button
-                onClick={toggleSidebar}
-                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-all ml-auto cursor-pointer"
-                aria-label="Collapse sidebar"
-                title={`Collapse Sidebar (${modifierLabel}B)`}
-              >
-                <PanelLeftClose size={16} />
-              </button>
-              <button
                 onClick={() => setMobileSidebarOpen(false)}
                 className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors ml-auto cursor-pointer"
                 aria-label="Close sidebar menu"
@@ -234,27 +226,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Sidebar Toggle Action */}
-        <div className="p-2 border-t border-[var(--color-border)] hidden lg:block">
-          <button
-            onClick={toggleSidebar}
-            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-tertiary)] transition-colors cursor-pointer ${sidebarCollapsed ? 'justify-center' : ''}`}
-            title={sidebarCollapsed ? `Expand Sidebar (${modifierLabel}B)` : `Collapse Sidebar (${modifierLabel}B)`}
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {sidebarCollapsed ? (
-              <PanelLeftOpen size={16} />
-            ) : (
-              <>
-                <PanelLeftClose size={16} />
-                <span className="truncate">Collapse Sidebar</span>
-                <kbd className="ml-auto text-[10px] font-mono px-1.5 py-0.5 bg-[var(--color-surface-tertiary)] rounded text-[var(--color-text-tertiary)]">
-                  {modifierLabel}B
-                </kbd>
-              </>
-            )}
-          </button>
-        </div>
 
         {/* User section */}
         <div className={`border-t border-[var(--color-border)] p-3 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
@@ -291,16 +262,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Menu size={18} />
             </button>
 
-            {sidebarCollapsed && (
-              <button
-                onClick={toggleSidebar}
-                className="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-                aria-label="Expand sidebar"
-                title={`Expand Sidebar (${modifierLabel}B)`}
-              >
-                <PanelLeftOpen size={16} />
-              </button>
-            )}
+            {/* Desktop sidebar toggle - permanently fixed in header bar */}
+            <button
+              onClick={toggleSidebar}
+              className="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all cursor-pointer active:scale-95"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={`${sidebarCollapsed ? "Expand" : "Collapse"} Sidebar (${modifierLabel}B)`}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+            </button>
+
+            <div className="hidden lg:block h-4 w-px bg-[var(--color-border)]" />
 
             <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden md:block whitespace-nowrap">
               {getPageTitle()}
