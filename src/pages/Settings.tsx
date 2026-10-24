@@ -610,7 +610,7 @@ export function Settings() {
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Keyboard Shortcuts</h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                    Navigate and trigger actions across TalentFlow ATS with universal shortcuts for {isMac ? 'macOS' : 'Windows & Linux'}
+                    Navigate and trigger actions across TalentMatch with universal shortcuts for {isMac ? 'macOS' : 'Windows & Linux'}
                   </p>
                 </div>
                 <button

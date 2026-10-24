@@ -115,7 +115,7 @@ export function Overview() {
                 <span className="text-xs text-[var(--color-text-tertiary)]">• Ready for your data</span>
               </div>
               <h2 className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] tracking-tight">
-                Welcome to TalentMatch ATS
+                Welcome to TalentMatch
               </h2>
               <p className="text-xs text-[var(--color-text-secondary)] max-w-xl leading-relaxed">
                 Your workspace is clean and ready. Upload candidate resumes and job requisitions, or load realistic clinical sample demo data to see the matching engine in action.

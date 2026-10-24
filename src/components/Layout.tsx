@@ -154,11 +154,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => { navigateTo('overview'); }}
               className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-transform hover:scale-105 focus-visible:outline-none cursor-pointer"
-              title="TalentFlow ATS — Overview"
+              title="TalentMatch — Overview"
             >
               <img
                 src="/favicon.svg"
-                alt="TalentFlow Logo"
+                alt="TalentMatch Logo"
                 className="w-7 h-7 flex-shrink-0 object-contain shadow-xs"
               />
             </button>
@@ -167,7 +167,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
                 className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0 group cursor-pointer"
-                title="TalentFlow ATS (G then O)"
+                title="TalentMatch (G then O)"
               >
                 <img
                   src="/favicon.svg"

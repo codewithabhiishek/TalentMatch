@@ -10,7 +10,7 @@ function createWindow() {
     height: 860,
     minWidth: 900,
     minHeight: 600,
-    title: 'TalentMatch ATS - AI Healthcare Recruitment',
+    title: 'TalentMatch - AI Healthcare Recruitment',
     backgroundColor: '#090d16',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),

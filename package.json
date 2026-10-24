@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.talentmatch.ats",
-    "productName": "TalentMatch ATS",
+    "productName": "TalentMatch",
     "directories": {
       "output": "release"
     },
