@@ -104,7 +104,7 @@ export function FolderWatcherPanel() {
         message: `Paused background folder watching for "${folderName}".`,
       });
     } else {
-      if (!folderWatcherInstance.getDirectoryHandle()) {
+      if (!folderWatcherInstance.getDirectoryHandle() && !folderWatcherInstance.getDirectoryPath()) {
         setErrorMessage('Direct live watching requires File System Access (available on Microsoft Edge, Google Chrome, or Windows Desktop app). You can still scan all files below.');
         return;
       }

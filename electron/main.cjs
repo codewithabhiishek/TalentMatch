@@ -6,8 +6,8 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 840,
+    width: 1300,
+    height: 860,
     minWidth: 900,
     minHeight: 600,
     title: 'TalentMatch ATS - AI Healthcare Recruitment',
@@ -25,8 +25,9 @@ function createWindow() {
 
   if (isDev) {
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
-    mainWindow.loadURL(devServerUrl);
-    // mainWindow.webContents.openDevTools();
+    mainWindow.loadURL(devServerUrl).catch(() => {
+      mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    });
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
@@ -36,7 +37,7 @@ function createWindow() {
   });
 }
 
-// Native Windows / OS directory picker IPC handler
+// Native Windows folder dialog
 ipcMain.handle('dialog:openDirectory', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
@@ -52,6 +53,50 @@ ipcMain.handle('dialog:openDirectory', async () => {
     path: dirPath,
     name: path.basename(dirPath),
   };
+});
+
+// Native Windows folder scanner with full OS file system permissions
+ipcMain.handle('folder:readFiles', async (event, dirPath) => {
+  if (!dirPath || !fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  const validExts = ['.pdf', '.docx', '.doc', '.txt'];
+  const files = [];
+
+  function traverseDir(currentPath) {
+    try {
+      const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(currentPath, entry.name);
+        if (entry.isFile()) {
+          const ext = path.extname(entry.name).toLowerCase();
+          if (validExts.includes(ext)) {
+            try {
+              const stat = fs.statSync(fullPath);
+              const data = fs.readFileSync(fullPath);
+              files.push({
+                name: entry.name,
+                path: fullPath,
+                size: stat.size,
+                lastModified: stat.mtimeMs,
+                data: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),
+              });
+            } catch (readErr) {
+              console.warn(`Could not read file ${fullPath}:`, readErr);
+            }
+          }
+        } else if (entry.isDirectory()) {
+          traverseDir(fullPath);
+        }
+      }
+    } catch (err) {
+      console.warn(`Could not traverse directory ${currentPath}:`, err);
+    }
+  }
+
+  traverseDir(dirPath);
+  return files;
 });
 
 app.whenReady().then(createWindow);

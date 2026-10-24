@@ -26,6 +26,8 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
     "tailwindcss": "^4.1.7",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0",
@@ -38,7 +40,10 @@
       "output": "release"
     },
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "public/favicon.svg"
     },
     "nsis": {
