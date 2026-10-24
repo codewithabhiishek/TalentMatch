@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard
+  Keyboard, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
@@ -148,53 +148,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
         safe-area-top safe-area-bottom
       `}>
         {/* Logo & Header */}
-        <div className={`flex items-center h-14 border-b border-[var(--color-border)] relative ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
+        <div className={`flex items-center h-14 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
           {sidebarCollapsed ? (
-            <div className="relative group/toggle flex items-center justify-center w-full">
-              <button
-                onClick={() => { navigateTo('overview'); }}
-                className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-transform hover:scale-105 focus-visible:outline-none cursor-pointer"
-                title="TalentMatch ATS — Click to go to Overview"
-              >
-                <img
-                  src="/favicon.svg"
-                  alt="TalentMatch Logo"
-                  className="w-7 h-7 rounded-lg flex-shrink-0 object-contain shadow-xs"
-                />
-              </button>
-              {/* Floating expand handle centered on the sidebar edge */}
-              <button
-                onClick={toggleSidebar}
-                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] shadow-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-accent)] hover:bg-[var(--color-surface-tertiary)] hover:scale-110 active:scale-95 items-center justify-center transition-all z-30 cursor-pointer"
-                aria-label="Expand sidebar"
-                title={`Expand Sidebar (${modifierLabel}B)`}
-              >
-                <ChevronRight size={12} />
-              </button>
-            </div>
+            <button
+              onClick={() => { navigateTo('overview'); }}
+              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-transform hover:scale-105 focus-visible:outline-none cursor-pointer"
+              title="TalentFlow ATS — Overview"
+            >
+              <img
+                src="/favicon.svg"
+                alt="TalentFlow Logo"
+                className="w-7 h-7 flex-shrink-0 object-contain shadow-xs"
+              />
+            </button>
           ) : (
             <>
               <button
                 onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
                 className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0 group cursor-pointer"
-                title="TalentMatch ATS (G then O)"
+                title="TalentFlow ATS (G then O)"
               >
                 <img
                   src="/favicon.svg"
-                  alt="TalentMatch Logo"
-                  className="w-7 h-7 rounded-lg flex-shrink-0 object-contain shadow-xs group-hover:scale-105 transition-transform"
+                  alt="TalentFlow Logo"
+                  className="w-7 h-7 flex-shrink-0 object-contain shadow-xs group-hover:scale-105 transition-transform"
                 />
                 <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
-                  TalentMatch
+                  TalentFlow
                 </span>
               </button>
               <button
                 onClick={toggleSidebar}
-                className="hidden lg:flex w-6 h-6 items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-all ml-auto cursor-pointer"
+                className="hidden lg:flex w-7 h-7 items-center justify-center rounded-md hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-all ml-auto cursor-pointer"
                 aria-label="Collapse sidebar"
                 title={`Collapse Sidebar (${modifierLabel}B)`}
               >
-                <ChevronLeft size={14} />
+                <PanelLeftClose size={16} />
               </button>
               <button
                 onClick={() => setMobileSidebarOpen(false)}
@@ -244,6 +233,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
+        {/* Sidebar Toggle Action */}
+        <div className="p-2 border-t border-[var(--color-border)] hidden lg:block">
+          <button
+            onClick={toggleSidebar}
+            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-tertiary)] transition-colors cursor-pointer ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title={sidebarCollapsed ? `Expand Sidebar (${modifierLabel}B)` : `Collapse Sidebar (${modifierLabel}B)`}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen size={16} />
+            ) : (
+              <>
+                <PanelLeftClose size={16} />
+                <span className="truncate">Collapse Sidebar</span>
+                <kbd className="ml-auto text-[10px] font-mono px-1.5 py-0.5 bg-[var(--color-surface-tertiary)] rounded text-[var(--color-text-tertiary)]">
+                  {modifierLabel}B
+                </kbd>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* User section */}
         <div className={`border-t border-[var(--color-border)] p-3 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
           {sidebarCollapsed ? (
@@ -269,8 +280,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Header */}
         <header className="relative flex items-center justify-between h-14 px-3 sm:px-4 lg:px-6 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 z-30 transition-colors duration-150 gap-2 sm:gap-4">
           {isNavigating && <div className="top-nav-loader" />}
-          {/* Left section: mobile menu toggle & page title */}
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {/* Left section: mobile menu toggle, desktop expand & page title */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="lg:hidden w-9 h-9 min-w-[36px] flex items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] transition-colors flex-shrink-0 cursor-pointer active:scale-95"
@@ -278,6 +289,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <Menu size={18} />
             </button>
+
+            {sidebarCollapsed && (
+              <button
+                onClick={toggleSidebar}
+                className="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg hover:bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                aria-label="Expand sidebar"
+                title={`Expand Sidebar (${modifierLabel}B)`}
+              >
+                <PanelLeftOpen size={16} />
+              </button>
+            )}
 
             <h1 className="text-sm font-semibold text-[var(--color-text-primary)] hidden md:block whitespace-nowrap">
               {getPageTitle()}
