@@ -126,6 +126,14 @@ export async function extractTextFromDocx(file: File): Promise<string> {
     }
     return result.value.trim();
   } catch (error: any) {
+    // Graceful fallback for legacy binary .doc or non-standard XML
+    try {
+      const rawText = await file.text();
+      const cleanText = rawText.replace(/[^\x20-\x7E\t\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+      if (cleanText.length > 50) {
+        return cleanText;
+      }
+    } catch {}
     console.error('Failed to parse Word document:', error);
     throw new Error(`Could not extract text from Word document: ${error.message || 'Corrupt or unsupported format'}.`);
   }
