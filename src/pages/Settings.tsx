@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
   Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
-  FileText, Briefcase, Users, GitMerge
+  FileText, Briefcase, Users, GitMerge, Globe, ChevronDown
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
@@ -202,54 +202,69 @@ export function Settings() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">First Name</label>
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">First Name</label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="input w-full h-10 px-3 text-sm"
+                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Last Name</label>
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Last Name</label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="input w-full h-10 px-3 text-sm"
+                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Email</label>
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Email Address</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="input w-full h-10 px-3 text-sm"
+                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Role</label>
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Role Title</label>
                   <input
                     type="text"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="input w-full h-10 px-3 text-sm"
+                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
                   />
                 </div>
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Timezone</label>
-                <select
-                  value={formData.timezone}
-                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                  className="input w-full sm:w-auto h-10 px-3 text-sm cursor-pointer"
-                >
-                  <option>Pacific Time (PT)</option>
-                  <option>Mountain Time (MT)</option>
-                  <option>Central Time (CT)</option>
-                  <option>Eastern Time (ET)</option>
-                </select>
+                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
+                  Timezone & Region
+                </label>
+                <div className="relative w-full max-w-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                    <Globe size={15} />
+                  </div>
+                  <select
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                    className="input w-full h-10.5 pl-9 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
+                  >
+                    <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
+                    <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
+                    <option value="Central Time (CT)">Central Time (CT) — Chicago, Dallas (UTC-6)</option>
+                    <option value="Eastern Time (ET)">Eastern Time (ET) — New York, Toronto (UTC-5)</option>
+                    <option value="UTC (Coordinated Universal Time)">UTC (Coordinated Universal Time)</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                    <ChevronDown size={15} />
+                  </div>
+                </div>
+                <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1.5">
+                  Used for formatting interview schedules, timestamps, and candidate timeline logs.
+                </p>
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
