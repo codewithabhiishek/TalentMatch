@@ -8,6 +8,7 @@ import { extractDocumentText } from '../services/documentParser';
 import { parseResumeWithAI } from '../services/aiExtractionService';
 import { downloadCandidateReport } from '../services/downloadService';
 import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
+import { FolderWatcherPanel } from '../components/FolderWatcherPanel';
 
 interface UploadFile {
   id: string;
@@ -227,6 +228,9 @@ export function ResumeImport() {
           </button>
         </div>
       </div>
+
+      {/* Local Folder Watcher for Windows & Desktop */}
+      <FolderWatcherPanel />
 
       {/* Drop zone */}
       <div
