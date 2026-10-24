@@ -250,7 +250,7 @@ export function Settings() {
                   <select
                     value={formData.timezone}
                     onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    className="input w-full h-10.5 pl-9 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
+                    className="input w-full h-10.5 pl-9 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] !bg-none border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
                   >
                     <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
                     <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
