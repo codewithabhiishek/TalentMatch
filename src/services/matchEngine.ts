@@ -23,7 +23,11 @@ export function calculateCandidateJobMatch(candidate: Candidate, job: Job): JobM
   // 2. Specialty match (25% weight)
   const specA = candidate.specialty.toLowerCase();
   const specB = job.specialty.toLowerCase();
-  if (specA === specB || specA.includes(specB) || specB.includes(specA)) {
+  const isUnknownSpec = specA === 'general' || specA === '';
+  if (isUnknownSpec) {
+    reasons.push({ factor: 'Specialty Match', score: 40, detail: 'Specialty not confirmed from resume — manual verification required' });
+    score += 8;
+  } else if (specA === specB || specA.includes(specB) || specB.includes(specA)) {
     reasons.push({ factor: 'Specialty Match', score: 100, detail: `${job.specialty} discipline aligns directly` });
     score += 25;
   } else {

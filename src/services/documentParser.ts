@@ -108,9 +108,10 @@ export async function extractTextFromPdf(file: File): Promise<string> {
     try {
       const rawText = await file.text();
       const cleanText = rawText.replace(/[^\x20-\x7E\t\n\r]/g, ' ').replace(/\s+/g, ' ');
-      if (cleanText.length > 50) return cleanText;
+      const alphaRatio = (cleanText.match(/[a-zA-Z]/g) || []).length / Math.max(1, cleanText.length);
+      if (cleanText.length > 50 && alphaRatio > 0.3) return cleanText;
     } catch {}
-    throw new Error('Could not extract text from PDF document. Please verify the file contains selectable text and is not an encrypted scan.');
+    throw new Error('This PDF appears to be a scanned image without selectable text. Please use a text-based PDF or convert it using Adobe Acrobat\'s OCR feature before uploading.');
   }
 }
 

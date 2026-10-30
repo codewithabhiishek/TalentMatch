@@ -200,14 +200,17 @@ export function FolderWatcherPanel() {
     setFolderName(folder);
     setReconnectMeta(null);
 
-    const discovered: DiscoveredResume[] = filesArray.map(f => ({
-      id:           `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name:         f.name,
-      size:         f.size,
-      lastModified: f.lastModified,
-      file:         f,
-      status:       'pending',
-    }));
+    const discovered: DiscoveredResume[] = filesArray.map(f => {
+      const sig = `${f.name}_${f.size}_${f.lastModified}`;
+      return {
+        id:           `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name:         f.name,
+        size:         f.size,
+        lastModified: f.lastModified,
+        file:         f,
+        status:       folderWatcherInstance.isSignatureProcessed(sig) ? 'completed' as const : 'pending' as const,
+      };
+    });
 
     setDiscoveredFiles(discovered);
     addNotification({
@@ -256,6 +259,10 @@ export function FolderWatcherPanel() {
             timestamp:     new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
           }, ...prev.slice(0, 9)]);
           setDiscoveredFiles(prev => prev.map(f => f.name === fileName ? { ...f, status: 'completed' } : f));
+          // Refresh the full file list to pick up any new files added to the folder
+          folderWatcherInstance.scanFiles().then(updatedFiles => {
+            setDiscoveredFiles(updatedFiles);
+          }).catch(() => {});
         },
         5
       );

@@ -81,13 +81,46 @@ function cleanJsonString(raw: string): string {
 }
 
 /**
+ * Attempts to extract the first complete JSON object from a potentially
+ * truncated LLM response. Handles cases where num_predict cuts mid-string.
+ */
+function extractFirstJsonObject(raw: string): string {
+  const cleaned = cleanJsonString(raw);
+  // Try direct parse first
+  try { JSON.parse(cleaned); return cleaned; } catch {}
+  // Find the first '{' and walk to find the matching '}'
+  const start = cleaned.indexOf('{');
+  if (start === -1) throw new Error('No JSON object found in LLM response');
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        const candidate = cleaned.slice(start, i + 1);
+        try { JSON.parse(candidate); return candidate; } catch {}
+      }
+    }
+  }
+  throw new Error('Could not extract valid JSON from LLM response');
+}
+
+/**
  * Computes an objective confidence & accuracy score (50-99%)
  */
 export function calculateExtractionConfidence(c: Partial<Candidate>): number {
   let score = 0;
   if (c.firstName && c.firstName !== 'Candidate' && c.lastName && c.lastName !== 'Profile') score += 15;
-  if (c.email && c.email.includes('@') && !c.email.endsWith('.demo')) score += 20;
-  else if (c.email && c.email.includes('@')) score += 10;
+  if (c.email && c.email.includes('@') && !c.email.endsWith('.demo') && !c.email.includes('talentflow')) score += 20;
+  else if (c.email && c.email.includes('@') && !c.email.includes('talentflow')) score += 10;
+  // 0 points for fake .demo or placeholder emails
   if (c.phone && c.phone !== '(555) 000-0000') score += 15;
   if (c.specialty && c.specialty !== 'General') score += 15;
   if (typeof c.experience === 'number' && c.experience > 0) score += 10;
@@ -120,7 +153,8 @@ async function extractWithOllama(
       stream: false,
       options: {
         temperature: config.temperature ?? 0.1,
-        num_predict: 1200,
+        num_predict: 2048,
+        num_ctx: 4096,
       },
     }),
   });
@@ -133,7 +167,7 @@ async function extractWithOllama(
 
   const data = await response.json();
   const rawResponse = data.response;
-  const parsed = JSON.parse(cleanJsonString(rawResponse));
+  const parsed = JSON.parse(extractFirstJsonObject(rawResponse));
   return parsed;
 }
 
@@ -195,7 +229,7 @@ async function extractWithOpenAICompatible(
     throw new Error('LLM returned empty response.');
   }
 
-  const parsed = JSON.parse(cleanJsonString(rawContent));
+  const parsed = JSON.parse(extractFirstJsonObject(rawContent));
   return parsed;
 }
 
@@ -215,7 +249,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
 
   // 2. Phone extraction
   const phoneMatch = resumeText.match(/(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/);
-  const phone = phoneMatch ? sanitizeString(phoneMatch[0]) : '(555) 000-0000';
+  const phone = phoneMatch ? sanitizeString(phoneMatch[0]) : '';
 
   // 3. Name extraction: pick first non-title, non-empty line with 2-3 words
   const ignoreWords = ['resume', 'curriculum', 'vitae', 'cv', 'profile', 'contact', 'summary', 'experience', 'education', 'skills', 'objective', 'work', 'history', 'certifications'];
@@ -314,12 +348,19 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   if (yearsMentioned && parseInt(yearsMentioned[1], 10)) {
     experienceYears = Math.min(25, Math.max(1, parseInt(yearsMentioned[1], 10)));
   } else {
-    const years = (resumeText.match(/\b(19\d{2}|20[0-2]\d)\b/g) || []).map(y => parseInt(y, 10));
-    if (years.length >= 2) {
-      const minYear = Math.min(...years.filter(y => y > 1990));
+    // Only use years that appear near employment keywords to avoid education/graduation years
+    const employmentYearPattern = /(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?((?:19|20)\d{2})(?:\s*[-–—]\s*(?:present|current|now|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?((?:19|20)\d{2})?)?/gi;
+    const employmentYears: number[] = [];
+    let empMatch;
+    while ((empMatch = employmentYearPattern.exec(resumeText)) !== null) {
+      const yr = parseInt(empMatch[1], 10);
+      if (yr > 1990 && yr <= new Date().getFullYear()) employmentYears.push(yr);
+    }
+    if (employmentYears.length >= 2) {
+      const minYear = Math.min(...employmentYears);
       const currentYear = new Date().getFullYear();
       if (minYear < currentYear) {
-        experienceYears = Math.min(25, Math.max(1, currentYear - minYear));
+        experienceYears = Math.min(30, Math.max(1, currentYear - minYear));
       }
     }
   }
@@ -346,9 +387,25 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     detectedCerts.push('BLS', 'ACLS', 'State RN License');
   }
 
-  // 8. Location Detection (City, State)
-  const locationMatch = resumeText.match(/([A-Z][a-zA-Z\s.-]+),\s*([A-Z]{2})\b/);
-  const currentLocation = locationMatch ? `${sanitizeString(locationMatch[1])}, ${sanitizeString(locationMatch[2])}` : 'Sacramento, CA';
+  // 8. Location Detection (City, State) — only valid US state abbreviations
+  const US_STATES = new Set([
+    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA',
+    'KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ',
+    'NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT',
+    'VA','WA','WV','WI','WY','DC'
+  ]);
+  const locationRegex = /\b([A-Z][a-zA-Z\s.-]{2,25}),\s*([A-Z]{2})\b/g;
+  let locationMatch2: RegExpExecArray | null;
+  let bestLocation: string | null = null;
+  while ((locationMatch2 = locationRegex.exec(resumeText)) !== null) {
+    const city = locationMatch2[1].trim();
+    const state = locationMatch2[2];
+    if (US_STATES.has(state) && city.split(/\s+/).length <= 4 && !/resume|profile|nurse|rn|bsn|msn|dnp|aprn/i.test(city)) {
+      bestLocation = `${sanitizeString(city)}, ${state}`;
+      break;
+    }
+  }
+  const currentLocation = bestLocation || 'United States';
 
   // 9. Timeline generation from detected text
   const startYear = (new Date().getFullYear() - experienceYears).toString();
@@ -433,7 +490,7 @@ export async function parseResumeWithAI(
     firstName: sanitizeString(candidateData?.firstName || baseHeuristic.firstName || 'Candidate'),
     lastName: sanitizeString(candidateData?.lastName || baseHeuristic.lastName || 'Profile'),
     email: sanitizeString(resolvedEmail),
-    phone: sanitizeString(candidateData?.phone || baseHeuristic.phone || '(555) 000-0000'),
+    phone: sanitizeString(candidateData?.phone || baseHeuristic.phone || ''),
     position: sanitizeString(candidateData?.position || baseHeuristic.position || 'Registered Nurse'),
     specialty: sanitizeString(candidateData?.specialty || baseHeuristic.specialty || 'ICU'),
     experience: typeof candidateData?.experience === 'number' ? candidateData.experience : (baseHeuristic.experience || 4),

@@ -8,6 +8,9 @@ import { extractDocumentText } from './documentParser';
 import { parseResumeWithAI, AIConfig } from './aiExtractionService';
 import { Candidate } from '../types';
 
+let _scanIdCounter = 0;
+const nextScanId = () => `doc-${++_scanIdCounter}-${Math.random().toString(36).substring(2, 6)}`;
+
 export interface DiscoveredResume {
   id: string;
   name: string;
@@ -179,7 +182,7 @@ export class FolderWatcherService {
           const isAlreadyProcessed = this.processedSignatures.has(sig);
 
           discovered.push({
-            id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            id: nextScanId(),
             name: file.name,
             size: file.size,
             lastModified: file.lastModified,
@@ -208,7 +211,7 @@ export class FolderWatcherService {
                   const isAlreadyProcessed = this.processedSignatures.has(sig);
 
                   discovered.push({
-                    id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                    id: nextScanId(),
                     name: file.name,
                     size: file.size,
                     lastModified: file.lastModified,
@@ -312,6 +315,10 @@ export class FolderWatcherService {
 
   public isWatching(): boolean {
     return this.timerId !== null;
+  }
+
+  public isSignatureProcessed(sig: string): boolean {
+    return this.processedSignatures.has(sig);
   }
 
   public markSignatureProcessed(file: File) {
