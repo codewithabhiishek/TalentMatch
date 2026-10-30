@@ -198,36 +198,38 @@ export function ResumeImport() {
   return (
     <div className="p-3.5 sm:p-5 lg:p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 animate-fade-in">
         <div>
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Resume Imports</h2>
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)] tracking-tight">Resume Imports</h2>
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-            Upload PDF or Word resumes to automatically extract clinical talent and evaluate job matches.
+            Batch ingest resumes, parse clinical credentials, and map candidate job fit.
           </p>
         </div>
 
-        {/* Active AI Engine Badge & Self-Test Trigger */}
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        {/* AI Engine & Benchmark Actions Toolbar (Always on a single horizontal row) */}
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
           <button
-            onClick={() => setBenchmarkOpen(true)}
-            className="btn btn-secondary btn-sm text-xs flex items-center gap-1.5 cursor-pointer shadow-xs hover:border-[var(--color-primary)]"
-            title="Run Automated Diagnostic Benchmark without uploading files"
-          >
-            <Sparkles size={12} className="text-[var(--color-primary)]" />
-            <span>Run Self-Test Benchmark</span>
-          </button>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
-            <Cpu size={12} className="text-[var(--color-info)]" />
-            <span className="text-[11px]">
-              Engine: <strong className="text-[var(--color-text-primary)]">{providerLabel}</strong>
-            </span>
-          </div>
-          <button
+            type="button"
             onClick={() => navigateTo('settings')}
-            className="btn btn-secondary btn-sm text-xs p-1.5 cursor-pointer"
-            title="Configure AI & LLM in Settings"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--color-surface-secondary)] border border-[var(--color-border)] hover:border-[var(--color-info)] text-xs transition-colors cursor-pointer shadow-2xs"
+            title="Configure AI extraction model in Settings"
           >
-            <SettingsIcon size={12} />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] text-[var(--color-text-secondary)]">Engine:</span>
+            <strong className="text-[11px] text-[var(--color-text-primary)]">
+              {aiConfig?.provider === 'ollama' ? `Ollama (${aiConfig.modelName || 'llama3.2:3b'})` : providerLabel}
+            </strong>
+            <SettingsIcon size={12} className="text-[var(--color-text-tertiary)] ml-0.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBenchmarkOpen(true)}
+            className="btn btn-secondary btn-sm text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+            title="Run Automated Diagnostic Benchmark"
+          >
+            <Sparkles size={12} className="text-amber-400" />
+            <span>Benchmark</span>
           </button>
         </div>
       </div>
@@ -271,40 +273,70 @@ export function ResumeImport() {
         </div>
       )}
 
-      {/* Workflow Tabs: Folder Auto-Sync vs Direct File Upload */}
-      <div className="flex items-center gap-1.5 p-1 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl w-full sm:w-fit mb-4 animate-fade-in">
+      {/* Workflow Mode Selector: Folder Auto-Sync vs Direct File Upload */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 animate-fade-in">
         <button
           type="button"
           onClick={() => setImportTab('folder')}
-          className={`flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex-1 sm:flex-initial ${
+          className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
             importTab === 'folder'
-              ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
-              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              ? 'border-[var(--color-info)] bg-[var(--color-surface)] ring-2 ring-[var(--color-info)]/20 shadow-xs'
+              : 'border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50 hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface)]'
           }`}
         >
-          <FolderOpen size={14} className={importTab === 'folder' ? 'text-[var(--color-info)]' : ''} />
-          <span>Local Folder Watcher</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-medium">
-            Continuous
-          </span>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+              importTab === 'folder' ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]' : 'bg-[var(--color-surface)] text-[var(--color-text-tertiary)]'
+            }`}>
+              <FolderOpen size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-xs text-[var(--color-text-primary)]">Continuous Folder Watcher</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded font-medium bg-[var(--color-info-bg)] text-[var(--color-info)]">Recommended</span>
+              </div>
+              <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 truncate">Auto-scan local directory with persistent access</p>
+            </div>
+          </div>
+          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+            importTab === 'folder' ? 'border-[var(--color-info)] bg-[var(--color-info)] text-white' : 'border-[var(--color-border)]'
+          }`}>
+            {importTab === 'folder' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+          </div>
         </button>
 
         <button
           type="button"
           onClick={() => setImportTab('files')}
-          className={`flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex-1 sm:flex-initial ${
+          className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
             importTab === 'files'
-              ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
-              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              ? 'border-[var(--color-info)] bg-[var(--color-surface)] ring-2 ring-[var(--color-info)]/20 shadow-xs'
+              : 'border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50 hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface)]'
           }`}
         >
-          <Upload size={14} className={importTab === 'files' ? 'text-[var(--color-info)]' : ''} />
-          <span>Upload Files Directly</span>
-          {files.length > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-medium">
-              {files.length}
-            </span>
-          )}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+              importTab === 'files' ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]' : 'bg-[var(--color-surface)] text-[var(--color-text-tertiary)]'
+            }`}>
+              <Upload size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-xs text-[var(--color-text-primary)]">Upload Files Directly</span>
+                {files.length > 0 && (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded font-medium bg-[var(--color-surface-tertiary)] text-[var(--color-text-secondary)]">
+                    {files.length} queued
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 truncate">Drag and drop specific PDF or Word resumes</p>
+            </div>
+          </div>
+          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
+            importTab === 'files' ? 'border-[var(--color-info)] bg-[var(--color-info)] text-white' : 'border-[var(--color-border)]'
+          }`}>
+            {importTab === 'files' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+          </div>
         </button>
       </div>
 
