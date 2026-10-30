@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TalentMatch - Resume Extraction & Folder Sync Architecture</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.45;
+    font-size: 12.5px;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 22px;
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    margin: 3px 0 0 0;
+    color: #64748b;
+    font-size: 12px;
+  }
+  .badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 700;
+    font-size: 10.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .lead-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0284c7;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .lead-box p {
+    margin: 0;
+    font-size: 12px;
+    color: #334155;
+    font-weight: 500;
+  }
+  h2 {
+    font-size: 14px;
+    color: #0f172a;
+    font-weight: 700;
+    margin: 14px 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+  }
+  .step-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 9px 12px;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .step-num {
+    background: #0284c7;
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .step-body {
+    color: #475569;
+    font-size: 11.5px;
+    margin: 0;
+    padding-left: 28px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 11.5px;
+  }
+  th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    text-align: left;
+    padding: 7px 9px;
+    border: 1px solid #cbd5e1;
+  }
+  td {
+    padding: 6px 9px;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+  .tag-green { background: #dcfce7; color: #15803d; }
+  .tag-blue { background: #e0f2fe; color: #0369a1; }
+  .tag-amber { background: #fef3c7; color: #b45309; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .info-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .info-box h3 {
+    margin: 0 0 5px 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .info-box ul {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 11px;
+    color: #475569;
+  }
+  .info-box li {
+    margin-bottom: 3px;
+  }
+  .footer {
+    margin-top: 18px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    font-size: 10.5px;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>TalentMatch ATS — System Guide</h1>
+    <p>Resume Folder Access, File Processing & Local AI Information Extraction</p>
+  </div>
+  <div class="badge">Architecture & User Guide</div>
+</div>
+
+<div class="lead-box">
+  <p><strong>Core Flow:</strong> When a user connects a local resume folder, TalentMatch operates 100% locally on their computer. It extracts text from all resumes (PDF, Word, Text), runs local AI parsing (via Ollama or built-in engine), compiles complete candidate dossiers, and scores job matches without uploading sensitive files to any cloud.</p>
+</div>
+
+<h2>1. What Happens When Folder Access Is Granted</h2>
+
+<div class="step-card">
+  <div class="step-head">
+    <span class="step-num">1</span>
+    <span class="step-title">Native OS Folder Picker</span>
+  </div>
+  <p class="step-body">User clicks <strong>"Connect Folder"</strong>. The operating system prompts for folder selection with read-only access. Files remain entirely on the local device.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-head">
+    <span class="step-num">2</span>
+    <span class="step-title">Recursive Scan & File Discovery</span>
+  </div>
+  <p class="step-body">The scanner looks through all root files and subdirectories. Supported formats (<span class="tag tag-green">.pdf</span>, <span class="tag tag-blue">.docx</span>, <span class="tag tag-amber">.doc</span>, <span class="tag tag-green">.txt</span>) are queued. Other formats are safely ignored.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-head">
+    <span class="step-num">3</span>
+    <span class="step-title">In-Memory Text Extraction</span>
+  </div>
+  <p class="step-body">
+    • <strong>PDF:</strong> Reconstructed spatially from top-to-bottom and left-to-right (avoids broken columns).<br>
+    • <strong>Word (.docx):</strong> Extracted via Mammoth directly into clean structured text.
+  </p>
+</div>
+
+<div class="step-card">
+  <div class="step-head">
+    <span class="step-num">4</span>
+    <span class="step-title">AI Clinical Extraction (Ollama / Local LLM)</span>
+  </div>
+  <p class="step-body">Resume text is processed by a local model (such as <code>llama3.2:3b</code> at <code>localhost:11434</code>) into a structured JSON record.</p>
+</div>
+
+<div class="step-card">
+  <div class="step-head">
+    <span class="step-num">5</span>
+    <span class="step-title">Profile Storage & Job Match Calculation</span>
+  </div>
+  <p class="step-body">Profiles are saved into local storage and instantly scored against open requisitions to show fit percentage, missing qualifications, and experience match.</p>
+</div>
+
+<h2>2. Exactly What Information Is Extracted</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 25%;">Extracted Field</th>
+      <th style="width: 40%;">Description & Clinical Logic</th>
+      <th style="width: 35%;">Sample Output</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Candidate Name</strong></td>
+      <td>Full Name parsed from header or contact block</td>
+      <td><code>Sarah Jenkins, RN</code></td>
+    </tr>
+    <tr>
+      <td><strong>Contact Info</strong></td>
+      <td>Direct phone number and verified email address</td>
+      <td><code>sarah.j@email.com · (555) 234-5678</code></td>
+    </tr>
+    <tr>
+      <td><strong>Position & Specialty</strong></td>
+      <td>Primary title & unit specialty (ICU, ER, OR, etc.)</td>
+      <td><code>ICU Registered Nurse</code> (Specialty: <code>Critical Care</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>Experience Tenure</strong></td>
+      <td>Total calculated professional clinical tenure (years)</td>
+      <td><code>5 Years</code></td>
+    </tr>
+    <tr>
+      <td><strong>Current Location</strong></td>
+      <td>City and State of primary residence</td>
+      <td><code>Austin, TX</code></td>
+    </tr>
+    <tr>
+      <td><strong>Travel / Work History</strong></td>
+      <td>Prior states or metro areas where candidate practiced</td>
+      <td><code>["Denver, CO", "Phoenix, AZ", "Seattle, WA"]</code></td>
+    </tr>
+    <tr>
+      <td><strong>Licenses & Certs</strong></td>
+      <td>Clinical certifications & active state licenses</td>
+      <td><code>["BLS", "ACLS", "CCRN", "Compact State RN"]</code></td>
+    </tr>
+    <tr>
+      <td><strong>Professional Summary</strong></td>
+      <td>2–3 sentence synthesized background profile</td>
+      <td><code>"Experienced ICU RN with 5+ years handling high-acuity trauma and telemetry..."</code></td>
+    </tr>
+    <tr>
+      <td><strong>Career Timeline</strong></td>
+      <td>Structured history: Facility, Role, Dates, Scope</td>
+      <td><code>St. David's Medical (2021–Present, Staff RN)</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="grid-2">
+  <div class="info-box">
+    <h3>💻 Windows Hardware Specs</h3>
+    <ul>
+      <li><strong>Recommended Local LLM:</strong> <code>llama3.2:3b</code> (Ollama)</li>
+      <li><strong>RAM:</strong> 8 GB Minimum (16 GB for faster batch)</li>
+      <li><strong>CPU:</strong> Intel Core i5 / AMD Ryzen 5 or higher</li>
+      <li><strong>Speed:</strong> 10–25s per resume (CPU) / 2–4s (NVIDIA GPU)</li>
+      <li><strong>Cost & Privacy:</strong> 100% Free, zero cloud data transfer</li>
+    </ul>
+  </div>
+  <div class="info-box">
+    <h3>⚠️ Key Extraction Caveats</h3>
+    <ul>
+      <li><strong>Scanned Image PDFs:</strong> Image-only photocopies without text layers cannot be read (requires selectable PDF).</li>
+      <li><strong>Legacy .doc format:</strong> Older binary formats may lose formatting; <code>.docx</code> and <code>.pdf</code> are best.</li>
+      <li><strong>Browser CORS:</strong> For web mode, run <code>set OLLAMA_ORIGINS=*</code> before starting Ollama, or use the Desktop .exe app.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  <span>TalentMatch Intelligence Engine — Architecture & Process Specification</span>
+  <span>Client Reference Documentation</span>
+</div>
+
+</body>
+</html>
+

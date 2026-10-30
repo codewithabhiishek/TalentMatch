@@ -29,7 +29,7 @@ export function Settings() {
     provider: aiConfig?.provider || 'ollama',
     apiUrl: aiConfig?.apiUrl || 'http://localhost:11434',
     apiKey: aiConfig?.apiKey || '',
-    modelName: aiConfig?.modelName || 'llama3',
+    modelName: aiConfig?.modelName || 'llama3.2:3b',
     temperature: aiConfig?.temperature ?? 0.1,
   });
 
@@ -41,14 +41,14 @@ export function Settings() {
   } | null>(null);
   const [benchmarkOpen, setBenchmarkOpen] = useState(false);
 
-  // Sync AI form if store changes
+    // Sync AI form if store changes
   useEffect(() => {
     if (aiConfig) {
       setAiForm({
         provider: aiConfig.provider || 'ollama',
         apiUrl: aiConfig.apiUrl || 'http://localhost:11434',
         apiKey: aiConfig.apiKey || '',
-        modelName: aiConfig.modelName || 'llama3',
+        modelName: aiConfig.modelName || 'llama3.2:3b',
         temperature: aiConfig.temperature ?? 0.1,
       });
     }
@@ -751,7 +751,7 @@ export function Settings() {
                       ...aiForm,
                       provider: 'ollama',
                       apiUrl: 'http://localhost:11434',
-                      modelName: 'llama3',
+                      modelName: 'llama3.2:3b',
                     })}
                     className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
                       aiForm.provider === 'ollama'
@@ -862,7 +862,7 @@ export function Settings() {
                         type="text"
                         value={aiForm.modelName}
                         onChange={(e) => setAiForm({ ...aiForm, modelName: e.target.value })}
-                        placeholder={aiForm.provider === 'ollama' ? 'llama3' : 'gpt-4o-mini'}
+                        placeholder={aiForm.provider === 'ollama' ? 'llama3.2:3b' : 'gpt-4o-mini'}
                         className="input w-full h-9 px-3 text-xs font-mono"
                       />
                     </div>
@@ -879,6 +879,17 @@ export function Settings() {
                         className="input w-full h-9 px-3 text-xs font-mono"
                       />
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CORS warning for Ollama in browser mode */}
+              {aiForm.provider === 'ollama' && !(window as any).electronAPI?.isElectron && (
+                <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-xs flex items-start gap-2.5">
+                  <AlertTriangle size={15} className="flex-shrink-0 mt-0.5 text-amber-500" />
+                  <div className="flex-1 leading-relaxed text-amber-600 dark:text-amber-400">
+                    <strong>Browser CORS Notice:</strong> When running in-browser (not the Desktop app), Ollama requires CORS to be enabled.
+                    Start Ollama with: <code className="font-mono text-[10px] bg-amber-500/20 px-1 py-0.5 rounded">set OLLAMA_ORIGINS=* && ollama serve</code> (Windows) or use the <strong>Desktop App</strong> (.exe) for zero-config local AI.
                   </div>
                 </div>
               )}

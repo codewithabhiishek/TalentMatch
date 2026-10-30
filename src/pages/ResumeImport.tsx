@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, X, FileText, CheckCircle, AlertCircle, Loader2, Eye, RotateCcw,
-  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play
+  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play, AlertTriangle
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { extractDocumentText } from '../services/documentParser';
@@ -228,6 +228,19 @@ export function ResumeImport() {
           </button>
         </div>
       </div>
+
+      {/* Heuristic mode warning banner */}
+      {(!aiConfig || aiConfig.provider === 'heuristic') && (
+        <div className="mb-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-xs flex items-start gap-2.5 animate-fade-in">
+          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5 text-amber-500" />
+          <span className="leading-relaxed text-amber-600 dark:text-amber-400">
+            <strong>Running in Offline Pattern-Match Mode.</strong> Results are estimated using regex patterns only (~60% accuracy).
+            {' '}Connect <strong>Local Ollama</strong> (free &amp; private) in{' '}
+            <button onClick={() => navigateTo('settings')} className="underline font-semibold cursor-pointer">Settings → API Keys</button>
+            {' '}for accurate AI extraction.
+          </span>
+        </div>
+      )}
 
       {/* Local Folder Watcher for Windows & Desktop */}
       <FolderWatcherPanel />

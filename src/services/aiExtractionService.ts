@@ -12,7 +12,7 @@ export const defaultAIConfig: AIConfig = {
   provider: 'ollama',
   apiUrl: 'http://localhost:11434',
   apiKey: '',
-  modelName: 'llama3',
+  modelName: 'llama3.2:3b',
   temperature: 0.1,
 };
 
@@ -104,7 +104,7 @@ async function extractWithOllama(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: config.modelName || 'llama3',
+      model: config.modelName || 'llama3.2:3b',
       system: SYSTEM_PROMPT,
       prompt: `Resume content:\n\n${resumeText}\n\nExtract the JSON structure:`,
       format: 'json',
