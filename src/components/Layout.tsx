@@ -3,13 +3,14 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard, PanelLeftClose, PanelLeftOpen, Download
+  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
+import { DesktopAppModal } from './DesktopAppModal';
 
 function formatRelativeTime(dateString: string): string {
   try {
@@ -63,6 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isNavigating, setIsNavigating] = useState(false);
+  const [desktopModalOpen, setDesktopModalOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -227,23 +229,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
 
-        {/* Download Desktop App CTA */}
+        {/* Run / Download Desktop App CTA */}
         {!sidebarCollapsed && !(window as any).electronAPI?.isElectron && (
           <div className="px-3 pb-2">
-            <a
-              href="https://github.com/codewithabhiishek/TalentMatch/releases/latest"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-secondary)] hover:border-[var(--color-info)]/60 hover:bg-[var(--color-info-bg)]/20 transition-all text-left group cursor-pointer"
+            <button
+              type="button"
+              onClick={() => {
+                setDesktopModalOpen(true);
+                setMobileSidebarOpen(false);
+              }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-secondary)] hover:border-[var(--color-info)]/60 hover:bg-[var(--color-info-bg)]/20 transition-all text-left group cursor-pointer shadow-2xs"
             >
-              <div className="w-6 h-6 rounded-md bg-[var(--color-info)]/10 text-[var(--color-info)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <div className="w-7 h-7 rounded-lg bg-[var(--color-info)]/10 text-[var(--color-info)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Laptop size={14} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-[var(--color-text-primary)] leading-tight">Download for Windows</p>
-                <p className="text-[10px] text-[var(--color-text-tertiary)] leading-tight mt-0.5">Desktop app (.exe) — full folder access</p>
+                <p className="text-[11px] font-semibold text-[var(--color-text-primary)] leading-tight flex items-center gap-1">
+                  <span>Desktop App</span>
+                  <span className="text-[9px] px-1 py-0.2 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-mono">Win/Mac</span>
+                </p>
+                <p className="text-[10px] text-[var(--color-text-tertiary)] leading-tight mt-0.5 truncate">Terminal &amp; local run setup</p>
               </div>
-            </a>
+            </button>
+          </div>
+        )}
+
+        {sidebarCollapsed && !(window as any).electronAPI?.isElectron && (
+          <div className="px-2 pb-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setDesktopModalOpen(true)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-info)] hover:bg-[var(--color-surface-secondary)] border border-transparent hover:border-[var(--color-border)] transition-colors cursor-pointer"
+              title="Run Desktop App (Windows & Mac)"
+            >
+              <Laptop size={15} />
+            </button>
           </div>
         )}
 
@@ -600,6 +620,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal />
+
+      {/* Desktop App Modal */}
+      <DesktopAppModal
+        isOpen={desktopModalOpen}
+        onClose={() => setDesktopModalOpen(false)}
+      />
     </div>
   );
 }
