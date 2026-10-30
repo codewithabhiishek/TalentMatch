@@ -142,6 +142,21 @@ body {
   animation: scaleIn 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+@keyframes tabSwitch {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(0.992);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-tab-switch {
+  animation: tabSwitch 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Page transitions */
 .page-enter {
   animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Copy, Check, Terminal, Laptop, ExternalLink, ShieldCheck, Sparkles, FolderOpen } from 'lucide-react';
+import { X, Copy, Check, Terminal, ExternalLink, ShieldCheck, Sparkles, FolderOpen } from 'lucide-react';
 import { Logo } from './Logo';
 
 interface DesktopAppModalProps {
@@ -8,6 +8,118 @@ interface DesktopAppModalProps {
 }
 
 type OperatingSystem = 'windows' | 'mac' | 'linux';
+
+interface TerminalCodeBlockProps {
+  id: string;
+  title: string;
+  badge?: string;
+  shellLabel: string;
+  command: string;
+  helperText?: string;
+  copiedId: string | null;
+  onCopy: (command: string, id: string) => void;
+  accentColor?: 'sky' | 'emerald';
+}
+
+function TerminalCodeBlock({
+  id,
+  title,
+  badge,
+  shellLabel,
+  command,
+  helperText,
+  copiedId,
+  onCopy,
+  accentColor = 'sky',
+}: TerminalCodeBlockProps) {
+  const isCopied = copiedId === id;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-xs text-[var(--color-text-primary)] flex items-center gap-1.5">
+          {accentColor === 'sky' ? (
+            <Terminal size={14} className="text-[var(--color-info)]" />
+          ) : (
+            <Sparkles size={14} className="text-emerald-400" />
+          )}
+          <span>{title}</span>
+        </span>
+        {badge && (
+          <span className="text-[10px] text-[var(--color-text-tertiary)] font-mono">{badge}</span>
+        )}
+      </div>
+
+      {/* Terminal Window with Header Bar */}
+      <div
+        className={`rounded-xl border bg-[#080d19] overflow-hidden shadow-xs transition-all duration-200 ${
+          isCopied
+            ? 'border-emerald-500/60 ring-1 ring-emerald-500/30'
+            : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)]'
+        }`}
+      >
+        {/* Terminal Window Header (Contains Traffic Lights, Shell Label, and Copy Button) */}
+        <div className="flex items-center justify-between px-3 py-2 bg-[#0c1424] border-b border-[var(--color-border)]/60 text-xs select-none">
+          {/* Left: Window Dots + Shell Name */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 opacity-75">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+            </div>
+            <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] flex items-center gap-1 pl-1">
+              <span>{shellLabel}</span>
+            </span>
+          </div>
+
+          {/* Right: Dedicated Copy Button (Never overlaps or crowds the command) */}
+          <button
+            type="button"
+            onClick={() => onCopy(command, id)}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+              isCopied
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                : 'bg-[var(--color-surface)]/80 hover:bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:border-[var(--color-info)]'
+            }`}
+            title="Copy command to clipboard"
+          >
+            {isCopied ? (
+              <>
+                <Check size={12} className="text-emerald-400" />
+                <span className="text-emerald-400 font-semibold">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy size={12} className="text-[var(--color-text-tertiary)]" />
+                <span>Copy Command</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Terminal Body */}
+        <div className="p-3 sm:p-3.5 font-mono text-[11px] sm:text-xs leading-relaxed select-all overflow-x-auto">
+          <div className="flex items-start gap-2">
+            <span className="text-sky-500/60 select-none font-bold">$</span>
+            <pre
+              className={`flex-1 m-0 p-0 font-mono whitespace-pre-wrap break-all ${
+                accentColor === 'sky' ? 'text-sky-300' : 'text-emerald-300'
+              }`}
+            >
+              {command}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {helperText && (
+        <p className="text-[11px] text-[var(--color-text-tertiary)] leading-normal">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   const [os, setOs] = useState<OperatingSystem>('windows');
@@ -57,7 +169,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
         
         {/* Header */}
-        <div className="p-5 border-b border-[var(--color-border)] flex items-start justify-between gap-4 bg-[var(--color-surface-secondary)]/50">
+        <div className="p-4 sm:p-5 border-b border-[var(--color-border)] flex items-start justify-between gap-4 bg-[var(--color-surface-secondary)]/50">
           <div className="flex items-center gap-3">
             <Logo size="md" withText={false} />
             <div>
@@ -80,147 +192,119 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
           
-          {/* OS Switcher Tabs */}
-          <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border)] pb-3">
+          {/* OS Switcher Tabs with Animated Indicators */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-[var(--color-border)]">
             <span className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
               Select Operating System:
             </span>
-            <div className="flex items-center gap-1.5 p-1 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl">
+            <div className="inline-flex items-center p-1 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl gap-1">
               <button
                 type="button"
                 onClick={() => setOs('windows')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                   os === 'windows'
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
+                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs ring-1 ring-[var(--color-info)]/30 scale-102'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 <span>🪟 Windows</span>
+                {os === 'windows' && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />}
               </button>
+
               <button
                 type="button"
                 onClick={() => setOs('mac')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                   os === 'mac'
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
+                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs ring-1 ring-[var(--color-info)]/30 scale-102'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 <span>🍎 macOS</span>
+                {os === 'mac' && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />}
               </button>
+
               <button
                 type="button"
                 onClick={() => setOs('linux')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                   os === 'linux'
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
+                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs ring-1 ring-[var(--color-info)]/30 scale-102'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 <span>🐧 Linux</span>
+                {os === 'linux' && <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse ml-0.5" />}
               </button>
             </div>
           </div>
 
-          {/* Quick Terminal Runner (Recommended) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                <Terminal size={14} className="text-[var(--color-info)]" />
-                1-Step Quick Run in Terminal ({os === 'windows' ? 'PowerShell / Command Prompt' : 'Terminal'}):
-              </span>
-              <span className="text-[10px] text-[var(--color-text-tertiary)] font-mono">Requires Node.js 18+ &amp; Git</span>
+          {/* Dynamic OS-Dependent Commands (Smooth Keyframed Switch Animation) */}
+          <div key={os} className="animate-tab-switch space-y-4">
+            
+            {/* Active Platform Banner */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[var(--color-surface-secondary)]/60 border border-[var(--color-border)]/80 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                <span className="font-semibold text-[var(--color-text-primary)]">
+                  {os === 'windows' ? 'Windows Environment' : os === 'mac' ? 'macOS Environment' : 'Linux Environment'}
+                </span>
+                <span className="text-[var(--color-text-tertiary)]">•</span>
+                <span className="text-[var(--color-text-secondary)]">
+                  {os === 'windows'
+                    ? 'PowerShell sequential syntax (;) & Portable .exe target'
+                    : os === 'mac'
+                    ? 'Apple Silicon & Intel zsh (&&) & .dmg installer target'
+                    : 'Standard POSIX shell (&&) & Production runtime'}
+                </span>
+              </div>
             </div>
 
-            <div className="relative group">
-              <pre className="p-3.5 bg-black/80 text-sky-300 font-mono text-[11px] rounded-xl border border-[var(--color-border)] overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
-                {getQuickStartCommand()}
-              </pre>
-              <button
-                onClick={() => copyToClipboard(getQuickStartCommand(), 'quickstart')}
-                className="absolute right-2.5 top-2.5 px-2.5 py-1 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-primary)] hover:border-[var(--color-info)] flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-              >
-                {copiedIndex === 'quickstart' ? (
-                  <>
-                    <Check size={12} className="text-[var(--color-success)]" />
-                    <span className="text-[var(--color-success)]">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={12} />
-                    <span>Copy Command</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">
-              This clones the project, installs dependencies, and launches the native Electron desktop application with full folder privileges.
-            </p>
-          </div>
+            {/* Quick Terminal Runner */}
+            <TerminalCodeBlock
+              id="quickstart"
+              title={`1-Step Quick Run in Terminal`}
+              badge="Requires Node.js 18+ & Git"
+              shellLabel={os === 'windows' ? 'PowerShell / Command Prompt' : os === 'mac' ? 'zsh / Apple Terminal' : 'bash / zsh'}
+              command={getQuickStartCommand()}
+              helperText="This clones the repository, installs dependencies, and launches the native Electron desktop application with background folder sync."
+              copiedId={copiedIndex}
+              onCopy={copyToClipboard}
+              accentColor="sky"
+            />
 
-          {/* Step 2: Build Standalone Installer (.exe or .dmg) */}
-          <div className="space-y-2 pt-2 border-t border-[var(--color-border)]">
-            <span className="font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
-              <Sparkles size={14} className="text-amber-400" />
-              Build Standalone Executable ({os === 'windows' ? 'Portable .exe' : os === 'mac' ? '.dmg Installer' : 'Production Build'}):
-            </span>
-
-            <div className="relative group">
-              <pre className="p-3.5 bg-black/80 text-emerald-300 font-mono text-[11px] rounded-xl border border-[var(--color-border)] overflow-x-auto select-all">
-                {getBuildCommand()}
-              </pre>
-              <button
-                onClick={() => copyToClipboard(getBuildCommand(), 'build')}
-                className="absolute right-2.5 top-2.5 px-2.5 py-1 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-primary)] hover:border-[var(--color-info)] flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-              >
-                {copiedIndex === 'build' ? (
-                  <>
-                    <Check size={12} className="text-[var(--color-success)]" />
-                    <span className="text-[var(--color-success)]">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={12} />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-            </div>
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">
-              The packaged output file will be generated in the <code className="px-1 py-0.5 rounded bg-[var(--color-surface-secondary)] font-mono text-[10px]">release/</code> folder.
-            </p>
+            {/* Standalone Binary Build */}
+            <TerminalCodeBlock
+              id="build"
+              title={`Build Standalone Executable`}
+              badge={os === 'windows' ? 'Portable .exe' : os === 'mac' ? '.dmg Installer' : 'Production Build'}
+              shellLabel={os === 'windows' ? 'PowerShell' : 'Terminal'}
+              command={getBuildCommand()}
+              helperText="The packaged executable output will be created inside the release/ directory on your machine."
+              copiedId={copiedIndex}
+              onCopy={copyToClipboard}
+              accentColor="emerald"
+            />
           </div>
 
           {/* Local LLM Command */}
-          <div className="space-y-2 pt-2 border-t border-[var(--color-border)]">
-            <span className="font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
-              <FolderOpen size={14} className="text-[var(--color-info)]" />
-              Free Open-Source Local AI Model (Ollama):
-            </span>
-
-            <div className="relative group">
-              <pre className="p-3 bg-black/80 text-sky-300 font-mono text-[11px] rounded-xl border border-[var(--color-border)] select-all">
-                ollama run llama3.2:3b
-              </pre>
-              <button
-                onClick={() => copyToClipboard('ollama run llama3.2:3b', 'ollama')}
-                className="absolute right-2.5 top-2 px-2 py-1 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-[11px] font-medium text-[var(--color-text-primary)] hover:border-[var(--color-info)] flex items-center gap-1 shadow-xs transition-all cursor-pointer"
-              >
-                {copiedIndex === 'ollama' ? (
-                  <Check size={12} className="text-[var(--color-success)]" />
-                ) : (
-                  <Copy size={12} />
-                )}
-              </button>
-            </div>
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">
-              Install Ollama from <a href="https://ollama.com/download" target="_blank" rel="noopener noreferrer" className="underline text-[var(--color-info)]">ollama.com/download</a>. Runs 100% private and offline on your machine.
-            </p>
+          <div className="pt-2 border-t border-[var(--color-border)]">
+            <TerminalCodeBlock
+              id="ollama"
+              title="Free Open-Source Local AI Model (Ollama)"
+              badge="100% Offline & Private"
+              shellLabel="Ollama CLI"
+              command="ollama run llama3.2:3b"
+              helperText="Download Ollama from ollama.com/download. Keeps candidate clinical data strictly air-gapped on your device."
+              copiedId={copiedIndex}
+              onCopy={copyToClipboard}
+              accentColor="sky"
+            />
           </div>
 
-          {/* Benefits Box */}
+          {/* Value Highlights */}
           <div className="p-3.5 rounded-xl bg-[var(--color-surface-secondary)]/50 border border-[var(--color-border)] space-y-2">
             <span className="font-semibold text-[var(--color-text-primary)] flex items-center gap-1.5">
               <ShieldCheck size={14} className="text-[var(--color-success)]" />
@@ -228,7 +312,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
             </span>
             <ul className="space-y-1 text-[11px] text-[var(--color-text-secondary)] list-disc pl-4 leading-relaxed">
               <li><strong>Zero Browser Dialogs:</strong> Direct access to local resume directories with background monitoring.</li>
-              <li><strong>Permanent Folder Permission:</strong> Remembers your resume directory forever across reboots.</li>
+              <li><strong>Permanent Folder Permission:</strong> Remembers your resume directory forever across reboots without re-granting permission.</li>
               <li><strong>Air-Gapped Confidentiality:</strong> No resume or candidate information ever leaves your device.</li>
             </ul>
           </div>
