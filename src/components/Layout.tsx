@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard, PanelLeftClose, PanelLeftOpen
+  Keyboard, PanelLeftClose, PanelLeftOpen, Download
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
@@ -226,6 +226,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
+
+        {/* Download Desktop App CTA */}
+        {!sidebarCollapsed && !(window as any).electronAPI?.isElectron && (
+          <div className="px-3 pb-2">
+            <a
+              href="https://github.com/codewithabhiishek/TalentMatch/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-secondary)] hover:border-[var(--color-info)]/60 hover:bg-[var(--color-info-bg)]/20 transition-all text-left group cursor-pointer"
+            >
+              <div className="w-6 h-6 rounded-md bg-[var(--color-info)]/10 text-[var(--color-info)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold text-[var(--color-text-primary)] leading-tight">Download for Windows</p>
+                <p className="text-[10px] text-[var(--color-text-tertiary)] leading-tight mt-0.5">Desktop app (.exe) — full folder access</p>
+              </div>
+            </a>
+          </div>
+        )}
 
         {/* User section */}
         <div className={`border-t border-[var(--color-border)] p-3 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>

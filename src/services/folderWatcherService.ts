@@ -98,6 +98,14 @@ export class FolderWatcherService {
   }
 
   /**
+   * Directly set the folder path (used by Electron auto-restore on startup).
+   */
+  public setDirectoryPath(path: string) {
+    this.dirPath = path;
+    this.dirHandle = null;
+  }
+
+  /**
    * Prompts the user to pick a folder on their Windows laptop or local system.
    */
   public async pickDirectory(): Promise<{ name: string; path?: string; files: DiscoveredResume[] }> {
