@@ -9,7 +9,7 @@ const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal'
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
 
 export function Candidates() {
-  const { candidates, navigateTo, addCandidateWithMatches, updateCandidateStatus, deleteCandidate, addNotification, loadSampleData } = useAppStore();
+  const { candidates, navigateTo, addCandidateWithMatches, updateCandidateStatus, deleteCandidate, addNotification, loadSampleData, clearAllData } = useAppStore();
   const [search, setSearch] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -34,6 +34,7 @@ export function Candidates() {
   const perPage = 8;
 
   const hasActiveFilters = specialtyFilter !== 'All' || statusFilter !== 'All';
+  const hasDemoData = candidates.length > 0 && candidates.some(c => c.id.startsWith('c') && !c.id.startsWith('cand-'));
 
   const resetFilters = () => {
     setSpecialtyFilter('All');
@@ -118,6 +119,32 @@ export function Candidates() {
           </button>
         </div>
       </div>
+
+      {/* Demo Data Notice with 1-click Clear */}
+      {hasDemoData && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-[var(--color-text-secondary)] animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-amber-400 shrink-0" />
+            <span>
+              Showing <strong className="text-[var(--color-text-primary)]">Sample Demo Candidates</strong>. You can import your own resumes or clear the sample data to start with a blank database.
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              clearAllData();
+              addNotification({
+                type: 'info',
+                title: 'Workspace Cleared',
+                message: 'All sample candidates removed. Your database is now fresh and ready for your real resumes.',
+              });
+            }}
+            className="btn btn-secondary btn-sm text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] border-[var(--color-error)]/30 shrink-0 cursor-pointer flex items-center gap-1.5"
+          >
+            <Trash2 size={12} />
+            <span>Clear Demo Data</span>
+          </button>
+        </div>
+      )}
 
       {/* Filter & Search Toolbar */}
       <div className="toolbar-root animate-fade-in" style={{ animationDelay: '60ms' }}>

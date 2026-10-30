@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, X, FileText, CheckCircle, AlertCircle, Loader2, Eye, RotateCcw,
-  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play, AlertTriangle
+  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play, AlertTriangle, Trash2
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { extractDocumentText } from '../services/documentParser';
@@ -37,11 +37,13 @@ const processingSteps = [
 ];
 
 export function ResumeImport() {
-  const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig, candidates } = useAppStore();
+  const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig, candidates, clearAllData } = useAppStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [benchmarkOpen, setBenchmarkOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const hasDemoData = candidates.length > 0 && candidates.some(c => c.id.startsWith('c') && !c.id.startsWith('cand-'));
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -239,6 +241,32 @@ export function ResumeImport() {
             <button onClick={() => navigateTo('settings')} className="underline font-semibold cursor-pointer">Settings → API Keys</button>
             {' '}for accurate AI extraction.
           </span>
+        </div>
+      )}
+
+      {/* Demo data warning banner before importing real folder */}
+      {hasDemoData && (
+        <div className="mb-4 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-fade-in">
+          <div className="flex items-start sm:items-center gap-2">
+            <Sparkles size={14} className="flex-shrink-0 text-amber-500 mt-0.5 sm:mt-0" />
+            <span className="leading-relaxed text-[var(--color-text-secondary)]">
+              Workspace currently has <strong className="text-[var(--color-text-primary)]">sample demo candidates</strong>. You can clear them before scanning your folder so only your real candidates are saved.
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              clearAllData();
+              addNotification({
+                type: 'info',
+                title: 'Workspace Cleared',
+                message: 'All sample demo candidates removed. Ready for your real resumes!',
+              });
+            }}
+            className="btn btn-secondary btn-sm text-xs text-[var(--color-error)] hover:bg-[var(--color-error-bg)] border-[var(--color-error)]/30 shrink-0 cursor-pointer flex items-center gap-1.5"
+          >
+            <Trash2 size={12} />
+            <span>Clear Demo Data</span>
+          </button>
         </div>
       )}
 
