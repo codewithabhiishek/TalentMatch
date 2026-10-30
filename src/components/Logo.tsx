@@ -6,6 +6,17 @@ interface LogoProps {
   className?: string;
 }
 
+/**
+ * TalentMatch Brand Mark: The Clinical Pulse Cross
+ *
+ * Meaning:
+ * 1. Medical Cross (+) — Universal healthcare authority (Nursing, Medical, Allied Health).
+ * 2. Vital ECG Pulse (/\_) — Real-time candidate matching, active clinical telemetry.
+ * 3. Match Focal Core (●) — Pinpoint precision alignment between clinician & healthcare facility.
+ *
+ * Color Discipline: Strictly Clinical Sky Blue (#0ea5e9, #38bdf8), Deep Medical Obsidian (#0b1329),
+ * and Crisp Pure White (#ffffff). Zero purple / extraneous hues.
+ */
 export function Logo({ size = 'md', withText = true, className = '' }: LogoProps) {
   const pixelSizes = {
     sm: 24,
@@ -18,7 +29,7 @@ export function Logo({ size = 'md', withText = true, className = '' }: LogoProps
 
   return (
     <div className={`flex items-center gap-2.5 select-none ${className}`}>
-      {/* Lettermark SVG Monogram */}
+      {/* Clinical Care Cross + Vital ECG Pulse Emblem */}
       <svg
         width={px}
         height={px}
@@ -29,27 +40,20 @@ export function Logo({ size = 'md', withText = true, className = '' }: LogoProps
       >
         <defs>
           <linearGradient id={`tmBg-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0f172a" />
-            <stop offset="50%" stopColor="#090d16" />
-            <stop offset="100%" stopColor="#020617" />
+            <stop offset="0%" stopColor="#0b1329" />
+            <stop offset="50%" stopColor="#080e1e" />
+            <stop offset="100%" stopColor="#030712" />
           </linearGradient>
 
           <linearGradient id={`tmBorder-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
-            <stop offset="40%" stopColor="#6366f1" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#a855f7" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#0284c7" stopOpacity="0.3" />
           </linearGradient>
 
-          <linearGradient id={`tmTGrad-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="50%" stopColor="#2563eb" />
-            <stop offset="100%" stopColor="#4f46e5" />
-          </linearGradient>
-
-          <linearGradient id={`tmMGrad-${size}`} x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="60%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#c084fc" />
+          <linearGradient id={`tmCross-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0284c7" />
+            <stop offset="45%" stopColor="#0ea5e9" />
+            <stop offset="100%" stopColor="#06b6d4" />
           </linearGradient>
 
           <filter id={`tmGlow-${size}`} x="-20%" y="-20%" width="140%" height="140%">
@@ -58,48 +62,43 @@ export function Logo({ size = 'md', withText = true, className = '' }: LogoProps
           </filter>
         </defs>
 
-        {/* Squircle Background Base */}
-        <rect x="2" y="2" width="44" height="44" rx="12" fill={`url(#tmBg-${size})`} />
-        <rect x="2" y="2" width="44" height="44" rx="12" stroke={`url(#tmBorder-${size})`} strokeWidth="1.5" />
-
-        {/* Subtle Ambient Glow Meshes */}
-        <circle cx="16" cy="14" r="10" fill="#38bdf8" opacity="0.15" filter={`url(#tmGlow-${size})`} />
-        <circle cx="32" cy="30" r="12" fill="#6366f1" opacity="0.15" filter={`url(#tmGlow-${size})`} />
-
-        {/* 'T' Top Crossbar */}
-        <path
-          d="M11 14.5C11 13.67 11.67 13 12.5 13H35.5C36.33 13 37 13.67 37 14.5V16C37 16.83 36.33 17.5 35.5 17.5H12.5C11.67 17.5 11 16.83 11 16V14.5Z"
-          fill={`url(#tmTGrad-${size})`}
+        {/* Squircle Base Canvas */}
+        <rect
+          x="2.5"
+          y="2.5"
+          width="43"
+          height="43"
+          rx="12"
+          fill={`url(#tmBg-${size})`}
+          stroke={`url(#tmBorder-${size})`}
+          strokeWidth="1.5"
         />
 
-        {/* 'T' Central Spine Stem */}
-        <path
-          d="M22 17.5H26V33.5C26 34.33 25.33 35 24.5 35H23.5C22.67 35 22 34.33 22 33.5V17.5Z"
-          fill={`url(#tmTGrad-${size})`}
-        />
+        {/* Soft Radial Ambient Glow */}
+        <circle cx="24" cy="24" r="14" fill="#0ea5e9" opacity="0.12" filter={`url(#tmGlow-${size})`} />
 
-        {/* 'M' Left Wing */}
-        <path
-          d="M12.5 18.5C13.2 18.5 13.78 18.98 13.95 19.65L17.5 32.5C17.7 33.25 17.15 34 16.37 34H14.5C13.8 34 13.22 33.52 13.05 32.85L11.1 24.5H11V20C11 19.17 11.67 18.5 12.5 18.5Z"
-          fill={`url(#tmMGrad-${size})`}
-        />
+        {/* Clinical Medical Cross (+) */}
+        {/* Vertical Arm */}
+        <rect x="19.5" y="9.5" width="9" height="29" rx="4.5" fill={`url(#tmCross-${size})`} />
+        {/* Horizontal Arm */}
+        <rect x="9.5" y="19.5" width="29" height="9" rx="4.5" fill={`url(#tmCross-${size})`} />
 
-        {/* 'M' Right Wing */}
+        {/* The Vital ECG Pulse & Match Waveform */}
         <path
-          d="M35.5 18.5C34.8 18.5 34.22 18.98 34.05 19.65L30.5 32.5C30.3 33.25 30.85 34 31.63 34H33.5C34.2 34 34.78 33.52 34.95 32.85L36.9 24.5H37V20C37 19.17 36.33 18.5 35.5 18.5Z"
-          fill={`url(#tmMGrad-${size})`}
-        />
-
-        {/* Clinical Match Precision Diamond Sparkle */}
-        <path
-          d="M37 9L38.2 11.8L41 13L38.2 14.2L37 17L35.8 14.2L33 13L35.8 11.8L37 9Z"
-          fill="#38bdf8"
+          d="M 11.5 24 H 17 L 19.5 26.5 L 23 14 L 26.5 34 L 28.5 22 L 30 24 H 36.5"
+          stroke="#ffffff"
+          strokeWidth={size === 'sm' ? 2.8 : 2.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           filter={`url(#tmGlow-${size})`}
         />
-        <circle cx="37" cy="13" r="1.2" fill="#ffffff" />
+
+        {/* Precision Match Focal Node */}
+        <circle cx="23" cy="14" r={size === 'sm' ? 1.5 : 1.8} fill="#38bdf8" />
+        <circle cx="23" cy="14" r={size === 'sm' ? 0.7 : 0.9} fill="#ffffff" />
       </svg>
 
-      {/* Stylized Brand Typographic Lockup */}
+      {/* Brand Typographic Lockup */}
       {withText && (
         <div className="flex flex-col text-left leading-tight">
           <div className="flex items-center gap-1.5">

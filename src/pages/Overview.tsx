@@ -107,7 +107,7 @@ export function Overview() {
     <div className="p-3 sm:p-5 lg:p-7 max-w-7xl mx-auto space-y-4 sm:space-y-6">
       {/* First-Time User Quick-Start Banner */}
       {totalCandidates === 0 && jobs.length === 0 && (
-        <div className="card p-5 sm:p-6 bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-purple-500/10 border border-sky-500/25 rounded-2xl animate-fade-in shadow-xs">
+        <div className="card p-5 sm:p-6 bg-gradient-to-r from-sky-500/10 via-blue-500/10 to-cyan-500/10 border border-sky-500/25 rounded-2xl animate-fade-in shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">

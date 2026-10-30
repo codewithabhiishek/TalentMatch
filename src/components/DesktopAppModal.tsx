@@ -201,7 +201,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
             </span>
 
             <div className="relative group">
-              <pre className="p-3 bg-black/80 text-purple-300 font-mono text-[11px] rounded-xl border border-[var(--color-border)] select-all">
+              <pre className="p-3 bg-black/80 text-sky-300 font-mono text-[11px] rounded-xl border border-[var(--color-border)] select-all">
                 ollama run llama3.2:3b
               </pre>
               <button

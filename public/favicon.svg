@@ -1,31 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
   <defs>
-    <!-- Background Gradient -->
+    <!-- Background Canvas Gradient -->
     <linearGradient id="tmBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="50%" stop-color="#090d16"/>
-      <stop offset="100%" stop-color="#020617"/>
+      <stop offset="0%" stop-color="#0b1329"/>
+      <stop offset="50%" stop-color="#080e1e"/>
+      <stop offset="100%" stop-color="#030712"/>
     </linearGradient>
 
     <!-- Outer Border Glow -->
     <linearGradient id="tmBorderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
-      <stop offset="40%" stop-color="#6366f1" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.3"/>
     </linearGradient>
 
-    <!-- Primary 'T' Brand Gradient -->
-    <linearGradient id="tmTGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="50%" stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#4f46e5"/>
-    </linearGradient>
-
-    <!-- 'M' Interlocking Geometry Gradient -->
-    <linearGradient id="tmMGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#06b6d4"/>
-      <stop offset="60%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#c084fc"/>
+    <!-- Clinical Medical Cross Gradient -->
+    <linearGradient id="tmCrossGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="45%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
 
     <!-- Glow Filter -->
@@ -36,27 +28,26 @@
   </defs>
 
   <!-- Squircle Base Canvas -->
-  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#tmBgGrad)"/>
-  <rect x="2" y="2" width="44" height="44" rx="12" stroke="url(#tmBorderGrad)" stroke-width="1.5"/>
+  <rect x="2.5" y="2.5" width="43" height="43" rx="12" fill="url(#tmBgGrad)" stroke="url(#tmBorderGrad)" stroke-width="1.5"/>
 
-  <!-- Subtle Inner Ambient Mesh -->
-  <circle cx="16" cy="14" r="10" fill="#38bdf8" opacity="0.12" filter="url(#tmGlow)"/>
-  <circle cx="32" cy="30" r="12" fill="#6366f1" opacity="0.12" filter="url(#tmGlow)"/>
+  <!-- Soft Radial Ambient Glow -->
+  <circle cx="24" cy="24" r="14" fill="#0ea5e9" opacity="0.12" filter="url(#tmGlow)"/>
 
-  <!-- Stylized Geometric 'T' & 'M' Lettermark -->
-  <!-- Top Crossbar of 'T' -->
-  <path d="M11 14.5C11 13.67 11.67 13 12.5 13H35.5C36.33 13 37 13.67 37 14.5V16C37 16.83 36.33 17.5 35.5 17.5H12.5C11.67 17.5 11 16.83 11 16V14.5Z" fill="url(#tmTGrad)"/>
+  <!-- Clinical Medical Cross (+) -->
+  <!-- Vertical Arm -->
+  <rect x="19.5" y="9.5" width="9" height="29" rx="4.5" fill="url(#tmCrossGrad)"/>
+  <!-- Horizontal Arm -->
+  <rect x="9.5" y="19.5" width="29" height="9" rx="4.5" fill="url(#tmCrossGrad)"/>
 
-  <!-- Central Stem of 'T' / Spine -->
-  <path d="M22 17.5H26V33.5C26 34.33 25.33 35 24.5 35H23.5C22.67 35 22 34.33 22 33.5V17.5Z" fill="url(#tmTGrad)"/>
+  <!-- The Vital ECG Heartbeat Waveform cutting through the cross -->
+  <path d="M 11.5 24 H 17 L 19.5 26.5 L 23 14 L 26.5 34 L 28.5 22 L 30 24 H 36.5" 
+        stroke="#ffffff" 
+        stroke-width="2.6" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        filter="url(#tmGlow)"/>
 
-  <!-- Left Diagonal Wing of 'M' -->
-  <path d="M12.5 18.5C13.2 18.5 13.78 18.98 13.95 19.65L17.5 32.5C17.7 33.25 17.15 34 16.37 34H14.5C13.8 34 13.22 33.52 13.05 32.85L11.1 24.5H11V20C11 19.17 11.67 18.5 12.5 18.5Z" fill="url(#tmMGrad)"/>
-
-  <!-- Right Diagonal Wing of 'M' with Match Accent -->
-  <path d="M35.5 18.5C34.8 18.5 34.22 18.98 34.05 19.65L30.5 32.5C30.3 33.25 30.85 34 31.63 34H33.5C34.2 34 34.78 33.52 34.95 32.85L36.9 24.5H37V20C37 19.17 36.33 18.5 35.5 18.5Z" fill="url(#tmMGrad)"/>
-
-  <!-- Precision Match Intelligence Diamond/Sparkle Accent (Upper Right) -->
-  <path d="M37 9L38.2 11.8L41 13L38.2 14.2L37 17L35.8 14.2L33 13L35.8 11.8L37 9Z" fill="#38bdf8" filter="url(#tmGlow)"/>
-  <circle cx="37" cy="13" r="1.2" fill="#ffffff"/>
+  <!-- Precision Match Focal Core -->
+  <circle cx="23" cy="14" r="1.8" fill="#38bdf8"/>
+  <circle cx="23" cy="14" r="0.9" fill="#ffffff"/>
 </svg>

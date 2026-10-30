@@ -15,12 +15,12 @@ const specialtyGradients: Record<string, { from: string; via?: string; to: strin
   'ICU': { from: '#0284c7', via: '#0ea5e9', to: '#38bdf8', text: '#ffffff', glow: 'rgba(56, 189, 248, 0.4)' },
   'Emergency': { from: '#e11d48', via: '#f43f5e', to: '#fb7185', text: '#ffffff', glow: 'rgba(244, 63, 94, 0.4)' },
   'Orthopedics': { from: '#0d9488', via: '#14b8a6', to: '#2dd4bf', text: '#ffffff', glow: 'rgba(20, 184, 166, 0.4)' },
-  'MRI': { from: '#6366f1', via: '#818cf8', to: '#a855f7', text: '#ffffff', glow: 'rgba(129, 140, 248, 0.4)' },
-  'Neonatal': { from: '#ec4899', via: '#f472b6', to: '#fbcfe8', text: '#ffffff', glow: 'rgba(244, 114, 182, 0.4)' },
-  'Med-Surg': { from: '#2563eb', via: '#3b82f6', to: '#60a5fa', text: '#ffffff', glow: 'rgba(59, 130, 246, 0.4)' },
-  'Pediatrics': { from: '#f59e0b', via: '#fbbf24', to: '#fde68a', text: '#78350f', glow: 'rgba(251, 191, 36, 0.4)' },
-  'Oncology': { from: '#7c3aed', via: '#8b5cf6', to: '#c4b5fd', text: '#ffffff', glow: 'rgba(139, 92, 246, 0.4)' },
-  'default': { from: '#475569', via: '#64748b', to: '#94a3b8', text: '#ffffff', glow: 'rgba(100, 116, 139, 0.3)' },
+  'MRI': { from: '#0369a1', via: '#0284c7', to: '#38bdf8', text: '#ffffff', glow: 'rgba(56, 189, 248, 0.4)' },
+  'Neonatal': { from: '#0284c7', via: '#0ea5e9', to: '#67e8f9', text: '#ffffff', glow: 'rgba(14, 165, 233, 0.4)' },
+  'Med-Surg': { from: '#1e40af', via: '#2563eb', to: '#60a5fa', text: '#ffffff', glow: 'rgba(59, 130, 246, 0.4)' },
+  'Pediatrics': { from: '#d97706', via: '#f59e0b', to: '#fbbf24', text: '#ffffff', glow: 'rgba(245, 158, 11, 0.4)' },
+  'Oncology': { from: '#0f766e', via: '#14b8a6', to: '#2dd4bf', text: '#ffffff', glow: 'rgba(20, 184, 166, 0.4)' },
+  'default': { from: '#334155', via: '#475569', to: '#64748b', text: '#ffffff', glow: 'rgba(100, 116, 139, 0.3)' },
 };
 
 export function ApplicantLettermarkBadge({
