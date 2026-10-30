@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   Upload, X, FileText, CheckCircle, AlertCircle, Loader2, Eye, RotateCcw,
-  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play, AlertTriangle, Trash2
+  Sparkles, Settings as SettingsIcon, Cpu, ArrowRight, Download, Play, AlertTriangle, Trash2, FolderOpen
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { extractDocumentText } from '../services/documentParser';
@@ -39,6 +39,7 @@ const processingSteps = [
 export function ResumeImport() {
   const { navigateTo, addCandidateWithMatches, addImportedFile, addNotification, aiConfig, candidates, clearAllData } = useAppStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
+  const [importTab, setImportTab] = useState<'folder' | 'files'>('folder');
   const [isDragging, setIsDragging] = useState(false);
   const [benchmarkOpen, setBenchmarkOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -185,7 +186,7 @@ export function ResumeImport() {
   const isProcessing = files.some(f => f.status === 'uploading' || f.status === 'processing');
 
   const providerLabel = aiConfig?.provider === 'ollama'
-    ? `Local Ollama (${aiConfig.modelName || 'llama3'})`
+    ? `Local Ollama (${aiConfig.modelName || 'llama3.2:3b'})`
     : aiConfig?.provider === 'openai'
     ? `OpenAI (${aiConfig.modelName || 'gpt-4o-mini'})`
     : aiConfig?.provider === 'groq'
@@ -270,53 +271,83 @@ export function ResumeImport() {
         </div>
       )}
 
-      {/* Local Folder Watcher for Windows & Desktop */}
-      <FolderWatcherPanel />
+      {/* Workflow Tabs: Folder Auto-Sync vs Direct File Upload */}
+      <div className="flex items-center gap-1.5 p-1 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl w-full sm:w-fit mb-4 animate-fade-in">
+        <button
+          type="button"
+          onClick={() => setImportTab('folder')}
+          className={`flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex-1 sm:flex-initial ${
+            importTab === 'folder'
+              ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          }`}
+        >
+          <FolderOpen size={14} className={importTab === 'folder' ? 'text-[var(--color-info)]' : ''} />
+          <span>Local Folder Watcher</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-info-bg)] text-[var(--color-info)] font-medium">
+            Continuous
+          </span>
+        </button>
 
-      {/* Drop zone */}
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`
-          border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-200
-          ${isDragging
-            ? 'border-[var(--color-primary)] bg-[var(--color-surface-secondary)]'
-            : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] bg-[var(--color-surface)]'
-          }
-        `}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".pdf,.doc,.docx,.txt"
-          onChange={e => { if (e.target.files) addFiles(Array.from(e.target.files)); e.target.value = ''; }}
-          className="hidden"
-        />
-        <Upload size={28} className={`mx-auto mb-3 ${isDragging ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-tertiary)]'}`} />
-        <p className="text-sm font-medium text-[var(--color-text-primary)]">
-          {isDragging ? 'Drop files here' : 'Drag & drop real resume files'}
-        </p>
-        <p className="text-xs text-[var(--color-text-tertiary)] mt-1">or click to browse from device</p>
-        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-          <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">PDF (.pdf)</span>
-          <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">Word (.docx)</span>
-          <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">Text (.txt)</span>
-          <span className="text-[10px] text-[var(--color-text-tertiary)] ml-1">Up to 15MB</span>
-        </div>
-        <p className="text-[11px] text-[var(--color-text-tertiary)] mt-3">
-          Want to test extraction speed & accuracy without uploading files?{' '}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setBenchmarkOpen(true); }}
-            className="text-[var(--color-primary)] hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
-          >
-            <Play size={10} /> Run Self-Test Benchmark
-          </button>
-        </p>
+        <button
+          type="button"
+          onClick={() => setImportTab('files')}
+          className={`flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer flex-1 sm:flex-initial ${
+            importTab === 'files'
+              ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-xs border border-[var(--color-border)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          }`}
+        >
+          <Upload size={14} className={importTab === 'files' ? 'text-[var(--color-info)]' : ''} />
+          <span>Upload Files Directly</span>
+          {files.length > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-medium">
+              {files.length}
+            </span>
+          )}
+        </button>
       </div>
+
+      {importTab === 'folder' ? (
+        <FolderWatcherPanel />
+      ) : (
+        <div className="space-y-4 animate-fade-in">
+          {/* Drop zone */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`
+              border-2 border-dashed rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-200
+              ${isDragging
+                ? 'border-[var(--color-primary)] bg-[var(--color-surface-secondary)] scale-[1.01]'
+                : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)] bg-[var(--color-surface)]'
+              }
+            `}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt"
+              onChange={e => { if (e.target.files) addFiles(Array.from(e.target.files)); e.target.value = ''; }}
+              className="hidden"
+            />
+            <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex items-center justify-center mx-auto mb-3 text-[var(--color-info)] shadow-xs">
+              <Upload size={22} className={isDragging ? 'text-[var(--color-primary)] animate-bounce' : ''} />
+            </div>
+            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+              {isDragging ? 'Drop resumes here to upload' : 'Drag & drop real resume files here'}
+            </p>
+            <p className="text-xs text-[var(--color-text-tertiary)] mt-1">or click to browse from device</p>
+            <div className="flex items-center justify-center gap-2 mt-3.5 flex-wrap">
+              <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">PDF (.pdf)</span>
+              <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">Word (.docx)</span>
+              <span className="px-2 py-0.5 text-[10px] font-medium bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded text-[var(--color-text-secondary)]">Text (.txt)</span>
+              <span className="text-[10px] text-[var(--color-text-tertiary)] ml-1">Up to 15MB each</span>
+            </div>
+          </div>
 
       {/* File list */}
       {files.length > 0 && (
@@ -493,12 +524,8 @@ export function ResumeImport() {
           ))}
         </div>
       )}
-
-      {files.length === 0 && (
-        <div className="mt-6 text-center py-8 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
-          <p className="text-xs text-[var(--color-text-tertiary)]">No files queued. Drop your real resume files above to extract candidates.</p>
-        </div>
-      )}
+    </div>
+  )}
 
       {/* Live Diagnostic Benchmark Modal */}
       <DiagnosticBenchmarkModal

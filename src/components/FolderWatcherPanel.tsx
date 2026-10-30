@@ -415,7 +415,7 @@ export function FolderWatcherPanel() {
           </div>
         </div>
 
-        {folderName ? (
+        {folderName && (
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               onClick={toggleWatching}
@@ -446,14 +446,6 @@ export function FolderWatcherPanel() {
               <X size={14} />
             </button>
           </div>
-        ) : (
-          <button
-            onClick={handlePickFolder}
-            className="btn btn-primary btn-sm text-xs flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
-          >
-            <Folder size={13} />
-            <span>Connect Resume Folder...</span>
-          </button>
         )}
       </div>
 
@@ -624,15 +616,32 @@ export function FolderWatcherPanel() {
           )}
         </div>
       ) : !reconnectMeta ? (
-        <div className="mt-3 p-3 bg-[var(--color-surface-secondary)]/50 border border-dashed border-[var(--color-border)] rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="text-xs text-[var(--color-text-secondary)]">
-            <span className="font-semibold text-[var(--color-text-primary)]">Tip for Windows Recruiters: </span>
-            Select your <code className="px-1 py-0.5 rounded bg-[var(--color-surface)] border text-[10px]">Resumes\</code> folder once.
-            Access is remembered across restarts — only new files are analyzed each time.
+        <div className="mt-4 p-6 sm:p-8 bg-[var(--color-surface-secondary)]/40 border border-dashed border-[var(--color-border)] rounded-xl text-center space-y-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center mx-auto text-[var(--color-info)] shadow-xs">
+            <Folder size={22} />
           </div>
-          <button onClick={handlePickFolder} className="btn btn-secondary btn-sm text-xs shrink-0 cursor-pointer">
-            Select Folder
-          </button>
+          <div className="max-w-md mx-auto space-y-1">
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)]">
+              Connect Your Resume Folder
+            </h4>
+            <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+              Select your local resumes directory (e.g. <code className="px-1.5 py-0.5 rounded bg-[var(--color-surface)] border text-[11px] font-mono">C:\Recruiting\Resumes\</code>). Permissions persist across browser restarts, and only newly added files will be extracted.
+            </p>
+          </div>
+          <div>
+            <button
+              onClick={handlePickFolder}
+              className="btn btn-primary h-9.5 px-5 text-xs font-semibold inline-flex items-center gap-2 cursor-pointer shadow-xs hover:scale-102 transition-transform"
+            >
+              <FolderOpen size={14} />
+              <span>Select Resume Folder to Watch</span>
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-[11px] text-[var(--color-text-tertiary)]">
+            <span className="flex items-center gap-1">✓ PDF, Word &amp; Text</span>
+            <span className="flex items-center gap-1">✓ Incremental Scan</span>
+            <span className="flex items-center gap-1">✓ 100% Local &amp; Private</span>
+          </div>
         </div>
       ) : null}
     </div>
