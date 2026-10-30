@@ -11,6 +11,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
 import { DesktopAppModal } from './DesktopAppModal';
+import { Logo } from './Logo';
 
 function formatRelativeTime(dateString: string): string {
   try {
@@ -151,34 +152,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
         safe-area-top safe-area-bottom
       `}>
         {/* Logo & Header */}
-        <div className={`flex items-center h-14 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
+        <div className={`flex items-center h-14 border-b border-[var(--color-border)] ${sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-3.5'}`}>
           {sidebarCollapsed ? (
             <button
               onClick={() => { navigateTo('overview'); }}
-              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-transform hover:scale-105 focus-visible:outline-none cursor-pointer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--color-surface-tertiary)] transition-all hover:scale-105 focus-visible:outline-none cursor-pointer"
               title="TalentMatch — Overview"
             >
-              <img
-                src="/favicon.svg"
-                alt="TalentMatch Logo"
-                className="w-7 h-7 flex-shrink-0 object-contain shadow-xs"
-              />
+              <Logo size="sm" withText={false} />
             </button>
           ) : (
             <>
               <button
                 onClick={() => { navigateTo('overview'); setMobileSidebarOpen(false); }}
-                className="flex items-center gap-2.5 focus-visible:outline-none text-left min-w-0 group cursor-pointer"
+                className="flex items-center gap-2 focus-visible:outline-none text-left min-w-0 group cursor-pointer"
                 title="TalentMatch (G then O)"
               >
-                <img
-                  src="/favicon.svg"
-                  alt="TalentFlow Logo"
-                  className="w-7 h-7 flex-shrink-0 object-contain shadow-xs group-hover:scale-105 transition-transform"
-                />
-                <span className="font-semibold text-sm text-[var(--color-text-primary)] tracking-tight truncate">
-                  TalentFlow
-                </span>
+                <Logo size="sm" withText={true} />
               </button>
               <button
                 onClick={() => setMobileSidebarOpen(false)}

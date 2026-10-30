@@ -4,6 +4,7 @@ import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport } from '../services/downloadService';
 import { Candidate } from '../types';
+import { ApplicantLettermarkBadge } from '../components/ApplicantLettermarkBadge';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
@@ -256,9 +257,14 @@ export function Candidates() {
                       onClick={() => navigateTo('candidate-profile', c.id)}
                       className="flex items-center gap-2.5 text-left group/cell focus-visible:outline-none"
                     >
-                      <div className="w-7 h-7 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0 group-hover/cell:border-[var(--color-border-hover)] transition-transform duration-150">
-                        <span className="text-[10px] font-semibold text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
-                      </div>
+                      <ApplicantLettermarkBadge
+                        size="sm"
+                        firstName={c.firstName}
+                        lastName={c.lastName}
+                        specialty={c.specialty}
+                        status={c.status}
+                        verified={c.verifiedByRecruiter}
+                      />
                       <div className="min-w-0">
                         <p className="font-semibold text-xs text-[var(--color-text-primary)] group-hover/cell:text-[var(--color-info)] transition-colors truncate">
                           {c.firstName} {c.lastName}
@@ -372,9 +378,14 @@ export function Candidates() {
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-semibold text-[var(--color-text-secondary)]">{c.firstName[0]}{c.lastName[0]}</span>
-                </div>
+                <ApplicantLettermarkBadge
+                  size="sm"
+                  firstName={c.firstName}
+                  lastName={c.lastName}
+                  specialty={c.specialty}
+                  status={c.status}
+                  verified={c.verifiedByRecruiter}
+                />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{c.firstName} {c.lastName}</p>
                   <p className="text-[11px] text-[var(--color-text-tertiary)] truncate">{c.position} · {c.specialty}</p>

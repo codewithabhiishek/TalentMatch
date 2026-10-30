@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase, Download, Sparkles, Award, FileJson, X, Check, Save } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Calendar, Edit, Eye, CheckCircle, AlertTriangle, Briefcase, Download, Sparkles, Award, FileJson, X, Check, Save, Copy, ShieldCheck } from 'lucide-react';
 import { useAppStore } from '../store';
 import { ProfileViewSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport, downloadCandidateJSON } from '../services/downloadService';
+import { ApplicantLettermarkBadge } from '../components/ApplicantLettermarkBadge';
 
 export function CandidateProfile() {
   const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo, updateCandidate, updateCandidateStatus, addNotification } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyField = (val: string, label: string) => {
+    navigator.clipboard.writeText(val);
+    setCopiedField(label);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
@@ -68,16 +76,35 @@ export function CandidateProfile() {
         <ArrowLeft size={14} /> Back to Candidates
       </button>
 
-      {/* Header */}
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 sm:p-5 mb-4 animate-fade-in shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--color-surface-tertiary)] flex items-center justify-center flex-shrink-0 border border-[var(--color-border)]">
-              <span className="text-base sm:text-lg font-medium text-[var(--color-text-secondary)]">{candidate.firstName[0]}{candidate.lastName[0]}</span>
-            </div>
+      {/* Executive Applicant Hero Header */}
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-5 sm:p-6 mb-5 animate-fade-in shadow-xs relative overflow-hidden">
+        {/* Subtle background glow tuned to specialty */}
+        <div className="absolute top-0 right-0 w-80 h-32 bg-sky-500/5 blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+          <div className="flex items-start sm:items-center gap-4 min-w-0">
+            {/* Lettermarked Applicant Avatar */}
+            <ApplicantLettermarkBadge
+              size="lg"
+              firstName={candidate.firstName}
+              lastName={candidate.lastName}
+              specialty={candidate.specialty}
+              status={candidate.status}
+              verified={candidate.verifiedByRecruiter}
+            />
+
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)] truncate">{candidate.firstName} {candidate.lastName}</h2>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] tracking-tight truncate">
+                  {candidate.firstName} {candidate.lastName}
+                </h2>
+                
+                {/* Clinical Specialty Pill */}
+                <span className="badge badge-info text-[10px] font-semibold tracking-wide uppercase">
+                  {candidate.specialty}
+                </span>
+
+                {/* Status Dropdown */}
                 <select
                   value={candidate.status}
                   onChange={(e) => {
@@ -89,39 +116,82 @@ export function CandidateProfile() {
                       message: `${candidate.firstName} ${candidate.lastName} updated to ${newStatus}`,
                     });
                   }}
-                  className={`text-[10px] font-medium px-2 py-0.5 rounded cursor-pointer border border-transparent hover:border-[var(--color-border)] ${statusColors[candidate.status]}`}
+                  className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full cursor-pointer border border-transparent hover:border-[var(--color-border)] shadow-2xs transition-colors ${statusColors[candidate.status]}`}
                   title="Change candidate status"
                 >
-                  <option value="new">new</option>
-                  <option value="reviewing">reviewing</option>
-                  <option value="matched">matched</option>
-                  <option value="interview">interview</option>
-                  <option value="placed">placed</option>
-                  <option value="rejected">rejected</option>
+                  <option value="new">● NEW APPLICANT</option>
+                  <option value="reviewing">● UNDER REVIEW</option>
+                  <option value="matched">● MATCHED</option>
+                  <option value="interview">● INTERVIEWING</option>
+                  <option value="placed">● PLACED</option>
+                  <option value="rejected">● ARCHIVED</option>
                 </select>
               </div>
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{candidate.position} · {candidate.specialty}</p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-[var(--color-text-tertiary)]">
-                <span className="flex items-center gap-1"><Mail size={11} />{candidate.email}</span>
-                <span className="flex items-center gap-1"><Phone size={11} />{candidate.phone}</span>
-                <span className="flex items-center gap-1"><MapPin size={11} />{candidate.currentLocation}</span>
+
+              {/* Title & Experience */}
+              <p className="text-xs font-medium text-[var(--color-text-secondary)] mt-1 flex items-center gap-1.5 flex-wrap">
+                <span>{candidate.position}</span>
+                <span className="text-[var(--color-text-tertiary)]">•</span>
+                <span className="text-sky-400 font-semibold">{candidate.experience} Years Tenure</span>
+                {candidate.certifications && candidate.certifications.length > 0 && (
+                  <>
+                    <span className="text-[var(--color-text-tertiary)]">•</span>
+                    <span className="text-[var(--color-text-tertiary)]">{candidate.certifications.slice(0, 3).join(', ')}</span>
+                  </>
+                )}
+              </p>
+
+              {/* Interactive Contact & Location Pills */}
+              <div className="flex flex-wrap items-center gap-2 mt-2.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => copyField(candidate.email, 'email')}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-info)] transition-colors cursor-pointer text-[11px]"
+                  title="Click to copy email"
+                >
+                  <Mail size={11} className="text-[var(--color-info)]" />
+                  <span>{candidate.email}</span>
+                  {copiedField === 'email' ? <Check size={10} className="text-[var(--color-success)] ml-1" /> : <Copy size={10} className="opacity-40 ml-1" />}
+                </button>
+
+                {candidate.phone && (
+                  <button
+                    type="button"
+                    onClick={() => copyField(candidate.phone, 'phone')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-info)] transition-colors cursor-pointer text-[11px]"
+                    title="Click to copy phone"
+                  >
+                    <Phone size={11} className="text-[var(--color-info)]" />
+                    <span>{candidate.phone}</span>
+                    {copiedField === 'phone' ? <Check size={10} className="text-[var(--color-success)] ml-1" /> : <Copy size={10} className="opacity-40 ml-1" />}
+                  </button>
+                )}
+
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)] text-[11px]">
+                  <MapPin size={11} className="text-amber-400" />
+                  <span>{candidate.currentLocation}</span>
+                </span>
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border)]/50">
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto pt-3 lg:pt-0 border-t lg:border-t-0 border-[var(--color-border)] shrink-0">
             <button
               onClick={() => downloadCandidateReport(candidate)}
-              className="btn btn-primary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="btn btn-primary flex-1 sm:flex-initial text-xs h-8.5 px-3.5 flex items-center gap-1.5 cursor-pointer shadow-xs font-semibold"
               title="Download formatted candidate dossier"
             >
-              <Download size={12} /> Download Dossier
+              <Download size={13} />
+              <span>Download Dossier</span>
             </button>
             <button
               onClick={() => downloadCandidateJSON(candidate)}
-              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer"
+              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8.5 px-3 flex items-center gap-1.5 cursor-pointer"
               title="Export candidate JSON"
             >
-              <FileJson size={12} /> JSON
+              <FileJson size={13} />
+              <span>JSON</span>
             </button>
             <button
               onClick={() => {
@@ -140,30 +210,34 @@ export function CandidateProfile() {
                 });
                 setIsEditModalOpen(true);
               }}
-              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8 flex items-center gap-1.5 cursor-pointer"
+              className="btn btn-secondary flex-1 sm:flex-initial text-xs h-8.5 px-3 flex items-center gap-1.5 cursor-pointer"
             >
-              <Edit size={12} /> Edit Profile
+              <Edit size={13} />
+              <span>Edit</span>
             </button>
           </div>
         </div>
 
-        {/* Meta info */}
-        <div className="flex flex-wrap items-center gap-4 mt-4 pt-4 border-t border-[var(--color-border)]">
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
-            <FileText size={12} className="text-[var(--color-text-tertiary)]" />
-            <span>{candidate.resumeFilename}</span>
+        {/* Quick Dossier Key Stats Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <FileText size={12} className="text-[var(--color-text-tertiary)]" />
+              <span className="font-mono text-[11px] text-[var(--color-text-tertiary)] truncate max-w-[180px]">{candidate.resumeFilename}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-[var(--color-text-tertiary)]" />
+              <span className="text-[11px]">Uploaded {candidate.uploadedAt}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Briefcase size={12} className="text-[var(--color-text-tertiary)]" />
+              <span className="text-[11px] font-semibold text-[var(--color-text-primary)]">{candidate.experienceTimeline?.length || 1} Past Facilities</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
-            <Calendar size={12} className="text-[var(--color-text-tertiary)]" />
-            <span>Uploaded {candidate.uploadedAt}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
-            <Briefcase size={12} className="text-[var(--color-text-tertiary)]" />
-            <span>{candidate.experience} years experience</span>
-          </div>
+
           {candidate.confidenceScore && (
-            <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
-              <Sparkles size={11} />
+            <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+              <Sparkles size={11} className="text-emerald-400" />
               <span>{candidate.confidenceScore}% Extraction Accuracy</span>
             </div>
           )}

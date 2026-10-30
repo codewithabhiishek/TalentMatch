@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Copy, Check, Terminal, Laptop, ExternalLink, ShieldCheck, Sparkles, FolderOpen } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface DesktopAppModalProps {
   isOpen: boolean;
@@ -58,9 +59,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
         {/* Header */}
         <div className="p-5 border-b border-[var(--color-border)] flex items-start justify-between gap-4 bg-[var(--color-surface-secondary)]/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-xs">
-              <Laptop size={20} />
-            </div>
+            <Logo size="md" withText={false} />
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-[var(--color-text-primary)]">Run TalentMatch on Desktop</h3>
