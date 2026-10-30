@@ -4,15 +4,20 @@ export function calculateCandidateJobMatch(candidate: Candidate, job: Job): JobM
   let score = 0;
   const reasons = [];
 
-  // 1. Position match (35% weight)
+  // 1. Position match (35% weight) — tiered scoring
   const posA = candidate.position.toLowerCase();
   const posB = job.position.toLowerCase();
+  const nurseVariants = ['registered nurse', 'staff nurse', 'rn', 'bsn nurse'];
+  const bothNurse = nurseVariants.some(v => posA.includes(v)) && nurseVariants.some(v => posB.includes(v));
   if (posA === posB || posA.includes(posB) || posB.includes(posA)) {
     reasons.push({ factor: 'Position Match', score: 100, detail: `${job.position} matches candidate background` });
     score += 35;
+  } else if (bothNurse) {
+    reasons.push({ factor: 'Position Match', score: 85, detail: 'Registered Nurse variant — strong role compatibility' });
+    score += 28;
   } else {
-    reasons.push({ factor: 'Position Match', score: 50, detail: 'Related healthcare clinical role' });
-    score += 18;
+    reasons.push({ factor: 'Position Match', score: 40, detail: 'Different clinical discipline — role transfer required' });
+    score += 10;
   }
 
   // 2. Specialty match (25% weight)
@@ -87,7 +92,7 @@ export function calculateCandidateJobMatch(candidate: Candidate, job: Job): JobM
     score += 6;
   }
 
-  const finalScore = Math.min(99, Math.max(55, Math.round(score)));
+  const finalScore = Math.min(99, Math.max(35, Math.round(score)));
 
   return {
     id: `m-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,

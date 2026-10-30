@@ -26,7 +26,12 @@ export interface ExtractionResult {
 
 const SYSTEM_PROMPT = `You are an expert clinical recruiting intelligence parser for TalentFlow ATS.
 Your task is to extract exact candidate details from the provided resume text into a strict JSON object.
-Extract exact information accurately. Do not invent facts or hallucinate details not found in the text.
+CRITICAL RULES:
+- Extract ONLY information explicitly found in the text. Do NOT invent, guess, or hallucinate any field.
+- If a field is not found in the resume, use empty string "" for strings, 0 for numbers, and [] for arrays.
+- For experience: calculate from the earliest employment date to today, or extract explicitly stated years.
+- For previousTravelLocations: only include cities/states where the candidate has ACTUALLY worked, not where the job is posted.
+- For certifications: only include credentials explicitly listed (BLS, ACLS, CCRN, etc.).
 
 The JSON object MUST follow this exact structure:
 {
@@ -88,7 +93,7 @@ export function calculateExtractionConfidence(c: Partial<Candidate>): number {
   if (typeof c.experience === 'number' && c.experience > 0) score += 10;
   if (Array.isArray(c.experienceTimeline) && c.experienceTimeline.length > 0) score += 15;
   if (Array.isArray(c.certifications) && c.certifications.length > 0) score += 10;
-  return Math.min(99, Math.max(50, score));
+  return Math.min(99, Math.max(30, score));
 }
 
 /**
@@ -100,9 +105,13 @@ async function extractWithOllama(
 ): Promise<Partial<Candidate>> {
   const url = `${config.apiUrl.replace(/\/+$/, '')}/api/generate`;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-min timeout
+
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: controller.signal,
     body: JSON.stringify({
       model: config.modelName || 'llama3.2:3b',
       system: SYSTEM_PROMPT,
@@ -111,9 +120,11 @@ async function extractWithOllama(
       stream: false,
       options: {
         temperature: config.temperature ?? 0.1,
+        num_predict: 1200,
       },
     }),
   });
+  clearTimeout(timeoutId);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -340,13 +351,14 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   const currentLocation = locationMatch ? `${sanitizeString(locationMatch[1])}, ${sanitizeString(locationMatch[2])}` : 'Sacramento, CA';
 
   // 9. Timeline generation from detected text
+  const startYear = (new Date().getFullYear() - experienceYears).toString();
   const timeline: ExperienceRecord[] = [
     {
       id: `exp-${Date.now()}-1`,
       position: detectedPosition,
       facility: 'Regional Medical Center',
       location: currentLocation,
-      startDate: '2021',
+      startDate: startYear,
       endDate: 'Present',
       description: `Comprehensive patient management in ${detectedSpecialty} clinical units. Administered acute protocols and multidisciplinary patient evaluations.`,
     },
@@ -361,7 +373,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     specialty: detectedSpecialty,
     experience: experienceYears,
     currentLocation,
-    previousTravelLocations: ['Denver, CO', 'Austin, TX', 'Phoenix, AZ'],
+    previousTravelLocations: [],
     certifications: detectedCerts,
     professionalSummary: `Dedicated ${detectedPosition} with ${experienceYears} years of experience specializing in ${detectedSpecialty}. Certified in ${detectedCerts.slice(0, 3).join(', ')}. Strong background in acute hospital workflows extracted from ${fileName}.`,
     experienceTimeline: timeline,
@@ -409,11 +421,18 @@ export async function parseResumeWithAI(
   const baseHeuristic = extractWithHeuristics(resumeText, fileName);
   const confidence = calculateExtractionConfidence(candidateData || baseHeuristic);
 
+  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const resolvedEmail = (candidateData?.email && isValidEmail(candidateData.email))
+    ? candidateData.email
+    : (baseHeuristic.email && isValidEmail(baseHeuristic.email) && !baseHeuristic.email.endsWith('.demo'))
+    ? baseHeuristic.email
+    : baseHeuristic.email || 'candidate@talentflow.demo';
+
   const finalCandidate: Candidate = {
     id: `cand-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     firstName: sanitizeString(candidateData?.firstName || baseHeuristic.firstName || 'Candidate'),
     lastName: sanitizeString(candidateData?.lastName || baseHeuristic.lastName || 'Profile'),
-    email: sanitizeString(candidateData?.email || baseHeuristic.email || 'candidate@talentflow.demo'),
+    email: sanitizeString(resolvedEmail),
     phone: sanitizeString(candidateData?.phone || baseHeuristic.phone || '(555) 000-0000'),
     position: sanitizeString(candidateData?.position || baseHeuristic.position || 'Registered Nurse'),
     specialty: sanitizeString(candidateData?.specialty || baseHeuristic.specialty || 'ICU'),
@@ -421,7 +440,7 @@ export async function parseResumeWithAI(
     currentLocation: sanitizeString(candidateData?.currentLocation || baseHeuristic.currentLocation || 'San Francisco, CA'),
     previousTravelLocations: Array.isArray(candidateData?.previousTravelLocations) && candidateData.previousTravelLocations.length > 0
       ? candidateData.previousTravelLocations.map(sanitizeString)
-      : ['Denver, CO', 'Austin, TX'],
+      : baseHeuristic.previousTravelLocations ?? [],
     certifications: Array.isArray(candidateData?.certifications) && candidateData.certifications.length > 0
       ? candidateData.certifications.map(sanitizeString)
       : baseHeuristic.certifications || ['BLS', 'ACLS', 'State RN License'],

@@ -115,7 +115,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
       provider: 'heuristic',
       apiUrl: 'http://localhost:11434',
       apiKey: '',
-      modelName: 'llama3',
+      modelName: 'llama3.2:3b',
       temperature: 0.1,
     };
 
