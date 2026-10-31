@@ -4,7 +4,7 @@ import {
   X, Copy, Check, Terminal, Sparkles,
   Activity, CheckCircle2, AlertCircle, RefreshCw, Play,
   ArrowRight, ArrowLeft, Apple, List, Sliders,
-  Zap, Lock, Cpu, Download, ExternalLink, HardDrive, ShieldCheck
+  Zap, Lock, Cpu, Download, ExternalLink, HardDrive, ShieldCheck, ChevronRight
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { DiagnosticBenchmarkModal } from './DiagnosticBenchmarkModal';
@@ -19,6 +19,7 @@ type OperatingSystem = 'windows' | 'mac' | 'linux';
 type ViewMode = 'wizard' | 'all';
 type WinOllamaMethod = 'winget' | 'direct' | 'powershell';
 type WinStep1Method = 'quickstart' | 'standalone' | 'prereqs';
+type WinShell = 'powershell' | 'cmd';
 
 function WindowsIcon({ size = 12, className = '' }: { size?: number; className?: string }) {
   return (
@@ -63,7 +64,7 @@ function TerminalCodeBlock({
         }`}
       >
         {/* Terminal Header Bar */}
-        <div className="flex items-center justify-between px-3.5 py-2 bg-[#0a101d] border-b border-white/8 select-none">
+        <div className="flex items-center justify-between px-3.5 py-2 bg-[#0a101d] border-b border-white/8 select-none flex-wrap gap-2">
           {/* Traffic dots and shell name */}
           <div className="flex items-center gap-2.5">
             <div className="flex items-center gap-1.5 opacity-90">
@@ -73,7 +74,7 @@ function TerminalCodeBlock({
             </div>
             <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5 pl-1.5 font-medium">
               <Terminal size={12} className="text-sky-400" />
-              <span>{shellLabel}</span>
+              <span className="truncate max-w-[200px] sm:max-w-none">{shellLabel}</span>
             </span>
           </div>
 
@@ -103,10 +104,10 @@ function TerminalCodeBlock({
         </div>
 
         {/* Terminal Code Body */}
-        <div className="p-3.5 sm:p-4 font-mono text-xs leading-relaxed select-all overflow-x-auto bg-[#070b14]">
+        <div className="p-3.5 sm:p-4 font-mono text-xs leading-relaxed select-all overflow-x-auto bg-[#070b14] no-overflow-x-forced">
           <div className="space-y-1.5">
             {lines.map((line, idx) => (
-              <div key={idx} className="flex items-start gap-3">
+              <div key={idx} className="flex items-start gap-2.5 sm:gap-3">
                 <span className="text-slate-500 font-mono text-xs select-none w-4 text-right shrink-0">
                   {lines.length > 1 ? idx + 1 : '$'}
                 </span>
@@ -146,7 +147,8 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   
-  // Windows specific installation options
+  // Windows specific installation options & shell type
+  const [winShell, setWinShell] = useState<WinShell>('powershell');
   const [winOllamaMethod, setWinOllamaMethod] = useState<WinOllamaMethod>('winget');
   const [winStep1Method, setWinStep1Method] = useState<WinStep1Method>('quickstart');
 
@@ -264,9 +266,12 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     { num: 5, title: 'Verify Accuracy', subtitle: 'Benchmark' },
   ];
 
-  // OS-specific command generators
+  // Shell-accurate command generators
   const getTalentMatchRunCommand = () => {
     if (os === 'windows') {
+      if (winShell === 'cmd') {
+        return `git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch && npm install && npm run electron`;
+      }
       return `git clone https://github.com/codewithabhiishek/TalentMatch.git ; cd TalentMatch ; npm install ; npm run electron`;
     }
     return `git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch && npm install && npm run electron`;
@@ -297,14 +302,19 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   };
 
   const getCorsConnectCommand = () => {
-    if (os === 'windows') return `$env:OLLAMA_ORIGINS="*" ; ollama serve`;
+    if (os === 'windows') {
+      if (winShell === 'cmd') {
+        return `set OLLAMA_ORIGINS=* && ollama serve`;
+      }
+      return `$env:OLLAMA_ORIGINS="*" ; ollama serve`;
+    }
     return `OLLAMA_ORIGINS="*" ollama serve`;
   };
 
   return createPortal(
     <>
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm ${
+        className={`fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-sm ${
           isClosing ? 'animate-modal-backdrop-exit' : 'animate-modal-backdrop-enter'
         }`}
         onClick={(e) => {
@@ -312,35 +322,47 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
         }}
       >
         <div
-          className={`bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+          className={`bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh] ${
             isClosing ? 'animate-modal-card-exit' : 'animate-modal-card-enter'
           }`}
         >
           
-          {/* Top Header: Brand, Title, Symmetrical OS Selector & Close */}
-          <div className="px-5 py-4 border-b border-white/10 bg-[#0f1728]/80 backdrop-blur-md">
-            <div className="flex items-center justify-between gap-4">
+          {/* Top Header: Brand, Title, Symmetrical OS Selector & Responsive Close */}
+          <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-white/10 bg-[#0f1728]/80 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               
               {/* Left: Brand Mark & Title */}
-              <div className="flex items-center gap-3 min-w-0">
-                <Logo size="md" withText={false} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                      Run TalentMatch on Desktop
-                    </h3>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                      Step {activeStep} of 5
-                    </span>
+              <div className="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 min-w-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <Logo size="md" withText={false} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                        Run TalentMatch on Desktop
+                      </h3>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                        Step {activeStep} of 5
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate hidden sm:block">
+                      End-to-end setup: Desktop app, local Ollama engine, and verified offline AI inference.
+                    </p>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                    End-to-end setup: Desktop app, local Ollama engine, and verified offline AI inference.
-                  </p>
                 </div>
+
+                {/* Mobile-only close button */}
+                <button
+                  type="button"
+                  onClick={handleSmoothClose}
+                  className="sm:hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                  aria-label="Close dialog"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              {/* Right: Symmetrical OS Segmented Selector + Close Button */}
-              <div className="flex items-center gap-2.5 shrink-0">
+              {/* Right: Symmetrical OS Segmented Selector + Desktop Close */}
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                 <div className="inline-flex items-center p-0.5 bg-slate-900 border border-white/12 rounded-lg gap-0.5">
                   <button
                     type="button"
@@ -352,7 +374,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     }`}
                   >
                     <WindowsIcon size={12} className={os === 'windows' ? 'text-sky-400' : 'text-slate-400'} />
-                    <span className="hidden sm:inline">Windows</span>
+                    <span>Windows</span>
                   </button>
                   <button
                     type="button"
@@ -364,7 +386,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     }`}
                   >
                     <Apple size={12} className={os === 'mac' ? 'text-slate-100' : 'text-slate-400'} />
-                    <span className="hidden sm:inline">macOS</span>
+                    <span>macOS</span>
                   </button>
                   <button
                     type="button"
@@ -376,7 +398,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     }`}
                   >
                     <Terminal size={12} className={os === 'linux' ? 'text-emerald-400' : 'text-slate-400'} />
-                    <span className="hidden sm:inline">Linux</span>
+                    <span>Linux</span>
                   </button>
                 </div>
 
@@ -394,10 +416,11 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                   {viewMode === 'wizard' ? <List size={14} /> : <Sliders size={14} />}
                 </button>
 
-                {/* Close Button with Smooth Animation */}
+                {/* Desktop-only Close Button with Smooth Animation */}
                 <button
+                  type="button"
                   onClick={handleSmoothClose}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="hidden sm:flex w-7 h-7 rounded-lg items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   aria-label="Close dialog"
                 >
                   <X size={16} />
@@ -408,7 +431,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
             {/* Clean Connected Milestone Stepper (Wizard Mode) */}
             {viewMode === 'wizard' && (
-              <div className="grid grid-cols-5 gap-1.5 mt-3.5 pt-3 border-t border-white/8 select-none">
+              <div className="grid grid-cols-5 gap-1 sm:gap-1.5 mt-3 pt-2.5 border-t border-white/8 select-none">
                 {steps.map(s => {
                   const isActive = activeStep === s.num;
                   const isCompleted = completedSteps.has(s.num);
@@ -418,7 +441,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                       key={s.num}
                       type="button"
                       onClick={() => setActiveStep(s.num)}
-                      className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl text-center transition-all cursor-pointer ${
+                      className={`flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 rounded-xl text-center transition-all cursor-pointer ${
                         isActive
                           ? 'bg-slate-800/90 text-white shadow-xs border border-sky-500/40 ring-1 ring-sky-500/20'
                           : isCompleted
@@ -426,7 +449,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                           : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
                       }`}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 sm:gap-1.5">
                         <span
                           className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center transition-colors ${
                             isActive
@@ -450,12 +473,12 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
             )}
           </div>
 
-          {/* Modal Main Content with Fluid Tab-Slide Motion */}
-          <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
+          {/* Modal Main Content with Fluid Tab-Slide Motion & Height Management */}
+          <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
             
             {/* VIEW MODE A: FOCUSED STEP-BY-STEP WIZARD */}
             {viewMode === 'wizard' && (
-              <div key={`${os}-${activeStep}`} className="animate-tab-slide space-y-4 min-h-[350px]">
+              <div key={`${os}-${activeStep}`} className="animate-tab-slide space-y-4">
                 
                 {/* STEP 1: Download & Launch TalentMatch */}
                 {activeStep === 1 && (
@@ -476,11 +499,11 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                       </div>
 
                       {/* Sub-tabs for Step 1 */}
-                      <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap">
+                      <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap gap-0.5">
                         <button
                           type="button"
                           onClick={() => setWinStep1Method('quickstart')}
-                          className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                          className={`px-2.5 sm:px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
                             winStep1Method === 'quickstart'
                               ? 'bg-slate-800 text-white shadow-xs border border-white/10'
                               : 'text-slate-400 hover:text-white'
@@ -491,7 +514,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                         <button
                           type="button"
                           onClick={() => setWinStep1Method('standalone')}
-                          className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                          className={`px-2.5 sm:px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
                             winStep1Method === 'standalone'
                               ? 'bg-slate-800 text-white shadow-xs border border-white/10'
                               : 'text-slate-400 hover:text-white'
@@ -503,7 +526,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                           <button
                             type="button"
                             onClick={() => setWinStep1Method('prereqs')}
-                            className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                            className={`px-2.5 sm:px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
                               winStep1Method === 'prereqs'
                                 ? 'bg-slate-800 text-white shadow-xs border border-white/10'
                                 : 'text-slate-400 hover:text-white'
@@ -516,17 +539,92 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     </div>
 
                     {winStep1Method === 'quickstart' && (
-                      <div className="animate-tab-slide">
+                      <div className="animate-tab-slide space-y-3">
+                        {/* Shell selector for Windows */}
+                        {os === 'windows' && (
+                          <div className="flex items-center justify-between text-[11px] bg-slate-900/60 p-2 px-3 rounded-lg border border-white/8">
+                            <span className="text-slate-400">Select Windows Terminal Shell:</span>
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setWinShell('powershell')}
+                                className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                                  winShell === 'powershell'
+                                    ? 'bg-sky-500 text-slate-950 font-bold'
+                                    : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                PowerShell (;)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setWinShell('cmd')}
+                                className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                                  winShell === 'cmd'
+                                    ? 'bg-sky-500 text-slate-950 font-bold'
+                                    : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                Command Prompt (&amp;&amp;)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
                         <TerminalCodeBlock
                           id="talentmatch-run"
-                          shellLabel={os === 'windows' ? 'PowerShell 7+ / CMD' : os === 'mac' ? 'zsh / Terminal' : 'bash / zsh'}
+                          shellLabel={
+                            os === 'windows'
+                              ? winShell === 'cmd'
+                                ? 'Windows Command Prompt (cmd.exe)'
+                                : 'PowerShell 5.1 / 7+'
+                              : os === 'mac'
+                              ? 'macOS Terminal (zsh)'
+                              : 'Linux Terminal (bash / zsh)'
+                          }
                           command={getTalentMatchRunCommand()}
                           displayLines={getTalentMatchRunLines()}
-                          helperText="Clones repository, installs dependencies, and launches native Electron desktop app with automatic folder sync."
+                          helperText={
+                            os === 'windows'
+                              ? winShell === 'cmd'
+                                ? 'Uses standard CMD && syntax. Clones repo, installs dependencies, builds, and launches native desktop window.'
+                                : 'Uses PowerShell sequential semicolons (;). Clones repo, installs dependencies, builds, and launches native desktop window.'
+                              : 'Clones repository, installs dependencies, builds Vite bundle, and launches native Electron app with automatic folder sync.'
+                          }
                           copiedId={copiedIndex}
                           onCopy={copyToClipboard}
                           accentColor="sky"
                         />
+
+                        {/* Line-by-line helper for manual run */}
+                        <div className="p-3 rounded-xl bg-slate-900/50 border border-white/8 space-y-2">
+                          <span className="text-[11px] font-semibold text-slate-300 block">
+                            Or run each command step-by-step:
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
+                            {[
+                              { label: '1. Clone', cmd: 'git clone https://github.com/codewithabhiishek/TalentMatch.git' },
+                              { label: '2. Enter', cmd: 'cd TalentMatch' },
+                              { label: '3. Install', cmd: 'npm install' },
+                              { label: '4. Launch', cmd: 'npm run electron' },
+                            ].map((stepItem, sIdx) => (
+                              <button
+                                key={sIdx}
+                                type="button"
+                                onClick={() => copyToClipboard(stepItem.cmd, `step-cmd-${sIdx}`)}
+                                className="flex items-center justify-between p-2 rounded-lg bg-[#070b14] border border-white/6 hover:border-sky-500/40 text-left transition-colors cursor-pointer group"
+                              >
+                                <div className="truncate pr-2">
+                                  <span className="text-slate-500 text-[10px] block font-sans">{stepItem.label}</span>
+                                  <span className="text-slate-200 group-hover:text-sky-300 truncate block text-[10px]">{stepItem.cmd}</span>
+                                </div>
+                                <span className="text-slate-500 group-hover:text-white shrink-0">
+                                  {copiedIndex === `step-cmd-${sIdx}` ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -644,7 +742,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
                       {/* Windows-specific installation method selector */}
                       {os === 'windows' ? (
-                        <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap">
+                        <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap gap-0.5">
                           <button
                             type="button"
                             onClick={() => setWinOllamaMethod('winget')}
@@ -705,12 +803,12 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                           onCopy={copyToClipboard}
                           accentColor="sky"
                         />
-                        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-white/8 flex items-center justify-between text-[11px] text-slate-400">
+                        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-white/8 flex items-center justify-between text-[11px] text-slate-400 flex-wrap gap-2">
                           <span>Don&apos;t have winget installed on this Windows PC?</span>
                           <button
                             type="button"
                             onClick={() => setWinOllamaMethod('direct')}
-                            className="text-sky-400 hover:text-sky-300 font-semibold cursor-pointer underline underline-offset-2 ml-2"
+                            className="text-sky-400 hover:text-sky-300 font-semibold cursor-pointer underline underline-offset-2"
                           >
                             Switch to Direct .exe Download →
                           </button>
@@ -891,9 +989,46 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                       </p>
                     </div>
 
+                    {/* Shell toggle for Windows */}
+                    {os === 'windows' && (
+                      <div className="flex items-center justify-between text-[11px] bg-slate-900/60 p-2 px-3 rounded-lg border border-white/8">
+                        <span className="text-slate-400">Terminal Shell:</span>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setWinShell('powershell')}
+                            className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                              winShell === 'powershell'
+                                ? 'bg-sky-500 text-slate-950 font-bold'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            PowerShell
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWinShell('cmd')}
+                            className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                              winShell === 'cmd'
+                                ? 'bg-sky-500 text-slate-950 font-bold'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            Command Prompt
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <TerminalCodeBlock
                       id="ollama-cors"
-                      shellLabel={os === 'windows' ? 'PowerShell' : 'Terminal'}
+                      shellLabel={
+                        os === 'windows'
+                          ? winShell === 'cmd'
+                            ? 'Windows Command Prompt'
+                            : 'PowerShell'
+                          : 'Terminal'
+                      }
                       command={getCorsConnectCommand()}
                       displayLines={[getCorsConnectCommand()]}
                       helperText="Required only if running in a web browser like Chrome to allow local cross-origin API requests."
@@ -1147,7 +1282,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
           </div>
 
           {/* Symmetrical Footer with Balanced Navigation */}
-          <div className="px-5 py-3.5 border-t border-white/10 bg-[#0f1728]/80 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-t border-white/10 bg-[#0f1728]/80 backdrop-blur-md flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
             
             {/* Left: Previous Step Button */}
             <div>
@@ -1156,13 +1291,13 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                   type="button"
                   onClick={() => setActiveStep(prev => Math.max(1, prev - 1))}
                   disabled={activeStep === 1}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors"
+                  className="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors"
                 >
                   <ArrowLeft size={13} />
                   <span>Previous</span>
                 </button>
               ) : (
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs text-slate-400 font-mono hidden sm:inline">
                   All 5 steps displayed for {os.toUpperCase()}
                 </span>
               )}
@@ -1170,8 +1305,8 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
             {/* Center: Step Progress Dots (Wizard mode) */}
             {viewMode === 'wizard' && (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-1.5">
                   {[1, 2, 3, 4, 5].map(stepNum => (
                     <button
                       key={stepNum}
@@ -1179,23 +1314,23 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                       onClick={() => setActiveStep(stepNum)}
                       className={`h-1.5 rounded-full transition-all cursor-pointer ${
                         activeStep === stepNum
-                          ? 'w-6 bg-sky-400'
+                          ? 'w-5 sm:w-6 bg-sky-400'
                           : completedSteps.has(stepNum)
-                          ? 'w-2 bg-emerald-400'
-                          : 'w-2 bg-slate-700 hover:bg-slate-500'
+                          ? 'w-1.5 sm:w-2 bg-emerald-400'
+                          : 'w-1.5 sm:w-2 bg-slate-700 hover:bg-slate-500'
                       }`}
                       title={`Go to step ${stepNum}`}
                     />
                   ))}
                 </div>
-                <span className="text-[11px] font-semibold text-slate-400 pl-1 hidden sm:inline">
+                <span className="text-[11px] font-semibold text-slate-400 pl-1 hidden md:inline">
                   Step {activeStep} of 5
                 </span>
               </div>
             )}
 
             {/* Right: Next Step or Diagnostic Launcher & Close Button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-auto sm:ml-0">
               {viewMode === 'wizard' && activeStep < 5 && (
                 <button
                   type="button"
@@ -1203,7 +1338,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     setCompletedSteps(prev => new Set(prev).add(activeStep));
                     setActiveStep(prev => Math.min(5, prev + 1));
                   }}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md bg-white hover:bg-slate-100 text-slate-950 transition-all active:scale-97"
+                  className="px-3.5 sm:px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md bg-white hover:bg-slate-100 text-slate-950 transition-all active:scale-97"
                 >
                   <span>Next Step</span>
                   <ArrowRight size={13} />
@@ -1217,7 +1352,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     setCompletedSteps(prev => new Set(prev).add(5));
                     setBenchmarkModalOpen(true);
                   }}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md bg-amber-400 hover:bg-amber-300 text-slate-950 transition-all active:scale-97"
+                  className="px-3.5 sm:px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md bg-amber-400 hover:bg-amber-300 text-slate-950 transition-all active:scale-97"
                 >
                   <Sparkles size={13} />
                   <span>Run Benchmark</span>
@@ -1227,7 +1362,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
               <button
                 type="button"
                 onClick={handleSmoothClose}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
+                className="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
               >
                 Close Guide
               </button>

@@ -237,9 +237,11 @@ body {
 
 .animate-tab-slide {
   animation: tabSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
-/* Page transitions */
+/* Page transitions with GPU hardware acceleration */
 @keyframes pageEnter {
   0% {
     opacity: 0;
@@ -253,6 +255,17 @@ body {
 
 .page-enter, .animate-page-transition {
   animation: pageEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.animate-modal-backdrop-enter,
+.animate-modal-backdrop-exit,
+.animate-modal-card-enter,
+.animate-modal-card-exit {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Scrollbar */

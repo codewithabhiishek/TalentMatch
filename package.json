@@ -7,7 +7,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "benchmark": "tsx scripts/benchmark.ts",
-    "electron": "electron .",
+    "electron": "vite build && electron .",
+    "electron:dev": "electron .",
     "build:win": "vite build && electron-builder --win",
     "build:win:portable": "vite build && electron-builder --win portable",
     "build:mac": "vite build && electron-builder --mac dmg"
@@ -44,7 +45,7 @@
         "nsis",
         "portable"
       ],
-      "icon": "public/favicon.svg"
+      "icon": "public/icon.png"
     },
     "nsis": {
       "oneClick": false,
