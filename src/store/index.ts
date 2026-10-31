@@ -10,12 +10,13 @@ import {
 } from '../data/mockData';
 import { AIConfig, defaultAIConfig } from '../services/aiExtractionService';
 import { calculateCandidateJobMatch } from '../services/matchEngine';
-import { notificationAudio } from '../services/notificationAudioService';
+import { notificationAudio, ChimeSound } from '../services/notificationAudioService';
 
 export type Theme = 'light' | 'dark' | 'black';
 
 export interface NotificationSettings {
   soundEnabled: boolean;
+  soundChoice?: ChimeSound;
   desktopEnabled: boolean;
   resumeAlerts: boolean;
   matchAlerts: boolean;
@@ -23,6 +24,7 @@ export interface NotificationSettings {
 
 const defaultNotificationSettings: NotificationSettings = {
   soundEnabled: true,
+  soundChoice: 'clinical-chime',
   desktopEnabled: true,
   resumeAlerts: true,
   matchAlerts: true,
@@ -290,6 +292,7 @@ export const useAppStore = create<AppState>()(
             message: newNotif.message,
             type: newNotif.type,
             soundEnabled: currentSettings.soundEnabled,
+            soundChoice: currentSettings.soundChoice || 'clinical-chime',
             desktopEnabled: currentSettings.desktopEnabled,
           });
         }

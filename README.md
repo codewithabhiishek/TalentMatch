@@ -159,7 +159,13 @@ TalentMatch features an alert pipeline designed for multitasking recruiters:
 
 1. **Native OS Desktop Notifications**: When background folder scans or resume extractions finish, TalentMatch pushes system alerts directly to the **Windows Action Center** or **macOS Notification Center**.
 2. **Window Attention Cues**: Automatically flashes the Windows taskbar icon (`flashFrame(true)`) or bounces the macOS dock icon (`app.dock.bounce('informational')`). Clicking the notification restores and focuses the window.
-3. **Harmonic Web Audio Chime**: An uplifting two-tone clinical chime (D5 `587 Hz` $\rightarrow$ A5 `880 Hz`) synthesized via the Web Audio API with zero external audio assets.
+3. **Synthesized Multi-Sound Chime Library**: 6 selectable, zero-latency audio chimes synthesized via the Web Audio API (zero external audio files or downloads required):
+   - **Clinical Harmonic** (Default): Uplifting 2-tone medical chime (D5 $\rightarrow$ A5)
+   - **Crystal Bell**: Bright 3-tone crystalline arpeggio with high shimmer decay
+   - **Warm Marimba**: Resonant acoustic wooden percussion chords
+   - **Zen Harp**: Soothing pentatonic harp pluck
+   - **Radar Pulse**: High-tech frequency sweep sonar pulse
+   - **Minimalist Pop**: Ultra-quick dual droplet micro-click
 4. **Floating In-App Toast**: A slide-up card with 5-second auto-dismissal and a 1-click **"View details $\rightarrow$"** button.
 5. **Interactive Controls**: Test the chime and system notifications anytime in **Settings $\rightarrow$ Notifications**.
 

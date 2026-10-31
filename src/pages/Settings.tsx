@@ -9,7 +9,7 @@ import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
 import { testAIConnection, AIConfig } from '../services/aiExtractionService';
 import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
-import { notificationAudio } from '../services/notificationAudioService';
+import { notificationAudio, SOUND_OPTIONS, ChimeSound } from '../services/notificationAudioService';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
 
 export function Settings() {
@@ -28,6 +28,7 @@ export function Settings() {
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [storageSize, setStorageSize] = useState<string>('0 KB');
   const [testAlertSent, setTestAlertSent] = useState(false);
+  const [playingSoundId, setPlayingSoundId] = useState<ChimeSound | null>(null);
   const [browserPermission, setBrowserPermission] = useState<string>(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported'
   );
@@ -793,42 +794,119 @@ export function Settings() {
 
               {/* Preferences Toggles */}
               <div className="space-y-2 border border-[var(--color-border)] rounded-xl divide-y divide-[var(--color-border)]/60 bg-[var(--color-surface-secondary)]/25 overflow-hidden">
-                {/* 1. Audio Chime */}
-                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <Volume2 size={16} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">
-                        Harmonic Audio Chime
-                      </p>
-                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
-                        Plays a crisp clinical harmonic chime (D5-A5) synthesized with Web Audio API whenever resume parsing or background folder scans finish.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => notificationAudio.playChime('success')}
-                      className="px-2.5 py-1 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface)] text-[11px] text-sky-400 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
-                      title="Test Audio Chime"
-                    >
-                      <Play size={11} /> Play Chime
-                    </button>
-                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings?.soundEnabled ?? true}
-                        onChange={(e) => updateNotificationSettings({ soundEnabled: e.target.checked })}
-                        className="sr-only peer"
-                      />
-                      <div className="toggle-track">
-                        <div className="toggle-thumb" />
+                {/* 1. Audio Notification Sounds */}
+                <div className="p-4 space-y-3.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <Volume2 size={16} />
                       </div>
-                    </label>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-semibold text-[var(--color-text-primary)]">
+                            Synthesized Audio Chimes
+                          </p>
+                          <span className="badge badge-info text-[9px] font-semibold uppercase">
+                            6 Audio Styles
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
+                          Harmonic alerts synthesized with Web Audio API. Zero external audio downloads, 100% offline.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                      <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings?.soundEnabled ?? true}
+                          onChange={(e) => updateNotificationSettings({ soundEnabled: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="toggle-track">
+                          <div className="toggle-thumb" />
+                        </div>
+                      </label>
+                    </div>
                   </div>
+
+                  {/* Sound Choice Grid (Active when sound is enabled) */}
+                  {(notificationSettings?.soundEnabled ?? true) && (
+                    <div className="mt-3 pt-3 border-t border-[var(--color-border)]/60 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
+                          Choose Notification Chime:
+                        </span>
+                        <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                          Active: <strong className="text-sky-300 font-semibold">{SOUND_OPTIONS.find(s => s.id === (notificationSettings?.soundChoice || 'clinical-chime'))?.name}</strong>
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {SOUND_OPTIONS.map((sound) => {
+                          const isSelected = (notificationSettings?.soundChoice || 'clinical-chime') === sound.id;
+                          const isPlaying = playingSoundId === sound.id;
+
+                          return (
+                            <div
+                              key={sound.id}
+                              onClick={() => {
+                                updateNotificationSettings({ soundChoice: sound.id });
+                                setPlayingSoundId(sound.id);
+                                notificationAudio.playSound(sound.id, 'success');
+                                setTimeout(() => setPlayingSoundId(null), 1200);
+                              }}
+                              className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5 select-none ${
+                                isSelected
+                                  ? 'bg-[var(--color-surface)] border-[var(--color-info)] ring-1 ring-[var(--color-info)]/30 shadow-xs'
+                                  : 'bg-[var(--color-surface)]/60 border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface)]'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)]'}`}>
+                                      {sound.name}
+                                    </span>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-[var(--color-surface-secondary)] text-[var(--color-text-tertiary)] border border-[var(--color-border)]">
+                                      {sound.tag}
+                                    </span>
+                                  </div>
+                                  <p className="text-[10px] text-[var(--color-text-tertiary)] mt-1 line-clamp-2 leading-relaxed">
+                                    {sound.description}
+                                  </p>
+                                </div>
+
+                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${
+                                  isSelected ? 'border-[var(--color-info)] bg-[var(--color-info)]' : 'border-[var(--color-border)]'
+                                }`}>
+                                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPlayingSoundId(sound.id);
+                                  notificationAudio.playSound(sound.id, 'success');
+                                  setTimeout(() => setPlayingSoundId(null), 1200);
+                                }}
+                                className={`w-full py-1.5 px-2 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                  isPlaying
+                                    ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                                    : 'bg-[var(--color-surface-secondary)]/80 hover:bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-transparent'
+                                }`}
+                              >
+                                <Play size={11} className={isPlaying ? 'animate-pulse text-sky-400' : ''} />
+                                <span>{isPlaying ? 'Playing...' : 'Play Preview'}</span>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Desktop OS Push Notifications */}
