@@ -3,7 +3,7 @@ import {
   Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
   Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
   FileText, Briefcase, Users, GitMerge, Globe, ChevronDown, Trash2,
-  Volume2, VolumeX, Laptop, Play
+  Volume2, VolumeX, Laptop, Play, Mail, ShieldCheck
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
@@ -69,7 +69,9 @@ export function Settings() {
     lastName: userProfile?.lastName || 'Rivera',
     email: userProfile?.email || 'jordan.rivera@talentmatch.ai',
     role: userProfile?.role || 'Senior Clinical Recruiter',
-    timezone: userProfile?.timezone || 'Pacific Time (PT)',
+    timezone: userProfile?.timezone || 'India Standard Time (IST)',
+    facility: userProfile?.facility || 'Pacific Health System · Level 1 Trauma',
+    recruiterStatus: userProfile?.recruiterStatus || 'active',
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,7 +84,9 @@ export function Settings() {
         lastName: userProfile.lastName || 'Rivera',
         email: userProfile.email || 'jordan.rivera@talentmatch.ai',
         role: userProfile.role || 'Senior Clinical Recruiter',
-        timezone: userProfile.timezone || 'Pacific Time (PT)',
+        timezone: userProfile.timezone || 'India Standard Time (IST)',
+        facility: userProfile.facility || 'Pacific Health System · Level 1 Trauma',
+        recruiterStatus: userProfile.recruiterStatus || 'active',
       });
     }
   }, [userProfile]);
@@ -113,6 +117,11 @@ export function Settings() {
     setSaveMessage('Profile saved to local storage!');
     setSaved(true);
     setTimeout(() => setSaved(false), 2400);
+  };
+
+  const setRecruiterDuty = (status: 'active' | 'interviewing' | 'offline') => {
+    setFormData(prev => ({ ...prev, recruiterStatus: status }));
+    updateUserProfile({ recruiterStatus: status });
   };
 
   const handleExportData = () => {
@@ -180,88 +189,195 @@ export function Settings() {
   ];
 
   return (
-    <div className="p-3.5 sm:p-5 lg:p-6 max-w-4xl mx-auto">
-      <div className="mb-4 sm:mb-5 animate-fade-in">
-        <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Settings</h2>
-        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage your account, appearance, and local device storage</p>
+    <div className="p-3.5 sm:p-6 lg:p-7 max-w-7xl mx-auto space-y-5 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in pb-1 border-b border-[var(--color-border)]">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">Settings & Preferences</h2>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Manage recruiter identity, system appearance, storage health, and AI engine parameters</p>
+        </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[11px] font-medium text-[var(--color-text-secondary)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Local Confidential Mode
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5">
-        {/* Tabs */}
-        <div className="lg:w-48 flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-semibold'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)]'
-              }`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
+      <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-start">
+        {/* Left Navigation Rail */}
+        <div className="w-full lg:w-64 shrink-0 space-y-4">
+          <div className="card p-2 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xs space-y-1">
+            <div className="px-3 py-2 text-[10px] font-bold tracking-wider uppercase text-[var(--color-text-tertiary)]">
+              Configuration
+            </div>
+            <div className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 lg:flex-none flex items-center justify-between px-3.5 py-2.5 text-xs font-medium rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+                    activeTab === tab.id
+                      ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-semibold shadow-xs border border-[var(--color-border)]'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={activeTab === tab.id ? 'text-[var(--color-info)]' : 'text-[var(--color-text-tertiary)]'}>
+                      {tab.icon}
+                    </span>
+                    <span>{tab.label}</span>
+                  </div>
+                  {activeTab === tab.id && (
+                    <span className="hidden lg:inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-info)]" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Local Database Health & Diagnostic Card */}
+          <div className="hidden lg:block card p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between text-xs font-semibold text-[var(--color-text-primary)]">
+              <span className="flex items-center gap-1.5">
+                <HardDrive size={13} className="text-[var(--color-info)]" />
+                Local Storage
+              </span>
+              <span className="font-mono text-[10px] text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                {storageSize}
+              </span>
+            </div>
+
+            <div className="space-y-2 pt-1 text-xs">
+              <div className="flex items-center justify-between text-[var(--color-text-secondary)]">
+                <span>Clinicians indexed</span>
+                <span className="font-semibold text-[var(--color-text-primary)]">{candidates.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-[var(--color-text-secondary)]">
+                <span>Active job requisitions</span>
+                <span className="font-semibold text-[var(--color-text-primary)]">{jobs.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-[var(--color-text-secondary)]">
+                <span>Match scores calculated</span>
+                <span className="font-semibold text-[var(--color-text-primary)]">{jobMatches.length}</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-[var(--color-border)] flex items-center gap-2 text-[11px] text-[var(--color-text-tertiary)]">
+              <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
+              <span>100% On-Device · Zero telemetry</span>
+            </div>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="card flex-1 p-4 sm:p-6">
+        {/* Content Pane */}
+        <div className="card flex-1 w-full min-w-0 p-5 sm:p-7 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xs">
           {/* PROFILE SETTINGS */}
           {activeTab === 'profile' && (
-            <div key="profile" className="space-y-5 animate-tab-slide">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div key="profile" className="space-y-6 animate-tab-slide">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Recruiter Profile &amp; Identity</h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                    Executive recruiter identity stored privately in local storage on this machine.
+                    Executive clinician recruiter credentials stored privately in local device storage.
                   </p>
+                </div>
+                <div className="flex items-center gap-1.5 self-start sm:self-auto text-[11px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Active Profile
                 </div>
               </div>
 
               {/* Recruiter Preview Hero Banner */}
-              <div className="p-4 rounded-2xl bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5 min-w-0">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+                <div className="flex items-center gap-4 min-w-0">
                   <RecruiterAvatar
                     user={{ firstName: formData.firstName, lastName: formData.lastName }}
                     size="xl"
-                    status={userProfile?.recruiterStatus || 'active'}
+                    status={formData.recruiterStatus}
                   />
-                  <div className="min-w-0">
+                  <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm sm:text-base font-bold text-[var(--color-text-primary)]">
+                      <h4 className="text-base font-bold text-[var(--color-text-primary)]">
                         {formData.firstName || 'Jordan'} {formData.lastName || 'Rivera'}
                       </h4>
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/10">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/20">
                         Lead Clinical Partner
                       </span>
                     </div>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                      {formData.role || 'Senior Clinical Recruiter'} · {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
+                    <p className="text-xs text-[var(--color-text-secondary)] truncate">
+                      {formData.role || 'Senior Clinical Recruiter'} · {formData.facility || 'Pacific Health System · Level 1 Trauma'}
                     </p>
-                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 flex items-center gap-1.5 flex-wrap">
-                      <span>{formData.email || 'jordan.rivera@talentmatch.ai'}</span>
-                      <span className="text-[var(--color-border)]">•</span>
-                      <span className="text-sky-300 font-mono text-[10px] px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20">{formData.timezone}</span>
-                    </p>
+                    <div className="flex items-center gap-3 text-[11px] text-[var(--color-text-tertiary)] pt-0.5 flex-wrap">
+                      <span className="flex items-center gap-1.5">
+                        <Mail size={12} className="text-[var(--color-text-tertiary)]" />
+                        <span>{formData.email || 'jordan.rivera@talentmatch.ai'}</span>
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1.5 text-sky-300 font-mono text-[10px] bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                        <Globe size={11} />
+                        <span>{formData.timezone}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] text-xs font-medium">
-                    <span className={`w-2 h-2 rounded-full ${userProfile?.recruiterStatus === 'interviewing' ? 'bg-amber-400' : userProfile?.recruiterStatus === 'offline' ? 'bg-slate-400' : 'bg-emerald-400'}`} />
-                    Duty: {userProfile?.recruiterStatus === 'interviewing' ? 'In Interview' : userProfile?.recruiterStatus === 'offline' ? 'Away' : 'Available'}
+                {/* Interactive Duty Status Switcher */}
+                <div className="flex flex-col sm:items-end gap-1.5 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[var(--color-border)]">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--color-text-tertiary)]">
+                    Recruiter Duty Status
                   </span>
+                  <div className="inline-flex items-center p-1 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setRecruiterDuty('active')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer ${
+                        formData.recruiterStatus === 'active'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold'
+                          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      Available
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecruiterDuty('interviewing')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer ${
+                        formData.recruiterStatus === 'interviewing'
+                          ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold'
+                          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      Interview
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecruiterDuty('offline')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer ${
+                        formData.recruiterStatus === 'offline'
+                          ? 'bg-slate-500/20 text-slate-300 border border-slate-500/30 font-semibold'
+                          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                      Away
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Symmetrical Form Grid (3 rows x 2 columns) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                {/* Row 1: First Name & Last Name */}
                 <div>
                   <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">First Name</label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    placeholder="Jordan"
                   />
                 </div>
                 <div>
@@ -270,92 +386,120 @@ export function Settings() {
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    placeholder="Rivera"
                   />
                 </div>
+
+                {/* Row 2: Work Email & Role Title */}
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Email Address</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
-                  />
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Work Email Address</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                      <Mail size={14} />
+                    </div>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="input w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                      placeholder="jordan.rivera@talentmatch.ai"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Role Title</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                      <Briefcase size={14} />
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      className="input w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                      placeholder="Senior Clinical Recruiter"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 3: Healthcare Facility & Timezone */}
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Healthcare Facility / System</label>
                   <input
                     type="text"
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="input w-full h-10 px-3 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    value={formData.facility}
+                    onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
+                    className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
+                    placeholder="Pacific Health System · Level 1 Trauma"
                   />
                 </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">Timezone &amp; Regional Locale</label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, timezone: 'India Standard Time (IST)' })}
+                      className="text-[11px] text-sky-400 hover:text-sky-300 font-medium transition-colors cursor-pointer"
+                    >
+                      Quick Set: Indian Time (IST)
+                    </button>
+                  </div>
+                  <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                      <Globe size={14} />
+                    </div>
+                    <select
+                      value={formData.timezone}
+                      onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                      className="input w-full h-10 pl-10 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] !bg-none border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
+                    >
+                      <optgroup label="India &amp; Asia">
+                        <option value="India Standard Time (IST)">India Standard Time (IST) — New Delhi, Mumbai, Bengaluru (UTC+5:30)</option>
+                        <option value="Gulf Standard Time (GST)">Gulf Standard Time (GST) — Dubai, Abu Dhabi (UTC+4)</option>
+                        <option value="Singapore / Hong Kong (SGT)">Singapore / Hong Kong (SGT) — Singapore, Hong Kong (UTC+8)</option>
+                        <option value="Japan &amp; Korea (JST)">Japan &amp; Korea (JST) — Tokyo, Seoul (UTC+9)</option>
+                      </optgroup>
+                      <optgroup label="Americas">
+                        <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
+                        <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
+                        <option value="Central Time (CT)">Central Time (CT) — Chicago, Dallas (UTC-6)</option>
+                        <option value="Eastern Time (ET)">Eastern Time (ET) — New York, Toronto (UTC-5)</option>
+                      </optgroup>
+                      <optgroup label="Europe &amp; Global">
+                        <option value="Greenwich Mean Time (GMT / BST)">Greenwich Mean Time (GMT / BST) — London, Dublin (UTC+0 / UTC+1)</option>
+                        <option value="Central European Time (CET)">Central European Time (CET) — Berlin, Paris, Amsterdam (UTC+1)</option>
+                        <option value="Australian Eastern Time (AEST)">Australian Eastern Time (AEST) — Sydney, Melbourne (UTC+10)</option>
+                        <option value="UTC (Coordinated Universal Time)">UTC (Coordinated Universal Time)</option>
+                      </optgroup>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1.5 max-w-md">
-                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-                    Timezone &amp; Region
-                  </label>
+              {/* Action Footer Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-5 border-t border-[var(--color-border)]">
+                <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+                  <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
+                  <span>Stored locally on this device · Zero external cloud tracking</span>
+                </div>
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  {saved && (
+                    <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium animate-fade-in">
+                      <CheckCircle2 size={14} /> {saveMessage}
+                    </span>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, timezone: 'India Standard Time (IST)' })}
-                    className="text-[11px] text-sky-400 hover:text-sky-300 font-medium transition-colors cursor-pointer"
+                    onClick={handleSaveProfile}
+                    className="btn btn-primary h-10 px-5 text-xs font-semibold rounded-xl cursor-pointer flex items-center gap-2 shadow-sm hover:shadow transition-all"
                   >
-                    Quick Set: Indian Time (IST)
+                    <Save size={14} /> Save Profile
                   </button>
                 </div>
-                <div className="relative w-full max-w-md">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
-                    <Globe size={15} />
-                  </div>
-                  <select
-                    value={formData.timezone}
-                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    className="input w-full h-10.5 pl-9 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] !bg-none border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
-                  >
-                    <optgroup label="India &amp; Asia">
-                      <option value="India Standard Time (IST)">India Standard Time (IST) — New Delhi, Mumbai, Bengaluru (UTC+5:30)</option>
-                      <option value="Gulf Standard Time (GST)">Gulf Standard Time (GST) — Dubai, Abu Dhabi (UTC+4)</option>
-                      <option value="Singapore / Hong Kong (SGT)">Singapore / Hong Kong (SGT) — Singapore, Hong Kong (UTC+8)</option>
-                      <option value="Japan &amp; Korea (JST)">Japan &amp; Korea (JST) — Tokyo, Seoul (UTC+9)</option>
-                    </optgroup>
-                    <optgroup label="Americas">
-                      <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
-                      <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
-                      <option value="Central Time (CT)">Central Time (CT) — Chicago, Dallas (UTC-6)</option>
-                      <option value="Eastern Time (ET)">Eastern Time (ET) — New York, Toronto (UTC-5)</option>
-                    </optgroup>
-                    <optgroup label="Europe &amp; Global">
-                      <option value="Greenwich Mean Time (GMT / BST)">Greenwich Mean Time (GMT / BST) — London, Dublin (UTC+0 / UTC+1)</option>
-                      <option value="Central European Time (CET)">Central European Time (CET) — Berlin, Paris, Amsterdam (UTC+1)</option>
-                      <option value="Australian Eastern Time (AEST)">Australian Eastern Time (AEST) — Sydney, Melbourne (UTC+10)</option>
-                      <option value="UTC (Coordinated Universal Time)">UTC (Coordinated Universal Time)</option>
-                    </optgroup>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
-                    <ChevronDown size={15} />
-                  </div>
-                </div>
-                <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1.5">
-                  Used for formatting clinical interview schedules, timestamps, and candidate timeline logs.
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
-                {saved && (
-                  <span className="text-xs text-[var(--color-success)] flex items-center gap-1.5 font-medium">
-                    <CheckCircle2 size={13} /> {saveMessage}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSaveProfile}
-                  className="btn btn-primary h-9 px-4 text-xs ml-auto cursor-pointer"
-                >
-                  <Save size={14} /> Save Profile
-                </button>
               </div>
             </div>
           )}
