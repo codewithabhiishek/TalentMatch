@@ -10,8 +10,23 @@ import {
 } from '../data/mockData';
 import { AIConfig, defaultAIConfig } from '../services/aiExtractionService';
 import { calculateCandidateJobMatch } from '../services/matchEngine';
+import { notificationAudio } from '../services/notificationAudioService';
 
 export type Theme = 'light' | 'dark' | 'black';
+
+export interface NotificationSettings {
+  soundEnabled: boolean;
+  desktopEnabled: boolean;
+  resumeAlerts: boolean;
+  matchAlerts: boolean;
+}
+
+const defaultNotificationSettings: NotificationSettings = {
+  soundEnabled: true,
+  desktopEnabled: true,
+  resumeAlerts: true,
+  matchAlerts: true,
+};
 
 export interface UserProfile {
   firstName: string;
@@ -53,6 +68,8 @@ export interface AppState {
   jobMatches: JobMatch[];
   importedFiles: ImportedFile[];
   notifications: Notification[];
+  notificationSettings: NotificationSettings;
+  activeToast: Notification | null;
 
   // Actions
   navigateTo: (page: Page, candidateId?: string, jobId?: string) => void;
@@ -80,6 +97,8 @@ export interface AppState {
   markAllNotificationsRead: () => void;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'> & { read?: boolean }) => void;
   clearNotifications: () => void;
+  updateNotificationSettings: (settings: Partial<NotificationSettings>) => void;
+  dismissToast: () => void;
 
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
@@ -132,6 +151,8 @@ export const useAppStore = create<AppState>()(
       jobMatches: [],
       importedFiles: [],
       notifications: [],
+      notificationSettings: defaultNotificationSettings,
+      activeToast: null,
 
       navigateTo: (page, candidateId, jobId) => set({
         currentPage: page,
@@ -226,16 +247,45 @@ export const useAppStore = create<AppState>()(
         notifications: state.notifications.map(n => ({ ...n, read: true }))
       })),
 
-      addNotification: (notif) => set((state) => ({
-        notifications: [
-          {
-            read: notif.read ?? false,
-            ...notif,
-            id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            timestamp: new Date().toISOString(),
-          },
-          ...state.notifications,
-        ],
+      addNotification: (notif) => {
+        const newNotif: Notification = {
+          read: notif.read ?? false,
+          ...notif,
+          id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          timestamp: new Date().toISOString(),
+        };
+
+        const currentSettings = get().notificationSettings || defaultNotificationSettings;
+
+        const isMatch = newNotif.title.toLowerCase().includes('match');
+        const isResume = newNotif.title.toLowerCase().includes('resume') ||
+                         newNotif.title.toLowerCase().includes('candidate') ||
+                         newNotif.title.toLowerCase().includes('folder');
+
+        let shouldAlert = true;
+        if (isMatch && !currentSettings.matchAlerts) shouldAlert = false;
+        if (isResume && !currentSettings.resumeAlerts) shouldAlert = false;
+
+        if (shouldAlert) {
+          notificationAudio.dispatchAlert({
+            title: newNotif.title,
+            message: newNotif.message,
+            type: newNotif.type,
+            soundEnabled: currentSettings.soundEnabled,
+            desktopEnabled: currentSettings.desktopEnabled,
+          });
+        }
+
+        set((state) => ({
+          notifications: [newNotif, ...state.notifications],
+          activeToast: shouldAlert ? newNotif : state.activeToast,
+        }));
+      },
+
+      dismissToast: () => set({ activeToast: null }),
+
+      updateNotificationSettings: (settings) => set((state) => ({
+        notificationSettings: { ...state.notificationSettings, ...settings },
       })),
 
       clearNotifications: () => set({ notifications: [] }),
@@ -340,6 +390,7 @@ export const useAppStore = create<AppState>()(
         jobMatches: state.jobMatches,
         importedFiles: state.importedFiles,
         notifications: state.notifications,
+        notificationSettings: state.notificationSettings,
         userProfile: state.userProfile,
         aiConfig: state.aiConfig,
         theme: state.theme,

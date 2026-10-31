@@ -285,13 +285,6 @@ export class FolderWatcherService {
                 this.saveProcessedManifest();
 
                 onNewCandidate(result.candidate, item.file.name);
-
-                if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                  new Notification('New Candidate Analyzed', {
-                    body: `${result.candidate.firstName} ${result.candidate.lastName} (${result.candidate.specialty}) parsed from ${item.file.name}`,
-                    icon: '/favicon.svg',
-                  });
-                }
               }
             } catch (parseErr) {
               console.error(`Failed to auto-process ${item.name}:`, parseErr);

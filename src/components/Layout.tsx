@@ -11,6 +11,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
 import { DesktopAppModal } from './DesktopAppModal';
+import { ToastNotification } from './ToastNotification';
 import { Logo } from './Logo';
 
 function formatRelativeTime(dateString: string): string {
@@ -616,6 +617,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         isOpen={desktopModalOpen}
         onClose={() => setDesktopModalOpen(false)}
       />
+
+      {/* Real-time In-App Notification Toast */}
+      <ToastNotification />
     </div>
   );
 }

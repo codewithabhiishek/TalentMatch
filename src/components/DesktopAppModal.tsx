@@ -549,6 +549,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
               <ul className="space-y-1.5 text-[11px] text-[var(--color-text-secondary)] list-disc pl-4 leading-relaxed">
                 <li><strong>Continuous Local Folder Sync:</strong> Direct operating-system directory watching without repeated browser authorization dialogs.</li>
                 <li><strong>Permanent Folder Permission:</strong> Remembers your resume directory across machine reboots and app restarts.</li>
+                <li><strong>Real-Time OS Alerts &amp; Sound Chimes:</strong> Windows Action Center &amp; macOS Notification banners with audio chimes when background extraction completes.</li>
                 <li><strong>100% Air-Gapped Confidentiality:</strong> Resumes and clinical credentials are processed completely on your device with local Ollama inference.</li>
               </ul>
             </div>

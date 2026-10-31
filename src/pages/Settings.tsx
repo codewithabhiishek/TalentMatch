@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
   Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
-  FileText, Briefcase, Users, GitMerge, Globe, ChevronDown, Trash2
+  FileText, Briefcase, Users, GitMerge, Globe, ChevronDown, Trash2,
+  Volume2, VolumeX, Laptop, Play
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
 import { testAIConnection, AIConfig } from '../services/aiExtractionService';
 import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
+import { notificationAudio } from '../services/notificationAudioService';
 
 export function Settings() {
   const {
@@ -15,6 +17,7 @@ export function Settings() {
     userProfile, updateUserProfile,
     aiConfig, updateAIConfig,
     candidates, jobs, jobMatches, importedFiles, notifications,
+    notificationSettings, updateNotificationSettings, addNotification,
     loadSampleData, clearAllData, resetAllData, exportDataJSON, importDataJSON
   } = useAppStore();
 
@@ -23,6 +26,10 @@ export function Settings() {
   const [saveMessage, setSaveMessage] = useState('Saved successfully');
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [storageSize, setStorageSize] = useState<string>('0 KB');
+  const [testAlertSent, setTestAlertSent] = useState(false);
+  const [browserPermission, setBrowserPermission] = useState<string>(
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported'
+  );
 
   // AI Configuration Form state
   const [aiForm, setAiForm] = useState<AIConfig>({
@@ -665,33 +672,223 @@ export function Settings() {
 
           {/* NOTIFICATIONS */}
           {activeTab === 'notifications' && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-5 animate-fade-in">
               <div>
-                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Notification Preferences</h3>
+                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+                  Real-Time Alerts &amp; Sound Chimes
+                </h3>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                  Control how and when you receive candidate match and processing alerts.
+                  Stay updated while multitasking — receive background notifications and audio cues whenever processing completes.
                 </p>
               </div>
-              <div className="space-y-1 divide-y divide-[var(--color-border)]/60">
-                {[
-                  { label: 'New candidate matches', desc: 'Get notified when new candidate-job matches are found' },
-                  { label: 'Resume processing complete', desc: 'Notification when resume processing finishes' },
-                  { label: 'Job import results', desc: 'Summary after job file imports complete' },
-                  { label: 'Status changes', desc: 'Updates when candidate or job status changes' },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between gap-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-[var(--color-text-primary)]">{item.label}</p>
-                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">{item.desc}</p>
+
+              {/* Platform Environment Banner */}
+              {(window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron ? (
+                <div className="p-3.5 rounded-xl border border-sky-500/30 bg-sky-500/10 flex items-center justify-between text-xs gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                      <Laptop size={16} />
                     </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-[var(--color-text-primary)]">
+                        Native Desktop App Active
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 truncate">
+                        Full Windows Action Center &amp; macOS Notification Center support with taskbar flashing, dock bounce, and sound.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30 uppercase shrink-0">
+                    Native OS Mode
+                  </span>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-secondary)]/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-sky-400 flex items-center justify-center shrink-0">
+                      <Globe size={16} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[var(--color-text-primary)]">Web Browser Mode</p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)]">
+                        Status: {browserPermission === 'granted' ? '✓ Browser Notifications Allowed' : 'Permission needed for desktop banners'}
+                      </p>
+                    </div>
+                  </div>
+                  {browserPermission !== 'granted' && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const perm = await notificationAudio.requestPermission();
+                        setBrowserPermission(perm);
+                      }}
+                      className="btn btn-secondary btn-sm text-xs cursor-pointer shrink-0"
+                    >
+                      Enable Browser Alerts
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Preferences Toggles */}
+              <div className="space-y-2 border border-[var(--color-border)] rounded-xl divide-y divide-[var(--color-border)]/60 bg-[var(--color-surface-secondary)]/25 overflow-hidden">
+                {/* 1. Audio Chime */}
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Volume2 size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">
+                        Harmonic Audio Chime
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
+                        Plays a crisp clinical harmonic chime (D5-A5) synthesized with Web Audio API whenever resume parsing or background folder scans finish.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => notificationAudio.playChime('success')}
+                      className="px-2.5 py-1 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface)] text-[11px] text-sky-400 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Test Audio Chime"
+                    >
+                      <Play size={11} /> Play Chime
+                    </button>
                     <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                      <input type="checkbox" defaultChecked={idx < 2} className="sr-only peer" />
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings?.soundEnabled ?? true}
+                        onChange={(e) => updateNotificationSettings({ soundEnabled: e.target.checked })}
+                        className="sr-only peer"
+                      />
                       <div className="toggle-track">
                         <div className="toggle-thumb" />
                       </div>
                     </label>
                   </div>
-                ))}
+                </div>
+
+                {/* 2. Desktop OS Push Notifications */}
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bell size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">
+                        OS Desktop Notifications
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
+                        Pushes system banners to Windows Action Center or macOS Notification Center even when TalentMatch is minimized or running behind other windows.
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-auto">
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings?.desktopEnabled ?? true}
+                      onChange={(e) => updateNotificationSettings({ desktopEnabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="toggle-track">
+                      <div className="toggle-thumb" />
+                    </div>
+                  </label>
+                </div>
+
+                {/* 3. Resume & Folder Watcher Alerts */}
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <FileText size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">
+                        Resume &amp; Folder Watcher Alerts
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
+                        Notify in real time when Folder Watcher auto-discovers a new resume or direct batch PDF extraction finishes.
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-auto">
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings?.resumeAlerts ?? true}
+                      onChange={(e) => updateNotificationSettings({ resumeAlerts: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="toggle-track">
+                      <div className="toggle-thumb" />
+                    </div>
+                  </label>
+                </div>
+
+                {/* 4. Candidate-Job Match Alerts */}
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <GitMerge size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">
+                        Candidate-Job Match Alerts
+                      </p>
+                      <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
+                        Notify when high-relevance clinical candidates are matched with active hospital requisitions.
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-auto">
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings?.matchAlerts ?? true}
+                      onChange={(e) => updateNotificationSettings({ matchAlerts: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="toggle-track">
+                      <div className="toggle-thumb" />
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Live Test Banner */}
+              <div className="p-4 rounded-xl border border-sky-500/30 bg-sky-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                    <Sparkles size={13} className="text-sky-400" />
+                    Test Real-Time Notification &amp; Sound
+                  </h4>
+                  <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                    Click to dispatch an instant test notification with audio chime to verify your desktop and sound setup.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {testAlertSent && (
+                    <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1 animate-fade-in">
+                      <CheckCircle2 size={13} /> Sent!
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addNotification({
+                        type: 'success',
+                        title: 'TalentMatch Desktop Alert',
+                        message: 'Real-time background notifications and sound chimes are working perfectly on your device!',
+                      });
+                      setTestAlertSent(true);
+                      setTimeout(() => setTestAlertSent(false), 3000);
+                    }}
+                    className="btn btn-primary text-xs h-8.5 px-3.5 cursor-pointer flex items-center gap-1.5 font-semibold"
+                  >
+                    <Bell size={13} />
+                    <span>Send Test Alert</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

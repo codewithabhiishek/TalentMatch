@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -97,6 +97,45 @@ ipcMain.handle('folder:readFiles', async (event, dirPath) => {
 
   traverseDir(dirPath);
   return files;
+});
+
+// Native OS Notifications with Sound & Window Attention
+ipcMain.handle('notification:show', async (event, { title, body, silent = false }) => {
+  try {
+    if (Notification.isSupported()) {
+      const iconPath = path.join(__dirname, '../public/favicon.svg');
+      const notification = new Notification({
+        title: title || 'TalentMatch',
+        body: body || 'Clinical processing completed.',
+        silent: Boolean(silent),
+        icon: fs.existsSync(iconPath) ? iconPath : undefined,
+      });
+
+      notification.on('click', () => {
+        if (mainWindow) {
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      });
+
+      notification.show();
+
+      // Alert user if window is backgrounded / minimized
+      if (mainWindow && !mainWindow.isFocused()) {
+        if (process.platform === 'darwin' && app.dock) {
+          app.dock.bounce('informational');
+        } else if (process.platform === 'win32') {
+          mainWindow.flashFrame(true);
+        }
+      }
+
+      return true;
+    }
+  } catch (err) {
+    console.warn('Native notification failed:', err);
+  }
+  return false;
 });
 
 app.whenReady().then(createWindow);
