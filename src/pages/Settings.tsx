@@ -66,8 +66,8 @@ export function Settings() {
   const [formData, setFormData] = useState({
     firstName: userProfile?.firstName || 'Jordan',
     lastName: userProfile?.lastName || 'Rivera',
-    email: userProfile?.email || 'jordan@talentflow.com',
-    role: userProfile?.role || 'Senior Recruiter',
+    email: userProfile?.email || 'jordan.rivera@talentmatch.ai',
+    role: userProfile?.role || 'Senior Clinical Recruiter',
     timezone: userProfile?.timezone || 'Pacific Time (PT)',
   });
 
@@ -79,8 +79,8 @@ export function Settings() {
       setFormData({
         firstName: userProfile.firstName || 'Jordan',
         lastName: userProfile.lastName || 'Rivera',
-        email: userProfile.email || 'jordan@talentflow.com',
-        role: userProfile.role || 'Senior Recruiter',
+        email: userProfile.email || 'jordan.rivera@talentmatch.ai',
+        role: userProfile.role || 'Senior Clinical Recruiter',
         timezone: userProfile.timezone || 'Pacific Time (PT)',
       });
     }
@@ -121,7 +121,7 @@ export function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `talentflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `talentmatch-backup-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -218,7 +218,7 @@ export function Settings() {
               </div>
 
               {/* Recruiter Preview Hero Banner */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0c1824] via-[#08111a] to-[#121c15] border border-emerald-500/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-[var(--color-surface-secondary)] border border-[var(--color-border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5 min-w-0">
                   <RecruiterAvatar
                     user={{ firstName: formData.firstName, lastName: formData.lastName }}
@@ -227,26 +227,26 @@ export function Settings() {
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm sm:text-base font-black text-white">
+                      <h4 className="text-sm sm:text-base font-bold text-[var(--color-text-primary)]">
                         {formData.firstName || 'Jordan'} {formData.lastName || 'Rivera'}
                       </h4>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        Senior Clinical Lead
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/10">
+                        Lead Clinical Partner
                       </span>
                     </div>
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                      {formData.role || 'Senior Clinical Recruiter'} · {userProfile?.facility || 'Pacific Health System'}
+                      {formData.role || 'Senior Clinical Recruiter'} · {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
                     </p>
-                    <p className="text-[11px] text-[var(--color-text-tertiary)] font-mono mt-0.5">
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
                       {formData.email || 'jordan.rivera@talentmatch.ai'}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-xs font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Duty: {userProfile?.recruiterStatus === 'interviewing' ? 'Interviewing' : userProfile?.recruiterStatus === 'offline' ? 'Away' : 'Active Sourcing'}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] text-xs font-medium">
+                    <span className={`w-2 h-2 rounded-full ${userProfile?.recruiterStatus === 'interviewing' ? 'bg-amber-400' : userProfile?.recruiterStatus === 'offline' ? 'bg-slate-400' : 'bg-emerald-400'}`} />
+                    Duty: {userProfile?.recruiterStatus === 'interviewing' ? 'In Interview' : userProfile?.recruiterStatus === 'offline' ? 'Away' : 'Available'}
                   </span>
                 </div>
               </div>

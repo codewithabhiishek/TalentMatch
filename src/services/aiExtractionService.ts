@@ -24,7 +24,7 @@ export interface ExtractionResult {
   confidenceScore: number;
 }
 
-const SYSTEM_PROMPT = `You are an expert clinical recruiting intelligence parser for TalentFlow ATS.
+const SYSTEM_PROMPT = `You are an expert clinical recruiting intelligence parser for TalentMatch ATS.
 Your task is to extract exact candidate details from the provided resume text into a strict JSON object.
 CRITICAL RULES:
 - Extract ONLY information explicitly found in the text. Do NOT invent, guess, or hallucinate any field.
@@ -118,8 +118,8 @@ function extractFirstJsonObject(raw: string): string {
 export function calculateExtractionConfidence(c: Partial<Candidate>): number {
   let score = 0;
   if (c.firstName && c.firstName !== 'Candidate' && c.lastName && c.lastName !== 'Profile') score += 15;
-  if (c.email && c.email.includes('@') && !c.email.endsWith('.demo') && !c.email.includes('talentflow')) score += 20;
-  else if (c.email && c.email.includes('@') && !c.email.includes('talentflow')) score += 10;
+  if (c.email && c.email.includes('@') && !c.email.endsWith('.demo') && !c.email.includes('talentflow') && !c.email.includes('talentmatch')) score += 20;
+  else if (c.email && c.email.includes('@') && !c.email.includes('talentflow') && !c.email.includes('talentmatch')) score += 10;
   // 0 points for fake .demo or placeholder emails
   if (c.phone && c.phone !== '(555) 000-0000') score += 15;
   if (c.specialty && c.specialty !== 'General') score += 15;
@@ -424,7 +424,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   return {
     firstName,
     lastName,
-    email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, '')}@talentflow.demo`,
+    email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, '')}@talentmatch.demo`,
     phone,
     position: detectedPosition,
     specialty: detectedSpecialty,
@@ -483,7 +483,7 @@ export async function parseResumeWithAI(
     ? candidateData.email
     : (baseHeuristic.email && isValidEmail(baseHeuristic.email) && !baseHeuristic.email.endsWith('.demo'))
     ? baseHeuristic.email
-    : baseHeuristic.email || 'candidate@talentflow.demo';
+    : baseHeuristic.email || 'candidate@talentmatch.demo';
 
   const finalCandidate: Candidate = {
     id: `cand-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,

@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop, ShieldCheck, Activity
+  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop, ShieldCheck, Activity, Building2
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
@@ -287,7 +287,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-bold text-[var(--color-text-primary)] truncate group-hover:text-emerald-400 transition-colors">
+                  <p className="text-xs font-bold text-[var(--color-text-primary)] truncate group-hover:text-white transition-colors">
                     {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
                   </p>
                 </div>
@@ -518,7 +518,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="relative" ref={userRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[var(--color-surface-secondary)] transition-all border border-[var(--color-border)] hover:border-emerald-500/40 cursor-pointer select-none active:scale-98 shadow-2xs group"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[var(--color-surface-secondary)] transition-all border border-[var(--color-border)] hover:border-[var(--color-border-hover)] cursor-pointer select-none active:scale-98 shadow-2xs group"
                 aria-label="User account menu"
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
@@ -530,7 +530,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 />
                 <div className="hidden sm:flex flex-col text-left leading-tight">
                   <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-[var(--color-text-primary)] group-hover:text-emerald-400 transition-colors">
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] group-hover:text-white transition-colors">
                       {userProfile?.firstName || 'Jordan'}
                     </span>
                   </div>
@@ -548,8 +548,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-80 max-w-[calc(100vw-1.5rem)] z-50 p-2.5 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]"
                 >
                   {/* Recruiter Identity Header Card */}
-                  <div className="p-3.5 bg-gradient-to-br from-[#0c1824] via-[#08111a] to-[#121c15] border border-emerald-500/30 rounded-xl mb-2 relative overflow-hidden">
-                    <div className="flex items-start gap-3 relative z-10">
+                  <div className="p-3.5 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl mb-2.5 relative">
+                    <div className="flex items-start gap-3">
                       <RecruiterAvatar
                         user={userProfile}
                         size="lg"
@@ -557,38 +557,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className="text-xs font-black text-[var(--color-text-primary)] leading-tight">
+                          <p className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">
                             {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
                           </p>
-                          <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            <ShieldCheck size={9} /> Verified Lead
+                          <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-white/10 text-slate-200 border border-white/10">
+                            <ShieldCheck size={10} className="text-slate-300" /> Clinical Lead
                           </span>
                         </div>
-                        <p className="text-[11px] text-[var(--color-text-secondary)] font-medium mt-0.5">
+                        <p className="text-[11px] text-[var(--color-text-secondary)] font-normal mt-0.5">
                           {userProfile?.role || 'Senior Clinical Recruiter'}
                         </p>
                         <p className="text-[10px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
                           {userProfile?.email || 'jordan.rivera@talentmatch.ai'}
                         </p>
-                        <p className="text-[9px] font-mono text-emerald-400/80 mt-1 truncate">
-                          {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-1 truncate">
+                          <Building2 size={11} className="text-slate-400 shrink-0" />
+                          <span>{userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}</span>
                         </p>
                       </div>
                     </div>
 
                     {/* Live Recruiter Pipeline Metrics */}
-                    <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-emerald-500/20 text-center">
-                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
-                        <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Pipelines</span>
-                        <span className="text-xs font-black text-[var(--color-text-primary)]">{jobs?.length || 8}</span>
+                    <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-[var(--color-border)] text-center">
+                      <div className="bg-[var(--color-surface)] rounded-lg p-1.5 border border-[var(--color-border)]/60">
+                        <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Requisitions</span>
+                        <span className="text-xs font-bold text-[var(--color-text-primary)]">{jobs?.length || 8}</span>
                       </div>
-                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
+                      <div className="bg-[var(--color-surface)] rounded-lg p-1.5 border border-[var(--color-border)]/60">
                         <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Candidates</span>
-                        <span className="text-xs font-black text-emerald-400">{candidates?.length || 24}</span>
+                        <span className="text-xs font-bold text-[var(--color-text-primary)]">{candidates?.length || 24}</span>
                       </div>
-                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
+                      <div className="bg-[var(--color-surface)] rounded-lg p-1.5 border border-[var(--color-border)]/60">
                         <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Match Rate</span>
-                        <span className="text-xs font-black text-amber-400">98%</span>
+                        <span className="text-xs font-bold text-[var(--color-text-primary)]">98%</span>
                       </div>
                     </div>
                   </div>
@@ -600,7 +601,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       {[
                         { key: 'active', label: 'Available', dot: 'bg-emerald-400' },
                         { key: 'interviewing', label: 'Interview', dot: 'bg-amber-400' },
-                        { key: 'offline', label: 'Away', dot: 'bg-slate-500' },
+                        { key: 'offline', label: 'Away', dot: 'bg-slate-400' },
                       ].map(s => {
                         const isCurrent = (userProfile?.recruiterStatus || 'active') === s.key;
                         return (
@@ -610,8 +611,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             onClick={() => updateUserProfile({ recruiterStatus: s.key as any })}
                             className={`flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
                               isCurrent
-                                ? 'bg-emerald-500/15 border-emerald-500/40 text-[var(--color-text-primary)]'
-                                : 'bg-[var(--color-surface-secondary)]/50 border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                                ? 'bg-[var(--color-surface-secondary)] border-[var(--color-border-hover)] text-[var(--color-text-primary)] shadow-2xs'
+                                : 'bg-transparent border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)]/50'
                             }`}
                           >
                             <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -631,7 +632,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Settings size={14} className="text-[var(--color-text-tertiary)] group-hover:text-emerald-400 transition-colors" />
+                        <Settings size={14} className="text-[var(--color-text-tertiary)] group-hover:text-white transition-colors" />
                         <span>Recruiter Settings &amp; AI Config</span>
                       </div>
                       <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity">G S</span>
@@ -644,7 +645,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Keyboard size={14} className="text-[var(--color-text-tertiary)] group-hover:text-emerald-400 transition-colors" />
+                        <Keyboard size={14} className="text-[var(--color-text-tertiary)] group-hover:text-white transition-colors" />
                         <span>Keyboard Shortcuts</span>
                       </div>
                       <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)]">?</kbd>
@@ -675,9 +676,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       setShowUserMenu(false);
                       navigateTo('overview');
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 rounded-lg transition-colors cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 rounded-lg transition-colors cursor-pointer group"
                   >
-                    <Activity size={14} className="text-emerald-400" />
+                    <Activity size={14} className="text-[var(--color-text-tertiary)] group-hover:text-white transition-colors" />
                     <span>Return to Overview</span>
                   </button>
                 </div>

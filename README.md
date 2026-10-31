@@ -45,12 +45,13 @@ Healthcare staffing presents unique complexities: compact multi-state licensing,
 
 ## 🎨 Brand Identity
 
-TalentMatch features an intentional, distinctive visual identity moving away from generic SaaS blue and purple:
+TalentMatch features an intentional, architectural visual identity rooted in executive clinical craft:
 
-* **Emerald Mint (`#10b981` / `#34d399`)**: Represents **Talent** — clinical healthcare vitality, living potential, certified medical credentials, and renewal.
-* **Golden Amber (`#f59e0b` / `#fbbf24`)**: Represents the **Match** — the precision spark of connection, finding the ideal clinician for high-acuity hospital needs.
-* **Deep Medical Obsidian (`#080f1a` / `#03060c`)**: Grounded clinical canvas providing high contrast and zero eye fatigue.
-* **The Synergy Cross Mark**: Two interwoven ribbon loops forming an unbroken Möbius clinical cross (+) and stylized T-M monogram with a radiant central match-spark.
+* **Dark Obsidian & Charcoal (`#0f172a` / `#090d16`)**: Grounded, high-contrast canvas designed for sustained clinical recruiting workflows without visual fatigue.
+* **Crisp Pure White (`#ffffff`)**: High-contrast, razor-sharp typography and geometric letterforms with zero AI-generated rainbow gradients or artificial neon bloom.
+* **The Precision Match Mark**: Two dynamic architectural brackets (representing Candidate Talent and Requisition Opportunity) converging upon a central match diamond point.
+* **Executive Recruiter Presence**: A human, illustrated recruiter portrait for Jordan Rivera with active presence indicators (🟢 Available, 🟡 In Interview, ⚪ Away) and real-time clinical pipeline metrics.
+* **Humanistic Typography**: Clean standard sans typography (`DM Sans` & system-ui) strictly avoiding overused generic tech defaults.
 
 ---
 

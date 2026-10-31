@@ -389,6 +389,11 @@ export const useAppStore = create<AppState>()(
     {
       name: 'talentflow-storage',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.userProfile && state.userProfile.email?.includes('talentflow.com')) {
+          state.updateUserProfile({ email: 'jordan.rivera@talentmatch.ai' });
+        }
+      },
       // Only persist long-lived application state & device data in localStorage
       partialize: (state) => ({
         candidates: state.candidates,

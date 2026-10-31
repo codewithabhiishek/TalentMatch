@@ -1,69 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <defs>
-    <!-- Background Canvas Gradient: Deep Medical Obsidian -->
-    <linearGradient id="tmFavBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#080f1a"/>
-      <stop offset="1" stop-color="#03060c"/>
-    </linearGradient>
-
-    <!-- Outer Dual Border: Emerald Mint to Warm Golden Amber -->
-    <linearGradient id="tmFavBorder" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34d399" stop-opacity="0.85"/>
-      <stop offset="0.5" stop-color="#10b981" stop-opacity="0.6"/>
-      <stop offset="1" stop-color="#fbbf24" stop-opacity="0.85"/>
-    </linearGradient>
-
-    <!-- Vertical Ribbon Loop: Clinical Talent (Vibrant Mint to Emerald) -->
-    <linearGradient id="tmFavTalent" x1="24" y1="9" x2="24" y2="39" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34d399"/>
-      <stop offset="0.5" stop-color="#10b981"/>
-      <stop offset="1" stop-color="#059669"/>
-    </linearGradient>
-
-    <!-- Horizontal Ribbon Loop: Requisition Match (Golden Amber to Radiant Topaz) -->
-    <linearGradient id="tmFavMatch" x1="9" y1="24" x2="39" y2="24" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fde047"/>
-      <stop offset="0.5" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#d97706"/>
-    </linearGradient>
-
-    <!-- Core Ambient Radiance -->
-    <radialGradient id="tmCoreGlow" cx="24" cy="24" r="14" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34d399" stop-opacity="0.25"/>
-      <stop offset="0.7" stop-color="#f59e0b" stop-opacity="0.15"/>
-      <stop offset="1" stop-color="#080f1a" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Subtle Glow Filter -->
-    <filter id="tmGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="1.2" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-  </defs>
-
-  <!-- Squircle Base Canvas -->
-  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#tmFavBg)" stroke="url(#tmFavBorder)" stroke-width="1.8"/>
-
-  <!-- Core Ambient Glow -->
-  <circle cx="24" cy="24" r="14" fill="url(#tmCoreGlow)"/>
-
-  <!-- Horizontal Loop: The Requisition / Facility Need (Amber) -->
-  <path d="M14.5 19C11.74 19 9.5 21.24 9.5 24C9.5 26.76 11.74 29 14.5 29H33.5C36.26 29 38.5 26.76 38.5 24C38.5 21.24 36.26 19 33.5 19H14.5Z" 
-        stroke="url(#tmFavMatch)" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- Vertical Loop: The Clinical Talent (Emerald Mint) -->
-  <path d="M19 14.5C19 11.74 21.24 9.5 24 9.5C26.76 9.5 29 11.74 29 14.5V33.5C29 36.26 26.76 38.5 24 38.5C21.24 38.5 19 36.26 19 33.5V14.5Z" 
-        stroke="url(#tmFavTalent)" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- Interlaced Depth Occlusion (Emerald weaves over Amber on the left) -->
-  <path d="M19 21V27" stroke="#040810" stroke-width="7" stroke-linecap="butt"/>
-  <path d="M19 21V27" stroke="url(#tmFavTalent)" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- Interlaced Depth Occlusion (Amber weaves over Emerald on the right) -->
-  <path d="M26 24H32" stroke="#040810" stroke-width="7" stroke-linecap="butt"/>
-  <path d="M26 24H32" stroke="url(#tmFavMatch)" stroke-width="5" stroke-linecap="round"/>
-
-  <!-- Central Radiant Match Spark: White Core with Golden Halo -->
-  <path d="M24 18.5L25.5 22.5L29.5 24L25.5 25.5L24 29.5L22.5 25.5L18.5 24L22.5 22.5Z" fill="#ffffff" filter="url(#tmGlow)"/>
-  <circle cx="24" cy="24" r="1.5" fill="#fde047"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#0f172a" stroke="rgba(255, 255, 255, 0.16)" stroke-width="1"/>
+  <!-- TalentMatch Precision Match Mark: Two dynamic framing brackets with central match diamond -->
+  <path d="M 8.5 17 V 11 C 8.5 9.6 9.6 8.5 11 8.5 H 17" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 23.5 15 V 21 C 23.5 22.4 22.4 23.5 21 23.5 H 15" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 16 13.5 L 18.5 16 L 16 18.5 L 13.5 16 Z" fill="#ffffff"/>
 </svg>
