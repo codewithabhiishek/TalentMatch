@@ -6,7 +6,7 @@ import { MatchCardsSkeleton } from '../components/Skeletons';
 const matchStatuses = ['All', 'pending', 'reviewed', 'accepted', 'rejected'];
 
 export function JobMatches() {
-  const { jobMatches, candidates, jobs, navigateTo, updateMatchStatus, loadSampleData } = useAppStore();
+  const { jobMatches, candidates, jobs, navigateTo, updateMatchStatus, loadSampleData, addNotification } = useAppStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
@@ -21,6 +21,25 @@ export function JobMatches() {
     setStatusFilter('All');
     setSpecialtyFilter('All');
     setPage(1);
+  };
+
+  const handleFilterButtonClick = () => {
+    if (hasActiveFilters) {
+      resetFilters();
+      addNotification({
+        type: 'info',
+        title: 'Filters Cleared',
+        message: 'Showing all clinical talent matches.',
+      });
+    } else {
+      setStatusFilter('pending');
+      setPage(1);
+      addNotification({
+        type: 'info',
+        title: 'Quick Filter: Pending Matches',
+        message: 'Showing matches awaiting recruiter review. Click filter icon again to clear.',
+      });
+    }
   };
 
   useEffect(() => {
@@ -119,10 +138,10 @@ export function JobMatches() {
         <div className="toolbar-controls-group">
           <button
             type="button"
-            onClick={hasActiveFilters ? resetFilters : undefined}
-            className={`toolbar-filter-btn ${hasActiveFilters ? 'is-active' : ''}`}
-            title={hasActiveFilters ? 'Filters active — click to reset' : 'Filter options'}
-            aria-label={hasActiveFilters ? 'Reset active filters' : 'Filter options'}
+            onClick={handleFilterButtonClick}
+            className={`toolbar-filter-btn ${hasActiveFilters ? 'is-active' : ''} cursor-pointer active:scale-95 transition-all`}
+            title={hasActiveFilters ? 'Filters active — click to reset to All' : 'Quick filter: show pending matches'}
+            aria-label={hasActiveFilters ? 'Reset active filters' : 'Quick filter: show pending matches'}
           >
             <Filter size={15} />
             {hasActiveFilters && <span className="toolbar-filter-badge" />}

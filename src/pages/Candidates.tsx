@@ -43,6 +43,25 @@ export function Candidates() {
     setPage(1);
   };
 
+  const handleFilterButtonClick = () => {
+    if (hasActiveFilters) {
+      resetFilters();
+      addNotification({
+        type: 'info',
+        title: 'Filters Cleared',
+        message: 'Showing all candidates across all specialties.',
+      });
+    } else {
+      setStatusFilter('new');
+      setPage(1);
+      addNotification({
+        type: 'info',
+        title: 'Quick Filter: New Applicants',
+        message: 'Showing new applicants pending review. Click filter icon again to clear.',
+      });
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     const t = setTimeout(() => setLoading(false), 200);
@@ -173,10 +192,10 @@ export function Candidates() {
         <div className="toolbar-controls-group">
           <button
             type="button"
-            onClick={hasActiveFilters ? resetFilters : undefined}
-            className={`toolbar-filter-btn ${hasActiveFilters ? 'is-active' : ''}`}
-            title={hasActiveFilters ? 'Filters active — click to reset' : 'Filter options'}
-            aria-label={hasActiveFilters ? 'Reset active filters' : 'Filter options'}
+            onClick={handleFilterButtonClick}
+            className={`toolbar-filter-btn ${hasActiveFilters ? 'is-active' : ''} cursor-pointer active:scale-95 transition-all`}
+            title={hasActiveFilters ? 'Filters active — click to reset to All' : 'Quick filter: show new candidates'}
+            aria-label={hasActiveFilters ? 'Reset active filters' : 'Quick filter: show new candidates'}
           >
             <Filter size={15} />
             {hasActiveFilters && <span className="toolbar-filter-badge" />}

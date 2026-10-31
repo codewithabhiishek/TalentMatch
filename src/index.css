@@ -158,8 +158,20 @@ body {
 }
 
 /* Page transitions */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.996);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .page-enter {
-  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: pageEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
 }
 
 /* Scrollbar */
@@ -277,7 +289,16 @@ body {
   user-select: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: scale(0.96) translateY(0);
 }
 
 .btn:disabled {
@@ -394,12 +415,18 @@ body {
   background: transparent;
   color: var(--color-text-secondary);
   border: 1px solid transparent;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .btn-icon:hover {
   background: var(--color-surface-tertiary);
   color: var(--color-text-primary);
+  transform: translateY(-1px);
+}
+
+.btn-icon:active {
+  transform: scale(0.92) translateY(0);
 }
 
 .btn-icon-sm {

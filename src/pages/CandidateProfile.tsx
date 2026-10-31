@@ -367,16 +367,39 @@ export function CandidateProfile() {
           {/* Extraction Review */}
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4">
             <h3 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Extraction Review</h3>
-            <div className="flex items-start gap-2 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               {candidate.verifiedByRecruiter ? (
-                <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] font-medium">
-                  <CheckCircle size={13} /> Verified by recruiter
+                <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] font-semibold">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>Verified Clinical Credentials</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs text-[var(--color-warning)] font-medium">
-                  <AlertTriangle size={13} /> Pending verification
+                <div className="flex items-center gap-1.5 text-xs text-amber-500 font-semibold">
+                  <AlertTriangle size={14} />
+                  <span>Pending Recruiter Verification</span>
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  const nextState = !candidate.verifiedByRecruiter;
+                  updateCandidate(candidate.id, { verifiedByRecruiter: nextState });
+                  addNotification({
+                    type: nextState ? 'success' : 'info',
+                    title: nextState ? 'Candidate Verified' : 'Verification Status Reset',
+                    message: `${candidate.firstName} ${candidate.lastName} credentials marked as ${nextState ? 'verified' : 'pending'}.`,
+                  });
+                }}
+                className={`btn btn-sm text-xs cursor-pointer inline-flex items-center gap-1.5 active:scale-95 transition-all shadow-2xs ${
+                  candidate.verifiedByRecruiter
+                    ? 'btn-secondary text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                    : 'btn-primary bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
+              >
+                <CheckCircle size={12} />
+                <span>{candidate.verifiedByRecruiter ? 'Reset to Pending' : 'Verify Credentials'}</span>
+              </button>
             </div>
             <p className="text-[10px] text-[var(--color-text-tertiary)] leading-relaxed">
               Spatial document parsing extracts high-fidelity clinical credentials and career timelines directly from raw resumes.
