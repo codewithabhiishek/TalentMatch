@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, Copy, Check, Terminal, ExternalLink, ShieldCheck, Sparkles,
   Cpu, Activity, CheckCircle2, AlertCircle, RefreshCw, Play
@@ -233,7 +234,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     return `OLLAMA_ORIGINS="*" ollama serve`;
   };
 
-  return (
+  return createPortal(
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fade-in">
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-scale-in">
@@ -581,6 +582,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
         isOpen={benchmarkModalOpen}
         onClose={() => setBenchmarkModalOpen(false)}
       />
-    </>
+    </>,
+    document.body
   );
 }
