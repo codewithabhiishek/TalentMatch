@@ -138,9 +138,6 @@ function TerminalCodeBlock({
 }
 
 export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
-  const [isRendered, setIsRendered] = useState(isOpen);
-  const [isClosing, setIsClosing] = useState(false);
-
   const [os, setOs] = useState<OperatingSystem>('windows');
   const [activeStep, setActiveStep] = useState<number>(1);
   const [viewMode, setViewMode] = useState<ViewMode>('wizard');
@@ -162,43 +159,17 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     models?: string[];
   }>({ status: 'idle', message: '' });
 
-  // Handle smooth close with exit animation (180ms)
-  const handleSmoothClose = useCallback(() => {
-    if (isClosing) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-      setIsRendered(false);
-      setIsClosing(false);
-    }, 180);
-  }, [isClosing, onClose]);
-
-  // Keep rendered state in sync with isOpen prop
-  useEffect(() => {
-    if (isOpen) {
-      setIsRendered(true);
-      setIsClosing(false);
-    } else if (isRendered && !isClosing) {
-      setIsClosing(true);
-      const timer = setTimeout(() => {
-        setIsRendered(false);
-        setIsClosing(false);
-      }, 180);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, isRendered, isClosing]);
-
-  // Keyboard Escape listener for smooth exit
+  // Direct Escape key handler for clean instant close
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        handleSmoothClose();
+        onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleSmoothClose]);
+  }, [isOpen, onClose]);
 
   // Auto-detect user OS on mount
   useEffect(() => {
@@ -214,7 +185,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     }
   }, []);
 
-  if (!isRendered) return null;
+  if (!isOpen) return null;
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -314,17 +285,13 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   return createPortal(
     <>
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-sm ${
-          isClosing ? 'animate-modal-backdrop-exit' : 'animate-modal-backdrop-enter'
-        }`}
+        className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
         onClick={(e) => {
-          if (e.target === e.currentTarget) handleSmoothClose();
+          if (e.target === e.currentTarget) onClose();
         }}
       >
         <div
-          className={`bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh] ${
-            isClosing ? 'animate-modal-card-exit' : 'animate-modal-card-enter'
-          }`}
+          className="bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh] animate-scale-in"
         >
           
           {/* Top Header: Brand, Title, Symmetrical OS Selector & Responsive Close */}
@@ -353,7 +320,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                 {/* Mobile-only close button */}
                 <button
                   type="button"
-                  onClick={handleSmoothClose}
+                  onClick={onClose}
                   className="sm:hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                   aria-label="Close dialog"
                 >
@@ -416,10 +383,10 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                   {viewMode === 'wizard' ? <List size={14} /> : <Sliders size={14} />}
                 </button>
 
-                {/* Desktop-only Close Button with Smooth Animation */}
+                {/* Desktop-only Close Button */}
                 <button
                   type="button"
-                  onClick={handleSmoothClose}
+                  onClick={onClose}
                   className="hidden sm:flex w-7 h-7 rounded-lg items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   aria-label="Close dialog"
                 >
@@ -1361,7 +1328,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
               <button
                 type="button"
-                onClick={handleSmoothClose}
+                onClick={onClose}
                 className="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
               >
                 Close Guide

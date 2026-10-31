@@ -5,42 +5,15 @@ import { SHORTCUT_DEFINITIONS, isMac, MODIFIER_LABEL } from '../hooks/useKeyboar
 
 export function KeyboardShortcutsModal() {
   const { shortcutsModalOpen, setShortcutsModalOpen } = useAppStore();
-  const [isRendered, setIsRendered] = useState(shortcutsModalOpen);
-  const [isClosing, setIsClosing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<'All' | 'Navigation' | 'General' | 'Actions'>('All');
   const modalRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle smooth close with exit animation (180ms)
-  const handleSmoothClose = useCallback(() => {
-    if (isClosing) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      setShortcutsModalOpen(false);
-      setIsRendered(false);
-      setIsClosing(false);
-    }, 180);
-  }, [isClosing, setShortcutsModalOpen]);
-
-  useEffect(() => {
-    if (shortcutsModalOpen) {
-      setIsRendered(true);
-      setIsClosing(false);
-    } else if (isRendered && !isClosing) {
-      setIsClosing(true);
-      const timer = setTimeout(() => {
-        setIsRendered(false);
-        setIsClosing(false);
-      }, 180);
-      return () => clearTimeout(timer);
-    }
-  }, [shortcutsModalOpen, isRendered, isClosing]);
-
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        handleSmoothClose();
+        setShortcutsModalOpen(false);
       }
     }
     if (shortcutsModalOpen) {
@@ -52,18 +25,18 @@ export function KeyboardShortcutsModal() {
       setActiveCategory('All');
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [shortcutsModalOpen, handleSmoothClose]);
+  }, [shortcutsModalOpen, setShortcutsModalOpen]);
 
   // Keyboard escape handler specifically for the modal
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && shortcutsModalOpen) {
-        handleSmoothClose();
+        setShortcutsModalOpen(false);
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcutsModalOpen, handleSmoothClose]);
+  }, [shortcutsModalOpen, setShortcutsModalOpen]);
 
   const filteredShortcuts = useMemo(() => {
     let list = SHORTCUT_DEFINITIONS;
@@ -94,7 +67,7 @@ export function KeyboardShortcutsModal() {
     [filteredShortcuts]
   );
 
-  if (!isRendered) return null;
+  if (!shortcutsModalOpen) return null;
 
   const renderKeyCap = (key: string, idx: number, totalKeys: number, firstKey?: string) => {
     const isSequence = totalKeys === 2 && firstKey === 'G';
@@ -126,21 +99,17 @@ export function KeyboardShortcutsModal() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/60 backdrop-blur-sm ${
-        isClosing ? 'animate-modal-backdrop-exit' : 'animate-modal-backdrop-enter'
-      }`}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shortcuts-dialog-title"
       onClick={(e) => {
-        if (e.target === e.currentTarget) handleSmoothClose();
+        if (e.target === e.currentTarget) setShortcutsModalOpen(false);
       }}
     >
       <div
         ref={modalRef}
-        className={`w-full max-w-3xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] ${
-          isClosing ? 'animate-modal-card-exit' : 'animate-modal-card-enter'
-        }`}
+        className="w-full max-w-3xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] animate-scale-in"
       >
         {/* Header with Search and Title */}
         <div className="px-5 pt-5 pb-4 border-b border-[var(--color-border)] bg-[var(--color-surface-secondary)]/30 flex-shrink-0 space-y-3.5">
@@ -160,7 +129,7 @@ export function KeyboardShortcutsModal() {
             </div>
 
             <button
-              onClick={handleSmoothClose}
+              onClick={() => setShortcutsModalOpen(false)}
               className="btn-icon btn-icon-sm text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
               aria-label="Close shortcuts modal"
             >
