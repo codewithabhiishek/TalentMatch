@@ -206,6 +206,8 @@ interface Props {
 
 export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
   const { aiConfig } = useAppStore();
+  const [isRendered, setIsRendered] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<BenchmarkCaseResult[] | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'details'>('summary');
@@ -213,6 +215,42 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
     'case-icu': true,
   });
   const [copiedCli, setCopiedCli] = useState(false);
+
+  // Handle smooth close with exit animation (180ms)
+  const handleSmoothClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsRendered(false);
+      setIsClosing(false);
+    }, 180);
+  }, [isClosing, onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setIsClosing(false);
+    } else if (isRendered && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+        setIsClosing(false);
+      }, 180);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isRendered, isClosing]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleSmoothClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleSmoothClose]);
 
   const runLiveBenchmark = useCallback(async () => {
     setIsRunning(true);
@@ -355,7 +393,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
     setTimeout(() => setCopiedCli(false), 2000);
   };
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const avgAccuracy = results && results.length > 0
     ? Math.round(results.reduce((a, b) => a + b.accuracyScore, 0) / results.length)
@@ -366,14 +404,18 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in"
-      onClick={onClose}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-sm ${
+        isClosing ? 'animate-modal-backdrop-exit' : 'animate-modal-backdrop-enter'
+      }`}
+      onClick={handleSmoothClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="benchmark-title"
     >
       <div
-        className="relative w-full max-w-3xl max-h-[90vh] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-in"
+        className={`relative w-full max-w-3xl max-h-[90vh] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl flex flex-col overflow-hidden ${
+          isClosing ? 'animate-modal-card-exit' : 'animate-modal-card-enter'
+        }`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -397,7 +439,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleSmoothClose}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] transition-colors cursor-pointer shrink-0"
             aria-label="Close modal"
           >
@@ -509,7 +551,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
 
               {/* Tab 1: Interactive Scenario Summary */}
               {activeTab === 'summary' && (
-                <div className="space-y-2.5">
+                <div key="summary" className="space-y-2.5 animate-tab-slide">
                   {results.map((r, idx) => {
                     const isExpanded = !!expandedCases[r.id];
                     return (
@@ -578,7 +620,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
 
               {/* Tab 2: Full Field Breakdown */}
               {activeTab === 'details' && (
-                <div className="space-y-3">
+                <div key="details" className="space-y-3 animate-tab-slide">
                   {results.map((r, idx) => (
                     <div
                       key={r.id}
@@ -646,7 +688,7 @@ export function DiagnosticBenchmarkModal({ isOpen, onClose }: Props) {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleSmoothClose}
               className="btn btn-primary text-xs h-8.5 px-4 cursor-pointer font-semibold"
             >
               Done

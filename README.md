@@ -100,15 +100,17 @@ git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch
 Run 100% offline, private candidate extraction on your machine with Meta's Llama 3.2 3B:
 
 ```bash
-# 1. Install Ollama
-# Windows: winget install Ollama.Ollama
-# macOS: brew install ollama
-# Linux: curl -fsSL https://ollama.com/install.sh | sh
+# 1. Install Ollama Engine:
+# Windows (Option A - Recommended CLI): winget install Ollama.Ollama
+# Windows (Option B - Direct Installer): Download https://ollama.com/download/OllamaSetup.exe
+# Windows (Option C - PowerShell):      powershell -Command "Invoke-WebRequest -Uri 'https://ollama.com/download/OllamaSetup.exe' -OutFile '$env:TEMP\OllamaSetup.exe'; Start-Process '$env:TEMP\OllamaSetup.exe' -Wait"
+# macOS:                                brew install ollama (or download Ollama-darwin.zip)
+# Linux:                                curl -fsSL https://ollama.com/install.sh | sh
 
-# 2. Run Meta Llama 3.2 model
+# 2. Run Meta Llama 3.2 3B model (offline AI)
 ollama run llama3.2:3b
 
-# 3. For browser CORS access, start Ollama with:
+# 3. For web browser CORS access, start Ollama with:
 # Windows PowerShell: $env:OLLAMA_ORIGINS="*" ; ollama serve
 # macOS / Linux:      OLLAMA_ORIGINS="*" ollama serve
 ```

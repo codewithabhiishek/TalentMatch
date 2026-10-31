@@ -166,6 +166,79 @@ body {
   animation: tabSwitch 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Modal backdrop and card entrance & exit animations */
+@keyframes modalBackdropEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalBackdropExit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalCardEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalCardExit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+.animate-modal-backdrop-enter {
+  animation: modalBackdropEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-backdrop-exit {
+  animation: modalBackdropExit 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.animate-modal-card-enter {
+  animation: modalCardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-card-exit {
+  animation: modalCardExit 0.18s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+
+/* Premium tab switching and cross-fade animations */
+@keyframes tabSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-tab-slide {
+  animation: tabSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Page transitions */
 @keyframes pageEnter {
   0% {
@@ -178,7 +251,7 @@ body {
   }
 }
 
-.page-enter {
+.page-enter, .animate-page-transition {
   animation: pageEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

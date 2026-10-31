@@ -208,7 +208,7 @@ export function Settings() {
         <div className="card flex-1 p-4 sm:p-6">
           {/* PROFILE SETTINGS */}
           {activeTab === 'profile' && (
-            <div className="space-y-5 animate-fade-in">
+            <div key="profile" className="space-y-5 animate-tab-slide">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Recruiter Profile &amp; Identity</h3>
@@ -362,7 +362,7 @@ export function Settings() {
 
           {/* APPEARANCE */}
           {activeTab === 'appearance' && (
-            <div className="space-y-6 animate-fade-in">
+            <div key="appearance" className="space-y-6 animate-tab-slide">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Appearance & Themes</h3>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
@@ -487,7 +487,7 @@ export function Settings() {
 
           {/* LOCAL STORAGE & DATA MANAGEMENT */}
           {activeTab === 'storage' && (
-            <div className="space-y-6 animate-fade-in">
+            <div key="storage" className="space-y-6 animate-tab-slide">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
@@ -674,7 +674,7 @@ export function Settings() {
 
           {/* KEYBOARD SHORTCUTS */}
           {activeTab === 'shortcuts' && (
-            <div className="space-y-5 animate-fade-in">
+            <div key="shortcuts" className="space-y-5 animate-tab-slide">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Keyboard Shortcuts</h3>
@@ -734,7 +734,7 @@ export function Settings() {
 
           {/* NOTIFICATIONS */}
           {activeTab === 'notifications' && (
-            <div className="space-y-5 animate-fade-in">
+            <div key="notifications" className="space-y-5 animate-tab-slide">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
                   Real-Time Alerts &amp; Sound Chimes
@@ -1034,7 +1034,7 @@ export function Settings() {
 
           {/* INTEGRATIONS */}
           {activeTab === 'integrations' && (
-            <div className="space-y-4 animate-fade-in">
+            <div key="integrations" className="space-y-4 animate-tab-slide">
               <h3 className="text-sm font-medium">Integrations</h3>
               <p className="text-xs text-[var(--color-text-tertiary)]">Connect external services. Currently running in client-side Local Storage mode.</p>
               <div className="space-y-2">
@@ -1064,7 +1064,7 @@ export function Settings() {
 
           {/* AI & LLM CONFIGURATION */}
           {activeTab === 'api' && (
-            <div className="space-y-5 animate-fade-in">
+            <div key="api" className="space-y-5 animate-tab-slide">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                   <Key size={16} className="text-[var(--color-info)]" />

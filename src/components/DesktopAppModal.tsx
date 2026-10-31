@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  X, Copy, Check, Terminal, ShieldCheck, Sparkles,
+  X, Copy, Check, Terminal, Sparkles,
   Activity, CheckCircle2, AlertCircle, RefreshCw, Play,
-  ArrowRight, ArrowLeft, Apple, List, Sliders, CheckCheck,
-  CheckCircle, Zap, Lock, Cpu
+  ArrowRight, ArrowLeft, Apple, List, Sliders,
+  Zap, Lock, Cpu, Download, ExternalLink, HardDrive, ShieldCheck
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { DiagnosticBenchmarkModal } from './DiagnosticBenchmarkModal';
@@ -17,6 +17,8 @@ interface DesktopAppModalProps {
 
 type OperatingSystem = 'windows' | 'mac' | 'linux';
 type ViewMode = 'wizard' | 'all';
+type WinOllamaMethod = 'winget' | 'direct' | 'powershell';
+type WinStep1Method = 'quickstart' | 'standalone' | 'prereqs';
 
 function WindowsIcon({ size = 12, className = '' }: { size?: number; className?: string }) {
   return (
@@ -135,12 +137,19 @@ function TerminalCodeBlock({
 }
 
 export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
+  const [isRendered, setIsRendered] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
   const [os, setOs] = useState<OperatingSystem>('windows');
   const [activeStep, setActiveStep] = useState<number>(1);
   const [viewMode, setViewMode] = useState<ViewMode>('wizard');
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [step1SubTab, setStep1SubTab] = useState<'quickstart' | 'standalone'>('quickstart');
+  
+  // Windows specific installation options
+  const [winOllamaMethod, setWinOllamaMethod] = useState<WinOllamaMethod>('winget');
+  const [winStep1Method, setWinStep1Method] = useState<WinStep1Method>('quickstart');
+
   const [benchmarkModalOpen, setBenchmarkModalOpen] = useState(false);
 
   // Live Ollama connection tester state
@@ -150,6 +159,44 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     message: string;
     models?: string[];
   }>({ status: 'idle', message: '' });
+
+  // Handle smooth close with exit animation (180ms)
+  const handleSmoothClose = useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsRendered(false);
+      setIsClosing(false);
+    }, 180);
+  }, [isClosing, onClose]);
+
+  // Keep rendered state in sync with isOpen prop
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      setIsClosing(false);
+    } else if (isRendered && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+        setIsClosing(false);
+      }, 180);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isRendered, isClosing]);
+
+  // Keyboard Escape listener for smooth exit
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleSmoothClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleSmoothClose]);
 
   // Auto-detect user OS on mount
   useEffect(() => {
@@ -165,7 +212,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     }
   }, []);
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -211,7 +258,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   // Step definitions
   const steps = [
     { num: 1, title: 'Desktop App', subtitle: 'Launch App' },
-    { num: 2, title: 'Install Ollama', subtitle: 'CLI Engine' },
+    { num: 2, title: 'Install Ollama', subtitle: 'CLI / Direct .exe' },
     { num: 3, title: 'Run Llama 3.2', subtitle: 'Offline AI' },
     { num: 4, title: 'Link Port 11434', subtitle: 'CORS Test' },
     { num: 5, title: 'Verify Accuracy', subtitle: 'Benchmark' },
@@ -239,7 +286,12 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
   };
 
   const getOllamaInstallCommand = () => {
-    if (os === 'windows') return `winget install Ollama.Ollama`;
+    if (os === 'windows') {
+      if (winOllamaMethod === 'powershell') {
+        return `powershell -Command "Invoke-WebRequest -Uri 'https://ollama.com/download/OllamaSetup.exe' -OutFile '$env:TEMP\\OllamaSetup.exe'; Start-Process '$env:TEMP\\OllamaSetup.exe' -Wait"`;
+      }
+      return `winget install Ollama.Ollama`;
+    }
     if (os === 'mac') return `brew install ollama`;
     return `curl -fsSL https://ollama.com/install.sh | sh`;
   };
@@ -251,8 +303,19 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div className="bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-scale-in">
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm ${
+          isClosing ? 'animate-modal-backdrop-exit' : 'animate-modal-backdrop-enter'
+        }`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) handleSmoothClose();
+        }}
+      >
+        <div
+          className={`bg-[#0b121e] border border-white/12 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+            isClosing ? 'animate-modal-card-exit' : 'animate-modal-card-enter'
+          }`}
+        >
           
           {/* Top Header: Brand, Title, Symmetrical OS Selector & Close */}
           <div className="px-5 py-4 border-b border-white/10 bg-[#0f1728]/80 backdrop-blur-md">
@@ -331,9 +394,9 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                   {viewMode === 'wizard' ? <List size={14} /> : <Sliders size={14} />}
                 </button>
 
-                {/* Close Button */}
+                {/* Close Button with Smooth Animation */}
                 <button
-                  onClick={onClose}
+                  onClick={handleSmoothClose}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   aria-label="Close dialog"
                 >
@@ -387,12 +450,12 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
             )}
           </div>
 
-          {/* Modal Main Content */}
+          {/* Modal Main Content with Fluid Tab-Slide Motion */}
           <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
             
             {/* VIEW MODE A: FOCUSED STEP-BY-STEP WIZARD */}
             {viewMode === 'wizard' && (
-              <div key={`${os}-${activeStep}`} className="animate-fade-in space-y-4 min-h-[350px]">
+              <div key={`${os}-${activeStep}`} className="animate-tab-slide space-y-4 min-h-[350px]">
                 
                 {/* STEP 1: Download & Launch TalentMatch */}
                 {activeStep === 1 && (
@@ -412,13 +475,13 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                         </p>
                       </div>
 
-                      {/* Sub-tab quickstart vs standalone */}
-                      <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto">
+                      {/* Sub-tabs for Step 1 */}
+                      <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap">
                         <button
                           type="button"
-                          onClick={() => setStep1SubTab('quickstart')}
+                          onClick={() => setWinStep1Method('quickstart')}
                           className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-                            step1SubTab === 'quickstart'
+                            winStep1Method === 'quickstart'
                               ? 'bg-slate-800 text-white shadow-xs border border-white/10'
                               : 'text-slate-400 hover:text-white'
                           }`}
@@ -427,43 +490,108 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setStep1SubTab('standalone')}
+                          onClick={() => setWinStep1Method('standalone')}
                           className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-                            step1SubTab === 'standalone'
+                            winStep1Method === 'standalone'
                               ? 'bg-slate-800 text-white shadow-xs border border-white/10'
                               : 'text-slate-400 hover:text-white'
                           }`}
                         >
                           Build Standalone (.exe)
                         </button>
+                        {os === 'windows' && (
+                          <button
+                            type="button"
+                            onClick={() => setWinStep1Method('prereqs')}
+                            className={`px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                              winStep1Method === 'prereqs'
+                                ? 'bg-slate-800 text-white shadow-xs border border-white/10'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            Prerequisites
+                          </button>
+                        )}
                       </div>
                     </div>
 
-                    {step1SubTab === 'quickstart' ? (
-                      <TerminalCodeBlock
-                        id="talentmatch-run"
-                        shellLabel={os === 'windows' ? 'PowerShell 7+ / CMD' : os === 'mac' ? 'zsh / Terminal' : 'bash / zsh'}
-                        command={getTalentMatchRunCommand()}
-                        displayLines={getTalentMatchRunLines()}
-                        helperText="Clones repository, installs dependencies, and launches native Electron desktop app with automatic folder sync."
-                        copiedId={copiedIndex}
-                        onCopy={copyToClipboard}
-                        accentColor="sky"
-                      />
-                    ) : (
-                      <TerminalCodeBlock
-                        id="standalone-build"
-                        shellLabel={os === 'windows' ? 'PowerShell' : 'Terminal'}
-                        command={getStandaloneBuildCommand()}
-                        displayLines={[getStandaloneBuildCommand()]}
-                        helperText={`Packages an independent executable in the release/ folder (${os === 'windows' ? 'Portable .exe' : os === 'mac' ? '.dmg Installer' : 'Linux build'}). No terminal required after packaging.`}
-                        copiedId={copiedIndex}
-                        onCopy={copyToClipboard}
-                        accentColor="emerald"
-                      />
+                    {winStep1Method === 'quickstart' && (
+                      <div className="animate-tab-slide">
+                        <TerminalCodeBlock
+                          id="talentmatch-run"
+                          shellLabel={os === 'windows' ? 'PowerShell 7+ / CMD' : os === 'mac' ? 'zsh / Terminal' : 'bash / zsh'}
+                          command={getTalentMatchRunCommand()}
+                          displayLines={getTalentMatchRunLines()}
+                          helperText="Clones repository, installs dependencies, and launches native Electron desktop app with automatic folder sync."
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="sky"
+                        />
+                      </div>
                     )}
 
-                    {/* Symmetrical 3-Pill Feature Bar (Replaces Cluttered Box Soup) */}
+                    {winStep1Method === 'standalone' && (
+                      <div className="animate-tab-slide">
+                        <TerminalCodeBlock
+                          id="standalone-build"
+                          shellLabel={os === 'windows' ? 'PowerShell' : 'Terminal'}
+                          command={getStandaloneBuildCommand()}
+                          displayLines={[getStandaloneBuildCommand()]}
+                          helperText={`Packages an independent executable in the release/ folder (${os === 'windows' ? 'Portable .exe' : os === 'mac' ? '.dmg Installer' : 'Linux build'}). No terminal required after packaging.`}
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="emerald"
+                        />
+                      </div>
+                    )}
+
+                    {winStep1Method === 'prereqs' && os === 'windows' && (
+                      <div className="animate-tab-slide space-y-3">
+                        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <span className="font-semibold text-white text-xs flex items-center gap-1.5">
+                              <HardDrive size={13} className="text-sky-400" />
+                              <span>Node.js v18+ LTS (Required for running locally)</span>
+                            </span>
+                            <p className="text-[11px] text-slate-400">
+                              CLI: <code className="font-mono text-sky-300">winget install OpenJS.NodeJS.LTS</code>
+                            </p>
+                          </div>
+                          <a
+                            href="https://nodejs.org"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                          >
+                            <Download size={13} />
+                            <span>Download Node.js ↗</span>
+                          </a>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <span className="font-semibold text-white text-xs flex items-center gap-1.5">
+                              <Terminal size={13} className="text-emerald-400" />
+                              <span>Git for Windows (Required to clone repository)</span>
+                            </span>
+                            <p className="text-[11px] text-slate-400">
+                              CLI: <code className="font-mono text-emerald-300">winget install Git.Git</code>
+                            </p>
+                          </div>
+                          <a
+                            href="https://git-scm.com/download/win"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                          >
+                            <Download size={13} />
+                            <span>Download Git ↗</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Symmetrical 3-Pill Feature Bar */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                       <div className="p-3 rounded-xl bg-slate-900/70 border border-white/8 flex items-start gap-2.5">
                         <Zap size={14} className="text-sky-400 shrink-0 mt-0.5" />
@@ -496,7 +624,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                   </div>
                 )}
 
-                {/* STEP 2: Install Ollama */}
+                {/* STEP 2: Install Ollama (Comprehensive Windows winget + Direct Download + Fallback) */}
                 {activeStep === 2 && (
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -506,38 +634,177 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                             2
                           </span>
                           <h4 className="text-sm font-bold text-white">
-                            Install Ollama via Terminal
+                            Install Ollama Engine
                           </h4>
                         </div>
                         <p className="text-xs text-slate-300 mt-1">
-                          Ollama is an open-source engine that runs local LLMs on your CPU or GPU without sending data to external APIs.
+                          Ollama runs open-source LLMs locally on CPU/GPU without external APIs or cloud tokens.
                         </p>
                       </div>
 
-                      <a
-                        href="https://ollama.com/download"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 rounded-lg text-xs font-medium text-sky-300 bg-sky-500/10 border border-sky-500/25 hover:bg-sky-500/20 transition-colors shrink-0 self-start sm:self-auto cursor-pointer"
-                      >
-                        ollama.com/download ↗
-                      </a>
+                      {/* Windows-specific installation method selector */}
+                      {os === 'windows' ? (
+                        <div className="inline-flex p-0.5 rounded-lg bg-slate-900 border border-white/10 shrink-0 self-start sm:self-auto flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setWinOllamaMethod('winget')}
+                            className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                              winOllamaMethod === 'winget'
+                                ? 'bg-slate-800 text-white shadow-xs border border-white/10'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            winget (CLI)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWinOllamaMethod('direct')}
+                            className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                              winOllamaMethod === 'direct'
+                                ? 'bg-slate-800 text-white shadow-xs border border-white/10'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            Direct .exe
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWinOllamaMethod('powershell')}
+                            className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+                              winOllamaMethod === 'powershell'
+                                ? 'bg-slate-800 text-white shadow-xs border border-white/10'
+                                : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            PowerShell (No winget)
+                          </button>
+                        </div>
+                      ) : (
+                        <a
+                          href="https://ollama.com/download"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded-lg text-xs font-medium text-sky-300 bg-sky-500/10 border border-sky-500/25 hover:bg-sky-500/20 transition-colors shrink-0 self-start sm:self-auto cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>ollama.com/download</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      )}
                     </div>
 
-                    <TerminalCodeBlock
-                      id="ollama-install"
-                      shellLabel={os === 'windows' ? 'PowerShell / Command Prompt' : 'Terminal'}
-                      command={getOllamaInstallCommand()}
-                      displayLines={[getOllamaInstallCommand()]}
-                      helperText={
-                        os === 'windows'
-                          ? 'Uses the official Microsoft Windows Package Manager (winget). Installs the background Ollama service cleanly.'
-                          : 'Installs the native Ollama CLI service on your operating system.'
-                      }
-                      copiedId={copiedIndex}
-                      onCopy={copyToClipboard}
-                      accentColor="sky"
-                    />
+                    {/* Windows: winget command */}
+                    {os === 'windows' && winOllamaMethod === 'winget' && (
+                      <div className="animate-tab-slide space-y-2.5">
+                        <TerminalCodeBlock
+                          id="ollama-install-winget"
+                          shellLabel="Windows Package Manager (winget)"
+                          command="winget install Ollama.Ollama"
+                          displayLines={['winget install Ollama.Ollama']}
+                          helperText="Uses Microsoft's built-in Windows Package Manager (winget). Downloads and installs the background Ollama service automatically."
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="sky"
+                        />
+                        <div className="p-2.5 rounded-lg bg-slate-900/60 border border-white/8 flex items-center justify-between text-[11px] text-slate-400">
+                          <span>Don&apos;t have winget installed on this Windows PC?</span>
+                          <button
+                            type="button"
+                            onClick={() => setWinOllamaMethod('direct')}
+                            className="text-sky-400 hover:text-sky-300 font-semibold cursor-pointer underline underline-offset-2 ml-2"
+                          >
+                            Switch to Direct .exe Download →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Windows: Direct 1-Click .exe Download */}
+                    {os === 'windows' && winOllamaMethod === 'direct' && (
+                      <div className="animate-tab-slide space-y-3">
+                        <div className="p-4 rounded-xl border border-sky-500/30 bg-sky-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+                          <div className="space-y-1">
+                            <span className="font-bold text-white text-sm flex items-center gap-2">
+                              <Download size={16} className="text-sky-400" />
+                              <span>Official OllamaSetup.exe Installer</span>
+                            </span>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              Standard Windows setup executable (~70 MB). No terminal commands or winget required. Runs on Windows 10 &amp; 11.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                            <a
+                              href="https://ollama.com/download/OllamaSetup.exe"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-sky-400 hover:bg-sky-300 shadow-md transition-all active:scale-97 flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Download size={14} />
+                              <span>Download OllamaSetup.exe</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard('https://ollama.com/download/OllamaSetup.exe', 'direct-exe-url')}
+                              className="p-2 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 hover:text-white transition-all cursor-pointer"
+                              title="Copy direct download link"
+                            >
+                              {copiedIndex === 'direct-exe-url' ? (
+                                <Check size={14} className="text-emerald-400" />
+                              ) : (
+                                <Copy size={14} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-slate-900/60 border border-white/8 text-[11px] text-slate-400 space-y-1">
+                          <strong className="text-white block font-semibold">How to install:</strong>
+                          <p>1. Click the button above to download <code className="text-sky-300 font-mono">OllamaSetup.exe</code>.</p>
+                          <p>2. Double click the file and follow the 10-second setup prompts.</p>
+                          <p>3. Once complete, Ollama appears in your Windows system tray ready for Step 3.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Windows: PowerShell Direct Fallback (No winget) */}
+                    {os === 'windows' && winOllamaMethod === 'powershell' && (
+                      <div className="animate-tab-slide space-y-2">
+                        <TerminalCodeBlock
+                          id="ollama-install-powershell"
+                          shellLabel="PowerShell 1-Liner (Fallback)"
+                          command={`powershell -Command "Invoke-WebRequest -Uri 'https://ollama.com/download/OllamaSetup.exe' -OutFile '$env:TEMP\\OllamaSetup.exe'; Start-Process '$env:TEMP\\OllamaSetup.exe' -Wait"`}
+                          displayLines={[
+                            `$exe = "$env:TEMP\\OllamaSetup.exe"`,
+                            `Invoke-WebRequest -Uri "https://ollama.com/download/OllamaSetup.exe" -OutFile $exe`,
+                            `Start-Process $exe -Wait`,
+                          ]}
+                          helperText="Universal PowerShell script for all Windows computers. Automatically downloads OllamaSetup.exe to your temp folder and launches the installer."
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="amber"
+                        />
+                      </div>
+                    )}
+
+                    {/* Non-Windows OS (macOS / Linux) */}
+                    {os !== 'windows' && (
+                      <div className="animate-tab-slide">
+                        <TerminalCodeBlock
+                          id="ollama-install-unix"
+                          shellLabel={os === 'mac' ? 'Terminal (Homebrew)' : 'Linux Terminal (Curl)'}
+                          command={getOllamaInstallCommand()}
+                          displayLines={[getOllamaInstallCommand()]}
+                          helperText={
+                            os === 'mac'
+                              ? 'Installs the native Ollama CLI application via Homebrew, or download directly from ollama.com/download/Ollama-darwin.zip.'
+                              : 'Installs the native Linux Ollama systemd background daemon.'
+                          }
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="sky"
+                        />
+                      </div>
+                    )}
 
                     {/* Symmetrical Feature Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -660,7 +927,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
                     {/* Ping Feedback Banners */}
                     {pingResult.status === 'success' && (
-                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-start gap-2.5 animate-fade-in">
+                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-start gap-2.5 animate-tab-slide">
                         <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-emerald-400" />
                         <div>
                           <strong className="block text-emerald-300 font-semibold">{pingResult.message}</strong>
@@ -674,7 +941,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     )}
 
                     {pingResult.status === 'error' && (
-                      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-start gap-2.5 animate-fade-in">
+                      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-start gap-2.5 animate-tab-slide">
                         <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-400" />
                         <p className="text-[11px] leading-relaxed text-amber-300">
                           {pingResult.message}
@@ -743,7 +1010,7 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
             {/* VIEW MODE B: CHEATSHEET (ALL 5 STEPS STACKED CLEANLY) */}
             {viewMode === 'all' && (
-              <div key={os} className="animate-fade-in space-y-4">
+              <div key={os} className="animate-tab-slide space-y-4">
                 
                 {/* Step 1 */}
                 <div className="p-4 rounded-xl bg-slate-900/60 border border-white/8 space-y-2.5">
@@ -777,10 +1044,10 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                       <span className="w-5 h-5 rounded-md bg-sky-500 text-slate-950 font-mono text-[11px] font-black flex items-center justify-center">
                         2
                       </span>
-                      <span>Install Ollama via Terminal</span>
+                      <span>Install Ollama via Terminal or Direct Download</span>
                     </span>
                     <span className="text-[10px] text-slate-400 font-mono">
-                      {os === 'windows' ? 'winget' : os === 'mac' ? 'brew' : 'curl'}
+                      {os === 'windows' ? 'winget / Direct .exe / PowerShell' : os === 'mac' ? 'brew' : 'curl'}
                     </span>
                   </div>
                   <TerminalCodeBlock
@@ -788,7 +1055,11 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                     shellLabel={os === 'windows' ? 'PowerShell / CMD' : 'Terminal'}
                     command={getOllamaInstallCommand()}
                     displayLines={[getOllamaInstallCommand()]}
-                    helperText="Installs native Ollama service on your machine."
+                    helperText={
+                      os === 'windows'
+                        ? 'Uses Microsoft Windows Package Manager (winget) or download OllamaSetup.exe directly from ollama.com/download/OllamaSetup.exe.'
+                        : 'Installs native Ollama service on your machine.'
+                    }
                     copiedId={copiedIndex}
                     onCopy={copyToClipboard}
                     accentColor="sky"
@@ -955,10 +1226,10 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
 
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleSmoothClose}
                 className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
               >
-                Close
+                Close Guide
               </button>
             </div>
 
