@@ -10,6 +10,7 @@ import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
 import { testAIConnection, AIConfig } from '../services/aiExtractionService';
 import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
 import { notificationAudio } from '../services/notificationAudioService';
+import { RecruiterAvatar } from '../components/RecruiterAvatar';
 
 export function Settings() {
   const {
@@ -207,11 +208,47 @@ export function Settings() {
           {/* PROFILE SETTINGS */}
           {activeTab === 'profile' && (
             <div className="space-y-5 animate-fade-in">
-              <div>
-                <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Profile Settings</h3>
-                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                  Update your identity details. These are stored locally in your browser.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Recruiter Profile &amp; Identity</h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                    Executive recruiter identity stored privately in local storage on this machine.
+                  </p>
+                </div>
+              </div>
+
+              {/* Recruiter Preview Hero Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0c1824] via-[#08111a] to-[#121c15] border border-emerald-500/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <RecruiterAvatar
+                    user={{ firstName: formData.firstName, lastName: formData.lastName }}
+                    size="xl"
+                    status={userProfile?.recruiterStatus || 'active'}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm sm:text-base font-black text-white">
+                        {formData.firstName || 'Jordan'} {formData.lastName || 'Rivera'}
+                      </h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Senior Clinical Lead
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                      {formData.role || 'Senior Clinical Recruiter'} · {userProfile?.facility || 'Pacific Health System'}
+                    </p>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] font-mono mt-0.5">
+                      {formData.email || 'jordan.rivera@talentmatch.ai'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-xs font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Duty: {userProfile?.recruiterStatus === 'interviewing' ? 'Interviewing' : userProfile?.recruiterStatus === 'offline' ? 'Away' : 'Active Sourcing'}
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

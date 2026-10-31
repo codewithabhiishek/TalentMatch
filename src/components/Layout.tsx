@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop
+  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop, ShieldCheck, Activity
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
@@ -12,6 +12,7 @@ import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 import { ShortcutSequenceIndicator } from './ShortcutSequenceIndicator';
 import { DesktopAppModal } from './DesktopAppModal';
 import { ToastNotification } from './ToastNotification';
+import { RecruiterAvatar } from './RecruiterAvatar';
 import { Logo } from './Logo';
 
 function formatRelativeTime(dateString: string): string {
@@ -57,7 +58,7 @@ const navItems: { id: Page; label: string; icon: React.ReactNode; shortcut: stri
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const {
-    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme, userProfile,
+    currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme, userProfile, updateUserProfile,
     candidates, jobs, loadSampleData,
     navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, markAllNotificationsRead, toggleTheme,
     setShortcutsModalOpen
@@ -258,22 +259,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        {/* User section */}
-        <div className={`border-t border-[var(--color-border)] p-3 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
+        {/* Executive Recruiter Workspace section */}
+        <div className={`border-t border-[var(--color-border)] p-2.5 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
           {sidebarCollapsed ? (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs ring-1 ring-white/10 shrink-0" title="Jordan Rivera (Senior Recruiter)">
-              <span>{userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="cursor-pointer group hover:scale-105 transition-transform"
+              title={`${userProfile?.firstName || 'Jordan'} ${userProfile?.lastName || 'Rivera'} (${userProfile?.role || 'Senior Clinical Recruiter'})`}
+            >
+              <RecruiterAvatar
+                user={userProfile}
+                size="sm"
+                status={userProfile?.recruiterStatus || 'active'}
+              />
+            </button>
           ) : (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs ring-1 ring-white/10 shrink-0">
-                <span>{userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}</span>
+            <button
+              type="button"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-full p-2 rounded-xl hover:bg-[var(--color-surface-secondary)]/80 border border-transparent hover:border-[var(--color-border)] flex items-center gap-2.5 transition-all cursor-pointer text-left group"
+            >
+              <RecruiterAvatar
+                user={userProfile}
+                size="md"
+                status={userProfile?.recruiterStatus || 'active'}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-[var(--color-text-primary)] truncate group-hover:text-emerald-400 transition-colors">
+                    {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
+                  </p>
+                </div>
+                <p className="text-[10px] text-[var(--color-text-tertiary)] truncate">
+                  {userProfile?.role || 'Senior Clinical Recruiter'}
+                </p>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}</p>
-                <p className="text-[11px] text-[var(--color-text-tertiary)] truncate">{userProfile?.role || 'Senior Recruiter'}</p>
-              </div>
-            </div>
+            </button>
           )}
         </div>
       </aside>
@@ -492,24 +514,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
             </div>
 
-            {/* User Profile Menu */}
+            {/* Executive Recruiter Profile Menu */}
             <div className="relative" ref={userRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--color-surface-tertiary)] transition-colors border border-transparent hover:border-[var(--color-border)] cursor-pointer select-none active:scale-98"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[var(--color-surface-secondary)] transition-all border border-[var(--color-border)] hover:border-emerald-500/40 cursor-pointer select-none active:scale-98 shadow-2xs group"
                 aria-label="User account menu"
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
               >
-                <div className="w-7.5 h-7.5 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-semibold flex items-center justify-center text-xs shadow-xs shrink-0 ring-1 ring-white/10">
-                  <span>
-                    {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
-                  </span>
-                </div>
+                <RecruiterAvatar
+                  user={userProfile}
+                  size="sm"
+                  status={userProfile?.recruiterStatus || 'active'}
+                />
                 <div className="hidden sm:flex flex-col text-left leading-tight">
-                  <span className="text-xs font-semibold text-[var(--color-text-primary)]">
-                    {userProfile?.firstName || 'Jordan'}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] group-hover:text-emerald-400 transition-colors">
+                      {userProfile?.firstName || 'Jordan'}
+                    </span>
+                  </div>
                   <span className="text-[10px] text-[var(--color-text-tertiary)]">
                     {userProfile?.role || 'Senior Recruiter'}
                   </span>
@@ -521,35 +545,85 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div
                   role="menu"
                   aria-orientation="vertical"
-                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-72 max-w-[calc(100vw-1.5rem)] z-50 p-2 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)]"
+                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-80 max-w-[calc(100vw-1.5rem)] z-50 p-2.5 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]"
                 >
-                  {/* User Identity Header Card */}
-                  <div className="p-3 bg-[var(--color-surface-secondary)]/70 border border-[var(--color-border)]/60 rounded-lg mb-1.5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0 ring-2 ring-white/10">
-                        <span>
-                          {userProfile?.firstName?.[0] || 'J'}{userProfile?.lastName?.[0] || 'R'}
-                        </span>
-                      </div>
+                  {/* Recruiter Identity Header Card */}
+                  <div className="p-3.5 bg-gradient-to-br from-[#0c1824] via-[#08111a] to-[#121c15] border border-emerald-500/30 rounded-xl mb-2 relative overflow-hidden">
+                    <div className="flex items-start gap-3 relative z-10">
+                      <RecruiterAvatar
+                        user={userProfile}
+                        size="lg"
+                        status={userProfile?.recruiterStatus || 'active'}
+                      />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-[var(--color-text-primary)] leading-snug">
-                          {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
-                        </p>
-                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
-                          {userProfile?.email || 'jordan@talentflow.com'}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] shadow-2xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
-                            {userProfile?.role || 'Senior Recruiter'}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-xs font-black text-[var(--color-text-primary)] leading-tight">
+                            {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
+                          </p>
+                          <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <ShieldCheck size={9} /> Verified Lead
                           </span>
                         </div>
+                        <p className="text-[11px] text-[var(--color-text-secondary)] font-medium mt-0.5">
+                          {userProfile?.role || 'Senior Clinical Recruiter'}
+                        </p>
+                        <p className="text-[10px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
+                          {userProfile?.email || 'jordan.rivera@talentmatch.ai'}
+                        </p>
+                        <p className="text-[9px] font-mono text-emerald-400/80 mt-1 truncate">
+                          {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Live Recruiter Pipeline Metrics */}
+                    <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-emerald-500/20 text-center">
+                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
+                        <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Pipelines</span>
+                        <span className="text-xs font-black text-[var(--color-text-primary)]">{jobs?.length || 8}</span>
+                      </div>
+                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
+                        <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Candidates</span>
+                        <span className="text-xs font-black text-emerald-400">{candidates?.length || 24}</span>
+                      </div>
+                      <div className="bg-[var(--color-surface)]/60 rounded-lg p-1.5 border border-white/5">
+                        <span className="block text-[9px] text-[var(--color-text-tertiary)] uppercase font-semibold">Match Rate</span>
+                        <span className="text-xs font-black text-amber-400">98%</span>
                       </div>
                     </div>
                   </div>
 
+                  {/* Recruiter Duty Status Selector */}
+                  <div className="px-1 py-1 mb-1">
+                    <span className="text-[10px] uppercase font-bold text-[var(--color-text-tertiary)] px-2">Recruiter Status</span>
+                    <div className="grid grid-cols-3 gap-1 mt-1">
+                      {[
+                        { key: 'active', label: 'Available', dot: 'bg-emerald-400' },
+                        { key: 'interviewing', label: 'Interview', dot: 'bg-amber-400' },
+                        { key: 'offline', label: 'Away', dot: 'bg-slate-500' },
+                      ].map(s => {
+                        const isCurrent = (userProfile?.recruiterStatus || 'active') === s.key;
+                        return (
+                          <button
+                            key={s.key}
+                            type="button"
+                            onClick={() => updateUserProfile({ recruiterStatus: s.key as any })}
+                            className={`flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
+                              isCurrent
+                                ? 'bg-emerald-500/15 border-emerald-500/40 text-[var(--color-text-primary)]'
+                                : 'bg-[var(--color-surface-secondary)]/50 border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                            <span>{s.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Menu Items */}
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 border-t border-[var(--color-border)]/60 pt-1.5">
                     <button
                       type="button"
                       role="menuitem"
@@ -557,8 +631,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Settings size={14} className="text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors" />
-                        <span>Settings & Themes</span>
+                        <Settings size={14} className="text-[var(--color-text-tertiary)] group-hover:text-emerald-400 transition-colors" />
+                        <span>Recruiter Settings &amp; AI Config</span>
                       </div>
                       <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity">G S</span>
                     </button>
@@ -570,17 +644,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Keyboard size={14} className="text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors" />
+                        <Keyboard size={14} className="text-[var(--color-text-tertiary)] group-hover:text-emerald-400 transition-colors" />
                         <span>Keyboard Shortcuts</span>
                       </div>
                       <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)]">?</kbd>
                     </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { toggleTheme(); }}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {theme === 'light' ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-sky-400" />}
+                        <span>Toggle Theme ({theme})</span>
+                      </div>
+                      <kbd className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)]">T</kbd>
+                    </button>
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-[var(--color-border)]/70 my-1.5" />
+                  <div className="border-t border-[var(--color-border)]/70 my-1" />
 
-                  {/* Sign Out */}
+                  {/* Reset to overview */}
                   <button
                     type="button"
                     role="menuitem"
@@ -588,11 +675,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       setShowUserMenu(false);
                       navigateTo('overview');
                     }}
-                    className="w-full text-left px-3 py-2 text-xs font-medium text-[var(--color-error)] hover:bg-[var(--color-error-bg)] flex items-center gap-2.5 rounded-lg transition-colors cursor-pointer"
-                    title="Reset session to Overview"
+                    className="w-full text-left px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)] flex items-center gap-2.5 rounded-lg transition-colors cursor-pointer"
                   >
-                    <LogOut size={14} className="text-[var(--color-error)]" />
-                    <span>Sign Out</span>
+                    <Activity size={14} className="text-emerald-400" />
+                    <span>Return to Overview</span>
                   </button>
                 </div>
               )}

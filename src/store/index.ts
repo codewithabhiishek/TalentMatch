@@ -34,14 +34,20 @@ export interface UserProfile {
   email: string;
   role: string;
   timezone: string;
+  department?: string;
+  facility?: string;
+  recruiterStatus?: 'active' | 'interviewing' | 'offline';
 }
 
 const defaultProfile: UserProfile = {
   firstName: 'Jordan',
   lastName: 'Rivera',
-  email: 'jordan@talentflow.com',
-  role: 'Senior Recruiter',
+  email: 'jordan.rivera@talentmatch.ai',
+  role: 'Senior Clinical Recruiter',
   timezone: 'Pacific Time (PT)',
+  department: 'Acute & ICU Talent Division',
+  facility: 'Pacific Health System · Level 1 Trauma',
+  recruiterStatus: 'active',
 };
 
 export interface AppState {
