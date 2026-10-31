@@ -151,37 +151,33 @@ body {
   animation: scaleIn 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+/* Clean, instant tab transitions with zero vertical jitter or layout shift */
 @keyframes tabSwitch {
   0% {
-    opacity: 0;
-    transform: translateY(7px) scale(0.992);
+    opacity: 0.95;
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
 .animate-tab-switch {
-  animation: tabSwitch 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: tabSwitch 0.08s ease-out forwards;
 }
 
-/* Premium tab switching and cross-fade animations */
+/* Stable tab switching and cross-fade animations with zero scale or translateY movement */
 @keyframes tabSlideIn {
   0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.995);
+    opacity: 0.95;
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
 .animate-tab-slide {
-  animation: tabSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity;
-  transform: translateZ(0);
+  animation: tabSlideIn 0.08s ease-out forwards;
+  will-change: opacity;
 }
 
 /* Page transitions with GPU hardware acceleration */

@@ -215,10 +215,10 @@ export function Settings() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 lg:flex-none flex items-center justify-between px-3.5 py-2.5 text-xs font-medium rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+                  className={`flex-1 lg:flex-none flex items-center justify-between px-3.5 py-2.5 text-xs font-medium rounded-xl whitespace-nowrap transition-colors duration-150 cursor-pointer border ${
                     activeTab === tab.id
-                      ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-semibold shadow-xs border border-[var(--color-border)]'
-                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)]'
+                      ? 'bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] font-semibold shadow-xs border-[var(--color-border)]'
+                      : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-secondary)]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -273,7 +273,7 @@ export function Settings() {
         <div className="card flex-1 w-full min-w-0 p-5 sm:p-7 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xs">
           {/* PROFILE SETTINGS */}
           {activeTab === 'profile' && (
-            <div key="profile" className="space-y-6 animate-tab-slide">
+            <div key="profile" className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Recruiter Profile &amp; Identity</h3>
@@ -506,7 +506,7 @@ export function Settings() {
 
           {/* APPEARANCE */}
           {activeTab === 'appearance' && (
-            <div key="appearance" className="space-y-6 animate-tab-slide">
+            <div key="appearance" className="space-y-6">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Appearance & Themes</h3>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
@@ -631,7 +631,7 @@ export function Settings() {
 
           {/* LOCAL STORAGE & DATA MANAGEMENT */}
           {activeTab === 'storage' && (
-            <div key="storage" className="space-y-6 animate-tab-slide">
+            <div key="storage" className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
@@ -818,7 +818,7 @@ export function Settings() {
 
           {/* KEYBOARD SHORTCUTS */}
           {activeTab === 'shortcuts' && (
-            <div key="shortcuts" className="space-y-5 animate-tab-slide">
+            <div key="shortcuts" className="space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
                 <div>
                   <h3 className="text-base font-semibold text-[var(--color-text-primary)]">Keyboard Shortcuts</h3>
@@ -878,7 +878,7 @@ export function Settings() {
 
           {/* NOTIFICATIONS */}
           {activeTab === 'notifications' && (
-            <div key="notifications" className="space-y-5 animate-tab-slide">
+            <div key="notifications" className="space-y-5">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
                   Real-Time Alerts &amp; Sound Chimes
@@ -1178,7 +1178,7 @@ export function Settings() {
 
           {/* INTEGRATIONS */}
           {activeTab === 'integrations' && (
-            <div key="integrations" className="space-y-4 animate-tab-slide">
+            <div key="integrations" className="space-y-4">
               <h3 className="text-sm font-medium">Integrations</h3>
               <p className="text-xs text-[var(--color-text-tertiary)]">Connect external services. Currently running in client-side Local Storage mode.</p>
               <div className="space-y-2">
@@ -1208,7 +1208,7 @@ export function Settings() {
 
           {/* AI & LLM CONFIGURATION */}
           {activeTab === 'api' && (
-            <div key="api" className="space-y-5 animate-tab-slide">
+            <div key="api" className="space-y-5">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                   <Key size={16} className="text-[var(--color-info)]" />
