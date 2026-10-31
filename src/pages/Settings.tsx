@@ -237,8 +237,10 @@ export function Settings() {
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                       {formData.role || 'Senior Clinical Recruiter'} · {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
                     </p>
-                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
-                      {formData.email || 'jordan.rivera@talentmatch.ai'}
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5 flex items-center gap-1.5 flex-wrap">
+                      <span>{formData.email || 'jordan.rivera@talentmatch.ai'}</span>
+                      <span className="text-[var(--color-border)]">•</span>
+                      <span className="text-sky-300 font-mono text-[10px] px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20">{formData.timezone}</span>
                     </p>
                   </div>
                 </div>
@@ -291,9 +293,18 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-                  Timezone & Region
-                </label>
+                <div className="flex items-center justify-between mb-1.5 max-w-md">
+                  <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">
+                    Timezone &amp; Region
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, timezone: 'India Standard Time (IST)' })}
+                    className="text-[11px] text-sky-400 hover:text-sky-300 font-medium transition-colors cursor-pointer"
+                  >
+                    Quick Set: Indian Time (IST)
+                  </button>
+                </div>
                 <div className="relative w-full max-w-md">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
                     <Globe size={15} />
@@ -303,18 +314,31 @@ export function Settings() {
                     onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
                     className="input w-full h-10.5 pl-9 pr-10 text-xs sm:text-sm font-medium bg-[var(--color-surface)] !bg-none border-[var(--color-border)] rounded-lg text-[var(--color-text-primary)] cursor-pointer appearance-none transition-all hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)]"
                   >
-                    <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
-                    <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
-                    <option value="Central Time (CT)">Central Time (CT) — Chicago, Dallas (UTC-6)</option>
-                    <option value="Eastern Time (ET)">Eastern Time (ET) — New York, Toronto (UTC-5)</option>
-                    <option value="UTC (Coordinated Universal Time)">UTC (Coordinated Universal Time)</option>
+                    <optgroup label="India &amp; Asia">
+                      <option value="India Standard Time (IST)">India Standard Time (IST) — New Delhi, Mumbai, Bengaluru (UTC+5:30)</option>
+                      <option value="Gulf Standard Time (GST)">Gulf Standard Time (GST) — Dubai, Abu Dhabi (UTC+4)</option>
+                      <option value="Singapore / Hong Kong (SGT)">Singapore / Hong Kong (SGT) — Singapore, Hong Kong (UTC+8)</option>
+                      <option value="Japan &amp; Korea (JST)">Japan &amp; Korea (JST) — Tokyo, Seoul (UTC+9)</option>
+                    </optgroup>
+                    <optgroup label="Americas">
+                      <option value="Pacific Time (PT)">Pacific Time (PT) — Los Angeles, Vancouver (UTC-8)</option>
+                      <option value="Mountain Time (MT)">Mountain Time (MT) — Denver, Phoenix (UTC-7)</option>
+                      <option value="Central Time (CT)">Central Time (CT) — Chicago, Dallas (UTC-6)</option>
+                      <option value="Eastern Time (ET)">Eastern Time (ET) — New York, Toronto (UTC-5)</option>
+                    </optgroup>
+                    <optgroup label="Europe &amp; Global">
+                      <option value="Greenwich Mean Time (GMT / BST)">Greenwich Mean Time (GMT / BST) — London, Dublin (UTC+0 / UTC+1)</option>
+                      <option value="Central European Time (CET)">Central European Time (CET) — Berlin, Paris, Amsterdam (UTC+1)</option>
+                      <option value="Australian Eastern Time (AEST)">Australian Eastern Time (AEST) — Sydney, Melbourne (UTC+10)</option>
+                      <option value="UTC (Coordinated Universal Time)">UTC (Coordinated Universal Time)</option>
+                    </optgroup>
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[var(--color-text-tertiary)]">
                     <ChevronDown size={15} />
                   </div>
                 </div>
                 <p className="text-[11px] text-[var(--color-text-tertiary)] mt-1.5">
-                  Used for formatting interview schedules, timestamps, and candidate timeline logs.
+                  Used for formatting clinical interview schedules, timestamps, and candidate timeline logs.
                 </p>
               </div>
 

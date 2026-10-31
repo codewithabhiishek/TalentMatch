@@ -39,12 +39,24 @@ export interface UserProfile {
   recruiterStatus?: 'active' | 'interviewing' | 'offline';
 }
 
+const getInitialTimezone = (): string => {
+  try {
+    if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz.includes('Kolkata') || tz.includes('Calcutta') || tz.includes('India')) {
+        return 'India Standard Time (IST)';
+      }
+    }
+  } catch {}
+  return 'India Standard Time (IST)';
+};
+
 const defaultProfile: UserProfile = {
   firstName: 'Jordan',
   lastName: 'Rivera',
   email: 'jordan.rivera@talentmatch.ai',
   role: 'Senior Clinical Recruiter',
-  timezone: 'Pacific Time (PT)',
+  timezone: getInitialTimezone(),
   department: 'Acute & ICU Talent Division',
   facility: 'Pacific Health System · Level 1 Trauma',
   recruiterStatus: 'active',

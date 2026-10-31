@@ -570,9 +570,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <p className="text-[10px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
                           {userProfile?.email || 'jordan.rivera@talentmatch.ai'}
                         </p>
-                        <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-1 truncate">
-                          <Building2 size={11} className="text-slate-400 shrink-0" />
-                          <span>{userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}</span>
+                        <p className="text-[10px] text-slate-400 flex items-center justify-between gap-1.5 mt-1 truncate">
+                          <span className="flex items-center gap-1 truncate">
+                            <Building2 size={11} className="text-slate-400 shrink-0" />
+                            <span className="truncate">{userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}</span>
+                          </span>
+                          <span className="text-[9px] font-mono text-sky-300 px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20 shrink-0">
+                            {userProfile?.timezone?.includes('IST') ? 'IST +5:30' : userProfile?.timezone?.split('—')[0]?.trim() || 'IST'}
+                          </span>
                         </p>
                       </div>
                     </div>
