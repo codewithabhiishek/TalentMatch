@@ -223,7 +223,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Run / Download Desktop App CTA */}
         {!sidebarCollapsed && !(window as any).electronAPI?.isElectron && (
-          <div className="px-3 pb-2">
+          <div className="p-3 border-t border-[var(--color-border)]">
             <button
               type="button"
               onClick={() => {
@@ -247,7 +247,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
 
         {sidebarCollapsed && !(window as any).electronAPI?.isElectron && (
-          <div className="px-2 pb-2 flex justify-center">
+          <div className="p-2 border-t border-[var(--color-border)] flex justify-center">
             <button
               type="button"
               onClick={() => setDesktopModalOpen(true)}
@@ -258,46 +258,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         )}
-
-        {/* Executive Recruiter Workspace section */}
-        <div className={`border-t border-[var(--color-border)] p-2.5 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
-          {sidebarCollapsed ? (
-            <button
-              type="button"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="cursor-pointer group hover:scale-105 transition-transform"
-              title={`${userProfile?.firstName || 'Jordan'} ${userProfile?.lastName || 'Rivera'} (${userProfile?.role || 'Senior Clinical Recruiter'})`}
-            >
-              <RecruiterAvatar
-                user={userProfile}
-                size="sm"
-                status={userProfile?.recruiterStatus || 'active'}
-              />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="w-full p-2 rounded-xl hover:bg-[var(--color-surface-secondary)]/80 border border-transparent hover:border-[var(--color-border)] flex items-center gap-2.5 transition-all cursor-pointer text-left group"
-            >
-              <RecruiterAvatar
-                user={userProfile}
-                size="md"
-                status={userProfile?.recruiterStatus || 'active'}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-bold text-[var(--color-text-primary)] truncate group-hover:text-white transition-colors">
-                    {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
-                  </p>
-                </div>
-                <p className="text-[10px] text-[var(--color-text-tertiary)] truncate">
-                  {userProfile?.role || 'Senior Clinical Recruiter'}
-                </p>
-              </div>
-            </button>
-          )}
-        </div>
       </aside>
 
       {/* Main content */}
