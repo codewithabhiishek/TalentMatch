@@ -132,23 +132,21 @@ npm run benchmark
   TALENTMATCH AI EXTRACTION ENGINE: ACCURACY & SPEED BENCHMARK  
 ================================================================
 
-[TEST 1/5] ✓ ICU Critical Care Travel Nurse (Multi-credential)
-   Speed: 3 ms  |  Accuracy: 100%  |  Engine Confidence: 99%
-     ✓ Candidate Name     : Sarah Mitchell
-     ✓ Email Detection    : sarah.mitchell@hospital.org
-     ✓ Clinical Position  : Registered Nurse
-     ✓ Clinical Specialty : ICU
-     ✓ Years Experience   : 8 yrs (expected 6-8)
-     ✓ Certifications     : Found [BLS, ACLS, CCRN, NIHSS, BSN, Compact RN]
+[TEST 1/10] ✓ ICU Critical Care Travel Nurse (Multi-credential) -> 100%
+[TEST 2/10] ✓ Physical Therapist Orthopedics Specialist         -> 100%
+[TEST 3/10] ✓ Emergency Department Trauma RN                    -> 100%
+[TEST 4/10] ✓ Neonatal Respiratory Care Specialist              -> 100%
+[TEST 5/10] ✓ Strix Security & Defensive Sanitization           -> 100%
+[TEST 6/10] ✓ CRNA Advanced Practice Anesthetist                -> 100%
+[TEST 7/10] ✓ Operating Room Perioperative Circulating Nurse    -> 100%
+[TEST 8/10] ✓ Speech-Language Pathologist Acute Neuro Rehab     -> 100%
+[TEST 9/10] ✓ Interventional Cardiology & Cath Lab Specialist   -> 100%
+[TEST 10/10] ✓ Strix Prototype Pollution & Deep Payload Attack   -> 100%
 
-[TEST 2/5] ✓ Physical Therapist Orthopedics Specialist -> 100%
-[TEST 3/5] ✓ Emergency Department Trauma RN            -> 100%
-[TEST 4/5] ✓ Neonatal Respiratory Care Specialist      -> 100%
-[TEST 5/5] ✓ Strix Security & Defensive Sanitization   -> 100%
-
- OVERALL ACCURACY SCORE : 100% (5 / 5 Scenarios Passed)
- AVERAGE PARSING TIME   : < 3 ms per document
- STRIX SECURITY AUDIT   : PASSED (Zero HTML/script leak)
+ OVERALL ACCURACY SCORE : 100% (10 / 10 Scenarios Passed)
+ AVERAGE PARSING TIME   : 1 ms per document
+ TOTAL THROUGHPUT       : ~950,000+ characters/second
+ STRIX SECURITY AUDIT   : PASSED (Zero HTML/script leak, Prototype pollution blocked)
 ```
 
 The benchmark can also be run interactively inside the web application via the **Run Self-Test Benchmark** button in Resume Imports or Settings.
