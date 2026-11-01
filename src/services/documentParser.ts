@@ -144,6 +144,11 @@ export async function extractTextFromDocx(file: File): Promise<string> {
  * Universal document text extractor supporting PDF, DOCX, DOC, and TXT
  */
 export async function extractDocumentText(file: File): Promise<string> {
+  const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB defensive limit
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File "${file.name}" exceeds the maximum safe size limit of 15MB.`);
+  }
+
   const ext = file.name.split('.').pop()?.toLowerCase();
 
   if (ext === 'pdf') {

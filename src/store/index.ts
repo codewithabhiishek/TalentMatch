@@ -11,6 +11,7 @@ import {
 import { AIConfig, defaultAIConfig } from '../services/aiExtractionService';
 import { calculateCandidateJobMatch } from '../services/matchEngine';
 import { notificationAudio, ChimeSound } from '../services/notificationAudioService';
+import { safeJsonParse, sanitizeObject } from '../services/securityService';
 
 export type Theme = 'light' | 'dark' | 'black';
 
@@ -186,11 +187,11 @@ export const useAppStore = create<AppState>()(
       setShortcutsModalOpen: (open) => set({ shortcutsModalOpen: open }),
 
       updateUserProfile: (profile) => set((state) => ({
-        userProfile: { ...state.userProfile, ...profile },
+        userProfile: { ...state.userProfile, ...sanitizeObject(profile) },
       })),
 
       updateAIConfig: (config) => set((state) => ({
-        aiConfig: { ...state.aiConfig, ...config },
+        aiConfig: { ...state.aiConfig, ...sanitizeObject(config) },
       })),
 
       updateCandidateStatus: (id, status) => set((state) => ({
@@ -198,7 +199,7 @@ export const useAppStore = create<AppState>()(
       })),
 
       updateCandidate: (id, updates) => set((state) => ({
-        candidates: state.candidates.map(c => c.id === id ? { ...c, ...updates } : c),
+        candidates: state.candidates.map(c => c.id === id ? { ...c, ...sanitizeObject(updates) } : c),
       })),
 
       deleteCandidate: (id) => set((state) => ({
@@ -207,10 +208,11 @@ export const useAppStore = create<AppState>()(
       })),
 
       addCandidate: (candidate) => set((state) => ({
-        candidates: [candidate, ...state.candidates],
+        candidates: [sanitizeObject(candidate), ...state.candidates],
       })),
 
-      addCandidateWithMatches: (candidate) => set((state) => {
+      addCandidateWithMatches: (rawCandidate) => set((state) => {
+        const candidate = sanitizeObject(rawCandidate);
         // Calculate matches with active jobs
         const activeJobs = state.jobs.filter(j => j.status === 'active');
         const newMatches: JobMatch[] = activeJobs.map(job =>
@@ -239,7 +241,7 @@ export const useAppStore = create<AppState>()(
       }),
 
       updateJob: (id, updates) => set((state) => ({
-        jobs: state.jobs.map(j => j.id === id ? { ...j, ...updates } : j),
+        jobs: state.jobs.map(j => j.id === id ? { ...j, ...sanitizeObject(updates) } : j),
       })),
 
       deleteJob: (id) => set((state) => ({
@@ -248,7 +250,7 @@ export const useAppStore = create<AppState>()(
       })),
 
       addJob: (job) => set((state) => ({
-        jobs: [job, ...state.jobs],
+        jobs: [sanitizeObject(job), ...state.jobs],
       })),
 
       updateMatchStatus: (id, status) => set((state) => ({
@@ -381,17 +383,17 @@ export const useAppStore = create<AppState>()(
 
       importDataJSON: (jsonString: string) => {
         try {
-          const parsed = JSON.parse(jsonString);
+          const parsed = safeJsonParse<any>(jsonString, null);
           if (parsed && typeof parsed === 'object') {
             set((state) => ({
-              candidates: Array.isArray(parsed.candidates) ? parsed.candidates : state.candidates,
-              jobs: Array.isArray(parsed.jobs) ? parsed.jobs : state.jobs,
-              jobMatches: Array.isArray(parsed.jobMatches) ? parsed.jobMatches : state.jobMatches,
-              importedFiles: Array.isArray(parsed.importedFiles) ? parsed.importedFiles : state.importedFiles,
-              notifications: Array.isArray(parsed.notifications) ? parsed.notifications : state.notifications,
-              userProfile: parsed.userProfile ? { ...state.userProfile, ...parsed.userProfile } : state.userProfile,
-              aiConfig: parsed.aiConfig ? { ...state.aiConfig, ...parsed.aiConfig } : state.aiConfig,
-              theme: parsed.theme ? parsed.theme : state.theme,
+              candidates: Array.isArray(parsed.candidates) ? sanitizeObject(parsed.candidates) : state.candidates,
+              jobs: Array.isArray(parsed.jobs) ? sanitizeObject(parsed.jobs) : state.jobs,
+              jobMatches: Array.isArray(parsed.jobMatches) ? sanitizeObject(parsed.jobMatches) : state.jobMatches,
+              importedFiles: Array.isArray(parsed.importedFiles) ? sanitizeObject(parsed.importedFiles) : state.importedFiles,
+              notifications: Array.isArray(parsed.notifications) ? sanitizeObject(parsed.notifications) : state.notifications,
+              userProfile: parsed.userProfile ? { ...state.userProfile, ...sanitizeObject(parsed.userProfile) } : state.userProfile,
+              aiConfig: parsed.aiConfig ? { ...state.aiConfig, ...sanitizeObject(parsed.aiConfig) } : state.aiConfig,
+              theme: (parsed.theme === 'light' || parsed.theme === 'dark' || parsed.theme === 'black') ? parsed.theme : state.theme,
             }));
             return true;
           }

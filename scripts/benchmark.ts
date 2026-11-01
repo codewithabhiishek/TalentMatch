@@ -213,6 +213,163 @@ const testCases: TestCase[] = [
       mustHaveCerts: ['BLS', 'ACLS'],
     },
   },
+  {
+    id: 'case-crna-anes',
+    title: 'CRNA Advanced Practice Anesthetist',
+    fileName: 'marcus_thorne_crna.pdf',
+    text: `
+      Marcus Thorne, CRNA, MSN, APRN
+      Miami, FL | (555) 789-0123 | m.thorne@anesthesiapartners.org
+      
+      PROFESSIONAL PROFILE
+      Certified Registered Nurse Anesthetist with eight (8) years of acute surgical anesthesia experience.
+      Proficient in general, neuro, obstetric epidural, and regional ultrasound-guided nerve blocks.
+      
+      LICENSES & CERTIFICATIONS
+      - Florida APRN License
+      - CRNA National Board Certified (NBCRNA)
+      - eNLC Multi-State Registered Nurse
+      - Advanced Cardiovascular Life Support (ACLS)
+      - Basic Life Support (BLS)
+      
+      EXPERIENCE
+      Staff CRNA | Miami Surgical Pavilion | Miami, FL
+      2020 - Present
+    `,
+    expected: {
+      firstName: 'Marcus',
+      lastName: 'Thorne',
+      emailDomain: 'anesthesiapartners.org',
+      position: 'Certified Registered Nurse Anesthetist',
+      minExperience: 7,
+      maxExperience: 9,
+      mustHaveCerts: ['CRNA', 'ACLS', 'BLS'],
+    },
+  },
+  {
+    id: 'case-or-perioperative',
+    title: 'Operating Room Perioperative Circulating Nurse',
+    fileName: 'jessica_hayes_or_cnor.docx',
+    text: `
+      Jessica Hayes, BSN, RN, CNOR
+      Denver, CO | (555) 890-1234 | jessica.hayes@mountainhealth.org
+      
+      SUMMARY
+      Dedicated Operating Room Nurse with 6 years of Level I perioperative surgical suite experience.
+      Specializes in intraoperative cardiac, orthopedic total joints, and general laparoscopic cases.
+      
+      CERTIFICATIONS
+      - Colorado RN License
+      - CNOR (Certified Perioperative Nurse)
+      - Basic Life Support (BLS)
+      - Advanced Cardiac Life Support (ACLS)
+      
+      WORK HISTORY
+      OR Staff Nurse | Denver Health | Denver, CO
+      2021 - Present
+    `,
+    expected: {
+      firstName: 'Jessica',
+      lastName: 'Hayes',
+      emailDomain: 'mountainhealth.org',
+      position: 'Registered Nurse',
+      specialty: 'Operating Room',
+      minExperience: 5,
+      maxExperience: 7,
+      mustHaveCerts: ['CNOR', 'BLS', 'ACLS'],
+    },
+  },
+  {
+    id: 'case-slp-rehab',
+    title: 'Speech-Language Pathologist Acute Neuro Rehab',
+    fileName: 'david_kim_slp_neuro.pdf',
+    text: `
+      David Kim, MS, CCC-SLP
+      Boston, MA | (555) 901-2345 | dkim@rehabcenter.org
+      
+      CLINICAL OBJECTIVE
+      Licensed Speech-Language Pathologist with 5 years of inpatient clinical dysphagia and cognitive rehabilitation experience.
+      Expert in modified barium swallow studies (MBSS) and post-stroke aphasia recovery.
+      
+      CREDENTIALS
+      - Massachusetts Speech-Language Pathologist License
+      - CPR Healthcare Provider
+      - AED Certified
+      
+      EXPERIENCE
+      Lead SLP | Boston Neuro Institute | Boston, MA
+      2022 - Present
+    `,
+    expected: {
+      firstName: 'David',
+      lastName: 'Kim',
+      emailDomain: 'rehabcenter.org',
+      position: 'Speech-Language Pathologist',
+      minExperience: 4,
+      maxExperience: 6,
+      mustHaveCerts: ['CPR', 'AED'],
+    },
+  },
+  {
+    id: 'case-cath-lab',
+    title: 'Interventional Cardiology & Cath Lab Specialist',
+    fileName: 'rachel_adams_cathlab.pdf',
+    text: `
+      Rachel Adams, RN, BSN
+      Houston, TX | (555) 012-3456 | radams@heartinstitute.org
+      
+      PROFILE
+      Interventional Cardiology Nurse with 7 years in high-volume cardiac catheterization and electrophysiology lab.
+      Proficient in STEMI emergencies, balloon angioplasty, pacemaker implants, and hemodynamics.
+      
+      CERTIFICATIONS
+      - Texas Registered Nurse
+      - Advanced Cardiovascular Life Support (ACLS)
+      - Basic Life Support (BLS)
+      
+      EXPERIENCE
+      Cath Lab RN | Texas Heart Institute | Houston, TX
+      2020 - Present
+    `,
+    expected: {
+      firstName: 'Rachel',
+      lastName: 'Adams',
+      emailDomain: 'heartinstitute.org',
+      position: 'Registered Nurse',
+      specialty: 'Cardiology / Cath Lab',
+      minExperience: 6,
+      maxExperience: 8,
+      mustHaveCerts: ['ACLS', 'BLS'],
+    },
+  },
+  {
+    id: 'case-prototype-pollution',
+    title: 'Strix Prototype Pollution & Deep Payload Attack Vector',
+    fileName: 'adversarial_prototype_exploit.json',
+    text: `
+      <object data="evil.swf"></object><div style="behavior:url(#default#time2)"></div>
+      Samantha <script>window.pwn=1</script> Reed, RN
+      Dallas, TX | (555) 123-9999 | samantha.reed@dallasclinic.com
+      {"__proto__": {"admin": true, "polluted": "yes"}, "constructor": {"prototype": {"hacked": true}}}
+      
+      SUMMARY
+      Nurse Practitioner with 6 years in family medicine and urgent care.
+      Certified in FNP-BC, BLS, and ACLS.
+      
+      EXPERIENCE
+      Nurse Practitioner | Dallas Health Clinic | Dallas, TX
+      2020 - Present
+    `,
+    expected: {
+      securityCheck: true,
+      firstName: 'Samantha',
+      lastName: 'Reed',
+      position: 'Nurse Practitioner',
+      minExperience: 5,
+      maxExperience: 7,
+      mustHaveCerts: ['BLS', 'ACLS'],
+    },
+  },
 ];
 
 async function runBenchmark() {

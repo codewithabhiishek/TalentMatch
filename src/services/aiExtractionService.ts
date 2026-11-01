@@ -1,4 +1,5 @@
 import { Candidate, ExperienceRecord } from '../types';
+import { sanitizeInput, sanitizeEmail } from './securityService';
 
 export interface AIConfig {
   provider: 'ollama' | 'openai' | 'groq' | 'anthropic' | 'custom' | 'heuristic';
@@ -60,11 +61,10 @@ The JSON object MUST follow this exact structure:
 Return ONLY valid JSON. No conversational text, no markdown wrapping.`;
 
 /**
- * Strips HTML and dangerous tags for defensive security (Strix standard)
+ * Strips HTML, scripts, null bytes, and dangerous tags for defensive security (Strix standard)
  */
 function sanitizeString(str: any): string {
-  if (typeof str !== 'string') return '';
-  return str.replace(/<[^>]*>?/gm, '').trim();
+  return sanitizeInput(str, 500);
 }
 
 /**
@@ -240,7 +240,7 @@ async function extractWithOpenAICompatible(
 export function extractWithHeuristics(resumeText: string, fileName: string): Partial<Candidate> {
   const lines = resumeText
     .split(/\r?\n/)
-    .map(l => l.trim())
+    .map(l => sanitizeInput(l, 300))
     .filter(Boolean);
 
   // 1. Email extraction
@@ -289,15 +289,20 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
 
   // 4. Clinical Specialty Detection via weighted frequency matching
   const specialtyKeywords: Record<string, RegExp[]> = {
-    'ICU': [/\bicu\b/i, /\bintensive care\b/i, /\bcritical care\b/i, /\bccu\b/i, /\bcvicu\b/i, /\bneuro icu\b/i],
-    'Emergency': [/\bemergency\b/i, /\b(?!.*(?:post-op|surgery|clinic))\ber\b/i, /\bed\b/i, /\btrauma\b/i, /\btriage\b/i, /\bresuscitation\b/i, /\btncc\b/i, /\benpc\b/i],
+    'ICU': [/\bicu\b/i, /\bintensive care\b/i, /\bcritical care\b/i, /\bccu\b/i, /\bcvicu\b/i, /\bneuro icu\b/i, /\bmicu\b/i, /\bsicu\b/i],
+    'Emergency': [/\bemergency\b/i, /\b(?!.*(?:post-op|surgery|clinic))\ber\b/i, /\bed\b/i, /\btrauma\b/i, /\btriage\b/i, /\bresuscitation\b/i, /\btncc\b/i, /\benpc\b/i, /\bcpen\b/i],
     'Orthopedics': [/\borthopedic\b/i, /\bortho\b/i, /\bbone\b/i, /\bjoint\b/i, /\bmusculoskeletal\b/i, /\barthroplasty\b/i, /\bocs\b/i, /\bsports\s+(?:spine|injury|rehab)/i],
+    'Operating Room': [/\boperating room\b/i, /\bor nurse\b/i, /\bperioperative\b/i, /\bintraoperative\b/i, /\bcnor\b/i, /\bscrub\b/i, /\bcirculat(?:ing|or)\b/i, /\bpacu\b/i, /\bpost-anesthesia\b/i],
+    'Cardiology / Cath Lab': [/\bcath lab\b/i, /\bcardiac catheterization\b/i, /\bcardiology\b/i, /\belectrophysiology\b/i, /\bep lab\b/i, /\binterventional cardiology\b/i],
     'MRI': [/\bmri\b/i, /\bmagnetic resonance\b/i, /\bradiology\b/i, /\bradiologic\b/i, /\bimaging\b/i],
     'Neonatal': [/\bneonatal\b/i, /\bnicu\b/i, /\binfant\b/i, /\bnewborn\b/i, /\bneonatology\b/i, /\brrt-nps\b/i, /\bnrp\b/i],
-    'Med-Surg': [/\bmed-surg\b/i, /\bmedical surgical\b/i, /\btelemetry\b/i, /\bstep-down\b/i],
-    'Pediatrics': [/\bpediatric\b/i, /\bpeds\b/i, /\bpicu\b/i, /\bchildren\b/i],
-    'Oncology': [/\boncology\b/i, /\bcancer\b/i, /\bchemotherapy\b/i],
-    'Labor & Delivery': [/\blabor and delivery\b/i, /\bl&d\b/i, /\bpostpartum\b/i, /\bmaternity\b/i],
+    'Med-Surg': [/\bmed-surg\b/i, /\bmedical surgical\b/i, /\btelemetry\b/i, /\bstep-down\b/i, /\bprogressive care\b/i, /\bpcu\b/i],
+    'Pediatrics': [/\bpediatric\b/i, /\bpeds\b/i, /\bpicu\b/i, /\bchildren\b/i, /\bcpn\b/i],
+    'Oncology': [/\boncology\b/i, /\bcancer\b/i, /\bchemotherapy\b/i, /\bocn\b/i, /\bhematology\b/i, /\binfusion\b/i],
+    'Labor & Delivery': [/\blabor and delivery\b/i, /\bl&d\b/i, /\bpostpartum\b/i, /\bmaternity\b/i, /\bantepartum\b/i, /\bmother-baby\b/i],
+    'Dialysis': [/\bdialysis\b/i, /\bhemodialysis\b/i, /\bnephrology\b/i, /\bperitoneal dialysis\b/i, /\bcrrt\b/i],
+    'Psychiatry': [/\bpsychiatric\b/i, /\bmental health\b/i, /\bbehavioral health\b/i, /\bpsych\b/i],
+    'Home Health / Hospice': [/\bhome health\b/i, /\bhospice\b/i, /\bpalliative\b/i, /\bvisiting nurse\b/i],
   };
 
   let maxScore = 0;
@@ -319,17 +324,38 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
 
   // 5. Clinical Position Detection
   const positionKeywords: Record<string, string> = {
+    'certified registered nurse anesthetist': 'Certified Registered Nurse Anesthetist',
+    'nurse anesthetist': 'Certified Registered Nurse Anesthetist',
+    'crna': 'Certified Registered Nurse Anesthetist',
+    'clinical nurse specialist': 'Clinical Nurse Specialist',
+    'family nurse practitioner': 'Nurse Practitioner',
     'nurse practitioner': 'Nurse Practitioner',
+    'physician assistant': 'Physician Assistant',
     'registered nurse': 'Registered Nurse',
     'staff nurse': 'Registered Nurse',
     'physical therapist': 'Physical Therapist',
+    'physical therapy': 'Physical Therapist',
+    'speech-language pathologist': 'Speech-Language Pathologist',
+    'speech language pathologist': 'Speech-Language Pathologist',
+    'speech pathologist': 'Speech-Language Pathologist',
+    'occupational therapist': 'Occupational Therapist',
     'respiratory therapist': 'Respiratory Therapist',
     'respiratory care': 'Respiratory Therapist',
     'mri technologist': 'MRI Technologist',
     'radiologic technologist': 'Radiologic Technologist',
-    'surgical technician': 'Surgical Technician',
-    'physician assistant': 'Physician Assistant',
-    'occupational therapist': 'Occupational Therapist',
+    'ultrasound technologist': 'Ultrasound Technologist',
+    'diagnostic medical sonographer': 'Ultrasound Technologist',
+    'sonographer': 'Ultrasound Technologist',
+    'surgical technologist': 'Surgical Technologist',
+    'surgical technician': 'Surgical Technologist',
+    'cardiovascular technologist': 'Cardiovascular Technologist',
+    'cath lab technologist': 'Cardiovascular Technologist',
+    'medical technologist': 'Medical Laboratory Scientist',
+    'clinical laboratory scientist': 'Medical Laboratory Scientist',
+    'licensed practical nurse': 'Licensed Practical Nurse',
+    'licensed vocational nurse': 'Licensed Practical Nurse',
+    'certified nursing assistant': 'Certified Nursing Assistant',
+    'patient care technician': 'Certified Nursing Assistant',
     'pharmacy technician': 'Pharmacy Technician',
   };
 
@@ -342,11 +368,20 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     }
   }
 
-  // 6. Experience Years Calculation
-  const yearsMentioned = resumeText.match(/(\d{1,2})\+?\s*years?(?:\s+of)?\s+(?:experience|clinical|nursing|critical care|orthopedic|acute|respiratory|pediatric)/i);
+  // 6. Experience Years Calculation (Supports digits & written number words)
+  const numberWordMap: Record<string, number> = {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7,
+    eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fifteen: 15, twenty: 20
+  };
+
+  const wordYearsMatch = resumeText.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty)\s*(?:\(\d+\))?\s*years?(?:\s+(?:of|in))?[^.\n]{0,60}?(?:experience|clinical|nursing|critical care|surgical|orthopedic|acute|respiratory|pediatric|healthcare|bedside|practice|rehab)/i);
+  const yearsMentioned = resumeText.match(/(\d{1,2})\+?\s*years?(?:\s+(?:of|in|bedside))?[^.\n]{0,60}?(?:experience|clinical|nursing|critical care|surgical|orthopedic|acute|respiratory|pediatric|healthcare|bedside|practice|rehabilitation|medicine|urgent care|catheterization)/i);
+  
   let experienceYears = 4;
   if (yearsMentioned && parseInt(yearsMentioned[1], 10)) {
     experienceYears = Math.min(25, Math.max(1, parseInt(yearsMentioned[1], 10)));
+  } else if (wordYearsMatch && numberWordMap[wordYearsMatch[1].toLowerCase()]) {
+    experienceYears = numberWordMap[wordYearsMatch[1].toLowerCase()];
   } else {
     // Only use years that appear near employment keywords to avoid education/graduation years
     const employmentYearPattern = /(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?((?:19|20)\d{2})(?:\s*[-–—]\s*(?:present|current|now|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?((?:19|20)\d{2})?)?/gi;
@@ -367,15 +402,19 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
 
   // 7. Clinical Certifications
   const knownCerts = [
-    'BLS', 'ACLS', 'PALS', 'TNCC', 'ENPC', 'CCRN', 'CEN', 'NRP', 'ARRT',
-    'CRT', 'RRT', 'RRT-NPS', 'OCS', 'CPR', 'AED', 'NIHSS', 'PTCB', 'CPhT',
-    'PCCN', 'BSN', 'MSN', 'Compact RN'
+    'BLS', 'ACLS', 'PALS', 'TNCC', 'ENPC', 'CCRN', 'CEN', 'CPEN', 'CNOR',
+    'NRP', 'ARRT', 'CRT', 'RRT', 'RRT-NPS', 'RRT-ACCS', 'OCS', 'CPR', 'AED',
+    'NIHSS', 'PTCB', 'CPhT', 'PCCN', 'BSN', 'MSN', 'DNP', 'CRNA', 'NP-C',
+    'FNP-BC', 'AGACNP', 'PMHNP', 'CNS', 'CPN', 'CRRN', 'CWOCN', 'OCN',
+    'RDMS', 'RVT', 'NREMT', 'CST', 'PTA', 'COTA', 'Compact RN', 'eNLC',
   ];
   const detectedCerts: string[] = [];
   for (const cert of knownCerts) {
     let rx: RegExp;
     if (cert === 'Compact RN') {
       rx = /\b(compact\s+(?:multi-state\s+)?(?:state\s+)?(?:rn|registered nurse|license))\b/i;
+    } else if (cert === 'eNLC') {
+      rx = /\b(enlc|enhanced nurse licensure compact)\b/i;
     } else {
       rx = new RegExp(`\\b${cert}\\b`, 'i');
     }

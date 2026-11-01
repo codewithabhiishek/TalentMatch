@@ -11,6 +11,7 @@ import { testAIConnection, AIConfig } from '../services/aiExtractionService';
 import { DiagnosticBenchmarkModal } from '../components/DiagnosticBenchmarkModal';
 import { notificationAudio, SOUND_OPTIONS, ChimeSound } from '../services/notificationAudioService';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
+import { sanitizeInput } from '../services/securityService';
 
 export function Settings() {
   const {
@@ -113,7 +114,16 @@ export function Settings() {
   }, [candidates, jobs, jobMatches, importedFiles, notifications, userProfile]);
 
   const handleSaveProfile = () => {
-    updateUserProfile(formData);
+    const cleaned = {
+      ...formData,
+      firstName: sanitizeInput(formData.firstName, 50),
+      lastName: sanitizeInput(formData.lastName, 50),
+      email: sanitizeInput(formData.email, 100),
+      role: sanitizeInput(formData.role, 80),
+      facility: sanitizeInput(formData.facility, 120),
+      timezone: sanitizeInput(formData.timezone, 80),
+    };
+    updateUserProfile(cleaned);
     setSaveMessage('Profile saved to local storage!');
     setSaved(true);
     setTimeout(() => setSaved(false), 2400);
@@ -374,6 +384,7 @@ export function Settings() {
                   <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">First Name</label>
                   <input
                     type="text"
+                    maxLength={50}
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
@@ -384,6 +395,7 @@ export function Settings() {
                   <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Last Name</label>
                   <input
                     type="text"
+                    maxLength={50}
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
@@ -400,6 +412,7 @@ export function Settings() {
                     </div>
                     <input
                       type="email"
+                      maxLength={100}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="input w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
@@ -415,6 +428,7 @@ export function Settings() {
                     </div>
                     <input
                       type="text"
+                      maxLength={80}
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       className="input w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"
@@ -428,6 +442,7 @@ export function Settings() {
                   <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">Healthcare Facility / System</label>
                   <input
                     type="text"
+                    maxLength={120}
                     value={formData.facility}
                     onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
                     className="input w-full h-10 px-3.5 text-xs sm:text-sm font-medium bg-[var(--color-surface)] border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] focus:border-[var(--color-info)] transition-all"

@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Filter, ChevronUp, ChevronDown, Plus, Upload, MapPin, MoreHorizontal, Briefcase, CheckCircle2, FileText, ArrowRight, X, Edit, Trash2, Check, Sparkles } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { Job } from '../types';
+import { sanitizeInput, isBotSubmission } from '../services/securityService';
 
 const statuses = ['All', 'active', 'draft', 'closed', 'filled'];
 
@@ -18,6 +19,12 @@ export function Jobs() {
   const [loading, setLoading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const modalOpenTimeRef = useRef<number>(0);
+
+  const openAddModal = () => {
+    modalOpenTimeRef.current = Date.now();
+    setIsAddModalOpen(true);
+  };
 
   const [newJob, setNewJob] = useState({
     position: '',
@@ -126,29 +133,44 @@ export function Jobs() {
   const activeJobs = jobs.filter(j => j.status === 'active').length;
   const locations = Array.from(new Set(jobs.map(j => `${j.city}, ${j.state}`))).length;
 
-  const handleAddJob = (e: React.FormEvent) => {
+  const handleAddJob = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!newJob.position.trim() || !newJob.facility.trim() || !newJob.city.trim() || !newJob.state.trim()) {
+    const formEl = e.currentTarget;
+    const formData = new FormData(formEl);
+    const botcheck = formData.get('botcheck');
+    const _gotcha = formData.get('_gotcha') as string;
+
+    if (isBotSubmission({ botcheck: !!botcheck, _gotcha, formStartTime: modalOpenTimeRef.current })) {
+      setIsAddModalOpen(false);
+      return;
+    }
+
+    const cleanPos = sanitizeInput(newJob.position, 120);
+    const cleanFacility = sanitizeInput(newJob.facility, 150);
+    const cleanCity = sanitizeInput(newJob.city, 80);
+    const cleanState = sanitizeInput(newJob.state, 30).toUpperCase();
+
+    if (!cleanPos || !cleanFacility || !cleanCity || !cleanState) {
       alert('Please fill out Position, Facility, City, and State.');
       return;
     }
 
     const reqs = newJob.requirements
       .split(/[\n,]+/)
-      .map(r => r.trim())
+      .map(r => sanitizeInput(r, 100))
       .filter(Boolean);
 
     const createdJob: Job = {
       id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      position: newJob.position.trim(),
-      specialty: newJob.specialty.trim() || 'General',
-      facility: newJob.facility.trim(),
-      city: newJob.city.trim(),
-      state: newJob.state.trim().toUpperCase(),
+      position: cleanPos,
+      specialty: sanitizeInput(newJob.specialty, 80) || 'General',
+      facility: cleanFacility,
+      city: cleanCity,
+      state: cleanState,
       status: newJob.status,
       postedDate: new Date().toISOString().split('T')[0],
       sourceFile: 'Manual Entry',
-      description: newJob.description.trim() || `Seeking qualified ${newJob.position} to join the team at ${newJob.facility}.`,
+      description: sanitizeInput(newJob.description, 2000) || `Seeking qualified ${cleanPos} to join the team at ${cleanFacility}.`,
       requirements: reqs.length > 0 ? reqs : ['Valid state medical license', 'BLS / ACLS Certification', 'Minimum 2 years clinical experience'],
     };
 
@@ -233,7 +255,7 @@ export function Jobs() {
             <span>Import Jobs</span>
           </button>
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={openAddModal}
             className="btn btn-primary h-8 px-3 text-xs cursor-pointer flex items-center gap-1.5 shadow-xs"
           >
             <Plus size={13} className="flex-shrink-0" />
@@ -619,7 +641,7 @@ export function Jobs() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={openAddModal}
               className="btn btn-primary h-9 px-4 text-xs flex items-center gap-1.5 cursor-pointer"
             >
               <Plus size={14} /> Add Job Requisition
@@ -669,6 +691,10 @@ export function Jobs() {
             </div>
 
             <form onSubmit={handleAddJob} className="space-y-4 text-xs">
+              {/* Strix Dual Honeypot Protection */}
+              <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
+              <input type="text" name="_gotcha" className="absolute -left-[9999px] opacity-0 pointer-events-none" tabIndex={-1} autoComplete="off" />
+
               <div>
                 <label className="block text-[11px] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider mb-1">
                   Position Title *
@@ -676,6 +702,7 @@ export function Jobs() {
                 <input
                   type="text"
                   required
+                  maxLength={120}
                   placeholder="e.g. ICU Registered Nurse, Staff Physical Therapist"
                   value={newJob.position}
                   onChange={e => setNewJob(prev => ({ ...prev, position: e.target.value }))}
@@ -690,6 +717,7 @@ export function Jobs() {
                   </label>
                   <input
                     type="text"
+                    maxLength={80}
                     placeholder="e.g. ICU, Emergency, Orthopedics, MRI"
                     value={newJob.specialty}
                     onChange={e => setNewJob(prev => ({ ...prev, specialty: e.target.value }))}
@@ -720,6 +748,7 @@ export function Jobs() {
                 <input
                   type="text"
                   required
+                  maxLength={150}
                   placeholder="e.g. Mercy General Hospital, Stanford Health Care"
                   value={newJob.facility}
                   onChange={e => setNewJob(prev => ({ ...prev, facility: e.target.value }))}
@@ -735,6 +764,7 @@ export function Jobs() {
                   <input
                     type="text"
                     required
+                    maxLength={80}
                     placeholder="e.g. Sacramento"
                     value={newJob.city}
                     onChange={e => setNewJob(prev => ({ ...prev, city: e.target.value }))}

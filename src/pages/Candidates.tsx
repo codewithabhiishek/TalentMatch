@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Filter, ChevronUp, ChevronDown, MoreHorizontal, Plus, Upload, MapPin, ArrowRight, X, Download, Check, Trash2, UserPlus, Sparkles, Users } from 'lucide-react';
 import { useAppStore } from '../store';
 import { TableSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport } from '../services/downloadService';
 import { Candidate } from '../types';
 import { ApplicantLettermarkBadge } from '../components/ApplicantLettermarkBadge';
+import { sanitizeInput, isBotSubmission } from '../services/securityService';
 
 const specialties = ['All', 'ICU', 'Emergency', 'Orthopedics', 'MRI', 'Neonatal', 'Med-Surg', 'Pediatrics', 'Hospital'];
 const statuses = ['All', 'new', 'reviewing', 'matched', 'interview', 'placed', 'rejected'];
@@ -20,6 +21,12 @@ export function Candidates() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const candidateModalOpenTimeRef = useRef<number>(0);
+
+  const openAddCandidateModal = () => {
+    candidateModalOpenTimeRef.current = Date.now();
+    setIsAddModalOpen(true);
+  };
   const [newCandidate, setNewCandidate] = useState({
     firstName: '',
     lastName: '',
@@ -131,7 +138,7 @@ export function Candidates() {
             <span>Import Resumes</span>
           </button>
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={openAddCandidateModal}
             className="btn btn-primary h-8 px-3 text-xs cursor-pointer flex items-center gap-1.5 shadow-xs"
           >
             <Plus size={13} className="flex-shrink-0" />
@@ -525,35 +532,53 @@ export function Candidates() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!newCandidate.firstName || !newCandidate.lastName) return;
+                const formEl = e.currentTarget;
+                const formData = new FormData(formEl);
+                const botcheck = formData.get('botcheck');
+                const _gotcha = formData.get('_gotcha') as string;
+
+                if (isBotSubmission({ botcheck: !!botcheck, _gotcha, formStartTime: candidateModalOpenTimeRef.current })) {
+                  setIsAddModalOpen(false);
+                  return;
+                }
+
+                const cleanFirst = sanitizeInput(newCandidate.firstName, 60);
+                const cleanLast = sanitizeInput(newCandidate.lastName, 60);
+                if (!cleanFirst || !cleanLast) return;
+
+                const cleanEmail = sanitizeInput(newCandidate.email, 120);
+                const cleanPhone = sanitizeInput(newCandidate.phone, 30);
+                const cleanPos = sanitizeInput(newCandidate.position, 100);
+                const cleanSpec = sanitizeInput(newCandidate.specialty, 80);
+                const cleanLoc = sanitizeInput(newCandidate.currentLocation, 100) || 'Sacramento, CA';
 
                 const cand: Candidate = {
                   id: `c-${Date.now()}`,
-                  firstName: newCandidate.firstName.trim(),
-                  lastName: newCandidate.lastName.trim(),
-                  email: newCandidate.email.trim() || `${newCandidate.firstName.toLowerCase()}.${newCandidate.lastName.toLowerCase()}@health.org`,
-                  phone: newCandidate.phone.trim() || '(555) 123-4567',
-                  position: newCandidate.position,
-                  specialty: newCandidate.specialty,
+                  firstName: cleanFirst,
+                  lastName: cleanLast,
+                  email: cleanEmail || `${cleanFirst.toLowerCase()}.${cleanLast.toLowerCase()}@health.org`,
+                  phone: cleanPhone || '(555) 123-4567',
+                  position: cleanPos,
+                  specialty: cleanSpec,
                   experience: Number(newCandidate.experience) || 1,
-                  currentLocation: newCandidate.currentLocation.trim() || 'Sacramento, CA',
-                  previousTravelLocations: [newCandidate.currentLocation.trim() || 'Sacramento, CA', 'Phoenix, AZ'],
+                  currentLocation: cleanLoc,
+                  previousTravelLocations: [cleanLoc, 'Phoenix, AZ'],
                   bestMatch: 'Evaluating opportunities...',
                   status: 'new',
-                  resumeFilename: `${newCandidate.firstName.toLowerCase()}_${newCandidate.lastName.toLowerCase()}_resume.pdf`,
+                  resumeFilename: `${cleanFirst.toLowerCase()}_${cleanLast.toLowerCase()}_resume.pdf`,
                   uploadedAt: new Date().toISOString().split('T')[0],
-                  professionalSummary: newCandidate.professionalSummary.trim() || `Dedicated ${newCandidate.position} specializing in ${newCandidate.specialty} with ${newCandidate.experience} years of clinical experience.`,
-                  certifications: newCandidate.certifications.split(',').map(s => s.trim()).filter(Boolean),
+                  professionalSummary: sanitizeInput(newCandidate.professionalSummary, 1500) || `Dedicated ${cleanPos} specializing in ${cleanSpec} with ${newCandidate.experience} years of clinical experience.`,
+                  certifications: newCandidate.certifications.split(',').map(s => sanitizeInput(s, 60)).filter(Boolean),
                   confidenceScore: 98,
                   experienceTimeline: [
                     {
                       id: `exp-${Date.now()}-1`,
-                      position: newCandidate.position,
+                      position: cleanPos,
                       facility: 'Regional Medical Center',
-                      location: newCandidate.currentLocation.trim() || 'Sacramento, CA',
+                      location: cleanLoc,
                       startDate: `${new Date().getFullYear() - (Number(newCandidate.experience) || 1)}`,
                       endDate: 'Present',
-                      description: `High-acuity ${newCandidate.specialty} patient care and multidisciplinary protocols.`,
+                      description: `High-acuity ${cleanSpec} patient care and multidisciplinary protocols.`,
                     },
                   ],
                   verifiedByRecruiter: true,
@@ -581,12 +606,17 @@ export function Candidates() {
               }}
               className="p-5 space-y-3.5"
             >
+              {/* Strix Dual Honeypot Protection */}
+              <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
+              <input type="text" name="_gotcha" className="absolute -left-[9999px] opacity-0 pointer-events-none" tabIndex={-1} autoComplete="off" />
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">First Name *</label>
                   <input
                     type="text"
                     required
+                    maxLength={60}
                     value={newCandidate.firstName}
                     onChange={e => setNewCandidate({ ...newCandidate, firstName: e.target.value })}
                     className="input w-full h-8.5 px-3 text-xs"
@@ -598,6 +628,7 @@ export function Candidates() {
                   <input
                     type="text"
                     required
+                    maxLength={60}
                     value={newCandidate.lastName}
                     onChange={e => setNewCandidate({ ...newCandidate, lastName: e.target.value })}
                     className="input w-full h-8.5 px-3 text-xs"
@@ -611,6 +642,7 @@ export function Candidates() {
                   <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Email</label>
                   <input
                     type="email"
+                    maxLength={120}
                     value={newCandidate.email}
                     onChange={e => setNewCandidate({ ...newCandidate, email: e.target.value })}
                     className="input w-full h-8.5 px-3 text-xs"
@@ -621,6 +653,7 @@ export function Candidates() {
                   <label className="block text-[11px] font-medium text-[var(--color-text-secondary)] mb-1">Phone</label>
                   <input
                     type="text"
+                    maxLength={30}
                     value={newCandidate.phone}
                     onChange={e => setNewCandidate({ ...newCandidate, phone: e.target.value })}
                     className="input w-full h-8.5 px-3 text-xs"

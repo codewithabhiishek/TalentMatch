@@ -4,6 +4,7 @@ import { useAppStore } from '../store';
 import { ProfileViewSkeleton } from '../components/Skeletons';
 import { downloadCandidateReport, downloadCandidateJSON } from '../services/downloadService';
 import { ApplicantLettermarkBadge } from '../components/ApplicantLettermarkBadge';
+import { sanitizeInput } from '../services/securityService';
 
 export function CandidateProfile() {
   const { selectedCandidateId, candidates, jobMatches, jobs, navigateTo, updateCandidate, updateCandidateStatus, addNotification } = useAppStore();
@@ -440,23 +441,33 @@ export function CandidateProfile() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const cleanFirst = sanitizeInput(editForm.firstName, 60) || candidate.firstName;
+                const cleanLast = sanitizeInput(editForm.lastName, 60) || candidate.lastName;
+                const cleanEmail = sanitizeInput(editForm.email, 120) || candidate.email;
+                const cleanPhone = sanitizeInput(editForm.phone, 30) || candidate.phone;
+                const cleanPos = sanitizeInput(editForm.position, 100) || candidate.position;
+                const cleanSpec = sanitizeInput(editForm.specialty, 80) || candidate.specialty;
+                const cleanLoc = sanitizeInput(editForm.currentLocation, 100) || candidate.currentLocation;
+                const cleanSummary = sanitizeInput(editForm.professionalSummary, 1500) || candidate.professionalSummary;
+                const cleanCerts = editForm.certifications.split(',').map(s => sanitizeInput(s, 60)).filter(Boolean);
+
                 updateCandidate(candidate.id, {
-                  firstName: editForm.firstName.trim() || candidate.firstName,
-                  lastName: editForm.lastName.trim() || candidate.lastName,
-                  email: editForm.email.trim() || candidate.email,
-                  phone: editForm.phone.trim() || candidate.phone,
-                  position: editForm.position || candidate.position,
-                  specialty: editForm.specialty || candidate.specialty,
+                  firstName: cleanFirst,
+                  lastName: cleanLast,
+                  email: cleanEmail,
+                  phone: cleanPhone,
+                  position: cleanPos,
+                  specialty: cleanSpec,
                   experience: Number(editForm.experience) || candidate.experience,
-                  currentLocation: editForm.currentLocation.trim() || candidate.currentLocation,
-                  certifications: editForm.certifications.split(',').map(s => s.trim()).filter(Boolean),
-                  professionalSummary: editForm.professionalSummary.trim() || candidate.professionalSummary,
+                  currentLocation: cleanLoc,
+                  certifications: cleanCerts.length > 0 ? cleanCerts : candidate.certifications,
+                  professionalSummary: cleanSummary,
                   status: editForm.status,
                 });
                 addNotification({
                   type: 'success',
                   title: 'Profile Updated',
-                  message: `${editForm.firstName || candidate.firstName}'s profile details have been saved`,
+                  message: `${cleanFirst}'s profile details have been saved`,
                 });
                 setIsEditModalOpen(false);
               }}
