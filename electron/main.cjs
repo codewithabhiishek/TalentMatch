@@ -21,15 +21,24 @@ function createWindow() {
     },
   });
 
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const isDev = process.env.NODE_ENV === 'development';
+  const distHtmlPath = path.join(__dirname, '../dist/index.html');
 
-  if (isDev) {
-    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
-    mainWindow.loadURL(devServerUrl).catch(() => {
-      mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+  if (isDev && process.env.VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL).catch((err) => {
+      console.warn('Dev server URL failed, falling back to dist/index.html:', err.message);
+      if (fs.existsSync(distHtmlPath)) {
+        mainWindow.loadFile(distHtmlPath);
+      }
     });
+  } else if (fs.existsSync(distHtmlPath)) {
+    // Standard local desktop run (npm run electron -> builds dist and loads directly)
+    mainWindow.loadFile(distHtmlPath);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    // If dist hasn't been built yet, try default dev port or wait
+    mainWindow.loadURL('http://localhost:3000').catch(() => {
+      console.error('Cannot load application: dist/index.html does not exist and dev server is offline.');
+    });
   }
 
   mainWindow.on('closed', () => {
