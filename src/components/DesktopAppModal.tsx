@@ -18,7 +18,7 @@ interface DesktopAppModalProps {
 type OperatingSystem = 'windows' | 'mac' | 'linux';
 type ViewMode = 'wizard' | 'all';
 type WinOllamaMethod = 'winget' | 'direct' | 'powershell';
-type WinStep1Method = 'quickstart' | 'standalone' | 'prereqs';
+type WinStep1Method = 'quickstart' | 'allinone' | 'standalone' | 'prereqs';
 type WinShell = 'powershell' | 'cmd';
 
 function WindowsIcon({ size = 12, className = '' }: { size?: number; className?: string }) {
@@ -261,6 +261,48 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
     return `npm run build`;
   };
 
+  // Unified 1-Line command that downloads the app, installs Ollama, pulls Llama 3.2, and starts everything connected
+  const getAllInOneCommand = () => {
+    if (os === 'windows') {
+      if (winShell === 'cmd') {
+        return `winget install Ollama.Ollama -e --accept-package-agreements --accept-source-agreements && start "Ollama Model" ollama run llama3.2:3b && git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch && npm install && npm run electron`;
+      }
+      return `winget install Ollama.Ollama -e --accept-package-agreements --accept-source-agreements ; Start-Process "ollama" -ArgumentList "run llama3.2:3b" ; git clone https://github.com/codewithabhiishek/TalentMatch.git ; cd TalentMatch ; npm install ; npm run electron`;
+    }
+    if (os === 'mac') {
+      return `brew install ollama && (ollama run llama3.2:3b &) && git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch && npm install && npm run electron`;
+    }
+    return `curl -fsSL https://ollama.com/install.sh | sh && (ollama run llama3.2:3b &) && git clone https://github.com/codewithabhiishek/TalentMatch.git && cd TalentMatch && npm install && npm run electron`;
+  };
+
+  const getAllInOneLines = () => {
+    if (os === 'windows') {
+      return [
+        '# 1. Install local Ollama AI engine via winget',
+        'winget install Ollama.Ollama -e --accept-package-agreements',
+        '# 2. Download and run Meta Llama 3.2 3B model in background',
+        'Start-Process "ollama" -ArgumentList "run llama3.2:3b"',
+        '# 3. Clone TalentMatch ATS desktop application',
+        'git clone https://github.com/codewithabhiishek/TalentMatch.git',
+        'cd TalentMatch',
+        '# 4. Install dependencies and launch native desktop window',
+        'npm install',
+        'npm run electron',
+      ];
+    }
+    return [
+      '# 1. Install Ollama engine',
+      os === 'mac' ? 'brew install ollama' : 'curl -fsSL https://ollama.com/install.sh | sh',
+      '# 2. Pull & launch Meta Llama 3.2 3B background process',
+      'ollama run llama3.2:3b &',
+      '# 3. Clone TalentMatch ATS and launch desktop app',
+      'git clone https://github.com/codewithabhiishek/TalentMatch.git',
+      'cd TalentMatch',
+      'npm install',
+      'npm run electron',
+    ];
+  };
+
   const getOllamaInstallCommand = () => {
     if (os === 'windows') {
       if (winOllamaMethod === 'powershell') {
@@ -480,6 +522,18 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                         </button>
                         <button
                           type="button"
+                          onClick={() => setWinStep1Method('allinone')}
+                          className={`px-2.5 sm:px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+                            winStep1Method === 'allinone'
+                              ? 'bg-gradient-to-r from-sky-500/25 to-emerald-500/25 text-sky-200 shadow-xs border border-sky-400/40'
+                              : 'text-emerald-400 hover:text-emerald-300'
+                          }`}
+                        >
+                          <Sparkles size={11} className="text-emerald-400" />
+                          <span>All-In-One (App + LLM)</span>
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setWinStep1Method('standalone')}
                           className={`px-2.5 sm:px-3 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer ${
                             winStep1Method === 'standalone'
@@ -592,6 +646,76 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                             ))}
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {winStep1Method === 'allinone' && (
+                      <div className="animate-tab-slide space-y-3">
+                        <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-500/10 via-emerald-500/10 to-transparent border border-sky-500/30">
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={14} className="text-emerald-400" />
+                            <span className="font-bold text-white text-xs">
+                              All-In-One Unified 1-Line Execution
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                            This single command installs Ollama, pulls the 2.0GB Meta Llama 3.2 3B model, clones TalentMatch ATS, installs packages, and launches both connected automatically.
+                          </p>
+                        </div>
+
+                        {/* Shell selector for Windows */}
+                        {os === 'windows' && (
+                          <div className="flex items-center justify-between text-[11px] bg-slate-900/60 p-2 px-3 rounded-lg border border-white/8">
+                            <span className="text-slate-400">Select Windows Terminal Shell:</span>
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setWinShell('powershell')}
+                                className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                                  winShell === 'powershell'
+                                    ? 'bg-sky-500 text-slate-950 font-bold'
+                                    : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                PowerShell (;)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setWinShell('cmd')}
+                                className={`px-2 py-0.5 rounded font-mono text-[10px] font-semibold transition-all cursor-pointer ${
+                                  winShell === 'cmd'
+                                    ? 'bg-sky-500 text-slate-950 font-bold'
+                                    : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                Command Prompt (&amp;&amp;)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <TerminalCodeBlock
+                          id="talentmatch-all-in-one"
+                          shellLabel={
+                            os === 'windows'
+                              ? winShell === 'cmd'
+                                ? 'Windows Command Prompt (cmd.exe)'
+                                : 'PowerShell 5.1 / 7+'
+                              : os === 'mac'
+                              ? 'macOS Terminal (zsh)'
+                              : 'Linux Terminal (bash / zsh)'
+                          }
+                          command={getAllInOneCommand()}
+                          displayLines={getAllInOneLines()}
+                          helperText={
+                            os === 'windows'
+                              ? 'Installs Ollama, starts Llama 3.2:3b in a separate background window, clones the repo, and runs the Electron app.'
+                              : 'Installs Ollama, initiates background model runner, clones the repository, and boots the native desktop ATS.'
+                          }
+                          copiedId={copiedIndex}
+                          onCopy={copyToClipboard}
+                          accentColor="emerald"
+                        />
                       </div>
                     )}
 
