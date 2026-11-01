@@ -505,7 +505,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div
                   role="menu"
                   aria-orientation="vertical"
-                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-80 max-w-[calc(100vw-1.5rem)] z-50 p-2.5 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]"
+                  className="dropdown fixed sm:absolute right-2 sm:right-0 top-15 sm:top-full mt-0 sm:mt-2 w-88 max-w-[calc(100vw-1.5rem)] z-50 p-3 animate-scale-in shadow-2xl border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]"
                 >
                   {/* Recruiter Identity Header Card */}
                   <div className="p-3.5 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl mb-2.5 relative">
@@ -520,25 +520,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           <p className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">
                             {userProfile?.firstName || 'Jordan'} {userProfile?.lastName || 'Rivera'}
                           </p>
-                          <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-white/10 text-slate-200 border border-white/10">
+                          <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium bg-white/10 text-slate-200 border border-white/10 shrink-0">
                             <ShieldCheck size={10} className="text-slate-300" /> Clinical Lead
                           </span>
                         </div>
-                        <p className="text-[11px] text-[var(--color-text-secondary)] font-normal mt-0.5">
+                        <p className="text-[11px] text-[var(--color-text-secondary)] font-normal mt-0.5 truncate">
                           {userProfile?.role || 'Senior Clinical Recruiter'}
                         </p>
                         <p className="text-[10px] text-[var(--color-text-tertiary)] truncate mt-0.5" title={userProfile?.email}>
                           {userProfile?.email || 'jordan.rivera@talentmatch.ai'}
                         </p>
-                        <p className="text-[10px] text-slate-400 flex items-center justify-between gap-1.5 mt-1 truncate">
-                          <span className="flex items-center gap-1 truncate">
-                            <Building2 size={11} className="text-slate-400 shrink-0" />
-                            <span className="truncate">{userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}</span>
+                        <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-300">
+                          <Building2 size={11} className="text-slate-400 shrink-0" />
+                          <span className="truncate flex-1 font-medium" title={userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}>
+                            {userProfile?.facility || 'Pacific Health System · Level 1 Trauma'}
                           </span>
-                          <span className="text-[9px] font-mono text-sky-300 px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20 shrink-0">
+                          <span className="text-[9px] font-mono text-sky-300 px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 shrink-0">
                             {userProfile?.timezone?.includes('IST') ? 'IST +5:30' : userProfile?.timezone?.split('—')[0]?.trim() || 'IST'}
                           </span>
-                        </p>
+                        </div>
                       </div>
                     </div>
 
