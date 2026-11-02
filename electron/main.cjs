@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Notification, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -40,6 +40,25 @@ function createWindow() {
       console.error('Cannot load application: dist/index.html does not exist and dev server is offline.');
     });
   }
+
+  // Defensive navigation security: prevent opening arbitrary untrusted web URLs inside electron window
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Only open trusted external protocols (http/https) in the user's default OS browser
+    if (url.startsWith('https://') || url.startsWith('http://')) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    // Prevent in-window navigation away from local bundle
+    if (url !== mainWindow.webContents.getURL() && !url.startsWith('file://')) {
+      event.preventDefault();
+      if (url.startsWith('https://') || url.startsWith('http://')) {
+        shell.openExternal(url);
+      }
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
