@@ -13,6 +13,22 @@ if (typeof window !== 'undefined') {
   }
 }
 
+/**
+ * Configure worker port or disable worker if blocked by browser sandbox
+ */
+function ensurePdfWorker() {
+  if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    try {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+      ).toString();
+    } catch {
+      // Fallback
+    }
+  }
+}
+
 interface TextItemWithCoords {
   str: string;
   x: number;
@@ -201,16 +217,15 @@ export async function extractTextFromDocx(file: File): Promise<string> {
       }
     }
 
-    // Strategy 3: Text stream extraction for legacy binary .doc or plain text wrapped files
-    const cleanText = decoded
-      .replace(/[^\x20-\x7E\t\n\r]/g, ' ')
-      .replace(/\s{2,}/g, '\n')
-      .trim();
-
+  // Strategy 3: Text stream extraction for legacy binary .doc, RTF, or plain text wrapped files
+  try {
+    const rawText = await file.text();
+    const cleanText = rawText.replace(/[^\x20-\x7E\t\n\r]/g, ' ').replace(/\s{2,}/g, '\n').trim();
     const alphaCount = (cleanText.match(/[a-zA-Z]/g) || []).length;
-    if (cleanText.length > 50 && alphaCount / cleanText.length > 0.3) {
+    if (cleanText.length > 50 && alphaCount / cleanText.length > 0.25) {
       return cleanText;
     }
+  } catch {}
   } catch (fallbackErr: any) {
     console.error('Word document fallback failed:', fallbackErr);
   }
