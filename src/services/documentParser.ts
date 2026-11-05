@@ -116,28 +116,55 @@ export async function extractTextFromPdf(file: File): Promise<string> {
 }
 
 /**
- * Extracts plain text from an uploaded Microsoft Word DOCX file
+ * Universal text extraction from uploaded Word documents (.docx and legacy .doc)
  */
 export async function extractTextFromDocx(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+
+  // Strategy 1: Mammoth raw text extraction (handles standard Word .docx)
   try {
-    const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
-    if (!result.value || result.value.trim().length === 0) {
-      throw new Error('DOCX document appears to be empty.');
+    if (result.value && result.value.trim().length > 20) {
+      return result.value.trim();
     }
-    return result.value.trim();
-  } catch (error: any) {
-    // Graceful fallback for legacy binary .doc or non-standard XML
-    try {
-      const rawText = await file.text();
-      const cleanText = rawText.replace(/[^\x20-\x7E\t\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
-      if (cleanText.length > 50) {
-        return cleanText;
-      }
-    } catch {}
-    console.error('Failed to parse Word document:', error);
-    throw new Error(`Could not extract text from Word document: ${error.message || 'Corrupt or unsupported format'}.`);
+  } catch (mErr: any) {
+    console.warn('Mammoth extraction failed, trying XML/binary fallback:', mErr.message);
   }
+
+  // Strategy 2: Extract text directly from docx XML content (document.xml)
+  try {
+    const uint8 = new Uint8Array(arrayBuffer);
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const decoded = decoder.decode(uint8);
+
+    // Look for <w:t> tags in docx XML
+    const wtMatches = decoded.match(/<w:t[^>]*>([^<]+)<\/w:t>/g);
+    if (wtMatches && wtMatches.length > 5) {
+      const extracted = wtMatches
+        .map(tag => tag.replace(/<[^>]+>/g, ''))
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (extracted.length > 30) {
+        return extracted;
+      }
+    }
+
+    // Strategy 3: Text stream extraction for legacy binary .doc or plain text wrapped files
+    const cleanText = decoded
+      .replace(/[^\x20-\x7E\t\n\r]/g, ' ')
+      .replace(/\s{2,}/g, '\n')
+      .trim();
+
+    const alphaCount = (cleanText.match(/[a-zA-Z]/g) || []).length;
+    if (cleanText.length > 50 && alphaCount / cleanText.length > 0.3) {
+      return cleanText;
+    }
+  } catch (fallbackErr: any) {
+    console.error('Word document fallback failed:', fallbackErr);
+  }
+
+  throw new Error(`Could not extract readable text from "${file.name}". Please ensure it contains selectable text.`);
 }
 
 /**

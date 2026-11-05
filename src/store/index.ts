@@ -110,6 +110,7 @@ export interface AppState {
   updateJob: (id: string, updates: Partial<Job>) => void;
   deleteJob: (id: string) => void;
   addJob: (job: Job) => void;
+  addJobsBatch: (jobs: Job[]) => void;
 
   updateMatchStatus: (id: string, status: JobMatch['status']) => void;
   addImportedFile: (file: ImportedFile) => void;
@@ -252,6 +253,26 @@ export const useAppStore = create<AppState>()(
       addJob: (job) => set((state) => ({
         jobs: [sanitizeObject(job), ...state.jobs],
       })),
+
+      addJobsBatch: (newJobs) => set((state) => {
+        const sanitizedJobs = newJobs.map(j => sanitizeObject(j));
+        // Compute matches for each candidate against the newly imported jobs
+        const activeCandidates = state.candidates;
+        const newMatches: JobMatch[] = [];
+
+        for (const candidate of activeCandidates) {
+          for (const job of sanitizedJobs) {
+            if (job.status === 'active') {
+              newMatches.push(calculateCandidateJobMatch(candidate, job));
+            }
+          }
+        }
+
+        return {
+          jobs: [...sanitizedJobs, ...state.jobs],
+          jobMatches: [...newMatches, ...state.jobMatches],
+        };
+      }),
 
       updateMatchStatus: (id, status) => set((state) => ({
         jobMatches: state.jobMatches.map(m => m.id === id ? { ...m, status } : m),

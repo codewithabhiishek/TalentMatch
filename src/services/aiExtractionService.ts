@@ -1,5 +1,6 @@
 import { Candidate, ExperienceRecord } from '../types';
 import { sanitizeInput, sanitizeEmail } from './securityService';
+import { fetchFacilityLocationFromWeb } from './facilityLocationService';
 
 export interface AIConfig {
   provider: 'ollama' | 'openai' | 'groq' | 'anthropic' | 'custom' | 'heuristic';
@@ -139,7 +140,8 @@ async function extractWithOllama(
   const url = `${config.apiUrl.replace(/\/+$/, '')}/api/generate`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2-min timeout
+  // Responsive timeout: 12 seconds max. If local model is lagging or cold, failover instantly to the fast deterministic engine
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -148,13 +150,13 @@ async function extractWithOllama(
     body: JSON.stringify({
       model: config.modelName || 'llama3.2:3b',
       system: SYSTEM_PROMPT,
-      prompt: `Resume content:\n\n${resumeText}\n\nExtract the JSON structure:`,
+      prompt: `Resume content:\n\n${resumeText.slice(0, 6000)}\n\nExtract the JSON structure:`,
       format: 'json',
       stream: false,
       options: {
         temperature: config.temperature ?? 0.1,
-        num_predict: 2048,
-        num_ctx: 4096,
+        num_predict: 1024,
+        num_ctx: 2048,
       },
     }),
   });
@@ -252,15 +254,15 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   const phone = phoneMatch ? sanitizeString(phoneMatch[0]) : '';
 
   // 3. Name extraction: pick first non-title, non-empty line with 2-3 words
-  const ignoreWords = ['resume', 'curriculum', 'vitae', 'cv', 'profile', 'contact', 'summary', 'experience', 'education', 'skills', 'objective', 'work', 'history', 'certifications'];
+  const ignoreWords = ['resume', 'curriculum', 'vitae', 'cv', 'profile', 'contact', 'summary', 'experience', 'education', 'skills', 'objective', 'work', 'history', 'certifications', 'professional', 'primary', 'specialty'];
   const credentialSuffixes = /\b(BSN|MSN|DNP|RN|APRN|FNP|CCRN|CEN|TNCC|ENPC|PT|DPT|OCS|OT|OTR|RT|RRT|RRT-NPS|CRT|MD|DO|PA|CPhT|CNA|ARRT|BLS|ACLS|PALS|CPR|AED)\b/gi;
 
-  let firstName = 'Candidate';
-  let lastName = 'Profile';
+  let firstName = '';
+  let lastName = '';
 
-  for (const line of lines.slice(0, 10)) {
-    // Skip lines with contact markers, emails, phone numbers or web links
-    if (/@|www\.|\.com|\.org|\.edu|\.net|\+?1?\s*\(?\d{3}\)?\s*[\d.-]{6,}|\|\s*\(?\d{3}\)?/i.test(line)) {
+  for (const line of lines.slice(0, 15)) {
+    // Skip lines with contact markers, emails, phone numbers, addresses, or web links
+    if (/@|www\.|\.com|\.org|\.edu|\.net|\+?1?\s*\(?\d{3}\)?\s*[\d.-]{6,}|\|\s*\(?\d{3}\)?|\b(ave|avenue|street|st|road|rd|blvd|lane|drive|dr|court|ct|box)\b/i.test(line)) {
       continue;
     }
     // Take part before comma if present (e.g. "Sarah Mitchell, BSN, RN" -> "Sarah Mitchell")
@@ -277,13 +279,24 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     }
   }
 
-  // If still candidate, fallback to filename
-  if (firstName === 'Candidate') {
-    const cleanFile = fileName.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-    const parts = cleanFile.split(' ').filter(Boolean);
+  // Fallback to filename if not detected in first lines (e.g., "Anieth Daley 2023 resume.docx" -> Anieth Daley)
+  if (!firstName || firstName === 'Candidate') {
+    const cleanFile = fileName
+      .replace(/\.[^/.]+$/, '') // strip extension
+      .replace(/\b(20\d{2}|19\d{2}|resume|cv|october|november|december|january|february|march|april|may|june|july|august|september)\b/gi, '') // strip dates & keywords
+      .replace(/[_.-]/g, ' ')
+      .trim();
+
+    const parts = cleanFile.split(/\s+/).filter(p => p.length > 1 && !ignoreWords.includes(p.toLowerCase()));
     if (parts.length >= 2) {
       firstName = sanitizeString(parts[0]);
       lastName = sanitizeString(parts.slice(1).join(' '));
+    } else if (parts.length === 1) {
+      firstName = sanitizeString(parts[0]);
+      lastName = 'Candidate';
+    } else {
+      firstName = 'Candidate';
+      lastName = 'Profile';
     }
   }
 
@@ -524,6 +537,36 @@ export async function parseResumeWithAI(
     ? baseHeuristic.email
     : baseHeuristic.email || 'candidate@talentmatch.demo';
 
+  // If experienceTimeline items have a facility but no city/state location, fetch real location from web
+  const rawTimeline = Array.isArray(candidateData?.experienceTimeline) && candidateData.experienceTimeline.length > 0
+    ? candidateData.experienceTimeline
+    : baseHeuristic.experienceTimeline || [];
+
+  const enrichedTimeline: ExperienceRecord[] = await Promise.all(
+    rawTimeline.map(async (item, idx) => {
+      const facility = sanitizeString(item.facility || '');
+      let loc = sanitizeString(item.location || '');
+
+      // If location is missing or generic, fetch the facility's real city/state from the internet
+      if ((!loc || loc === 'United States' || !loc.includes(',')) && facility && facility !== 'Healthcare Facility' && facility !== 'Regional Medical Center') {
+        const webLoc = await fetchFacilityLocationFromWeb(facility);
+        if (webLoc) {
+          loc = webLoc;
+        }
+      }
+
+      return {
+        id: `exp-${Date.now()}-${idx}`,
+        position: sanitizeString(item.position || 'Staff Role'),
+        facility: facility || 'Healthcare Facility',
+        location: loc || 'United States',
+        startDate: sanitizeString(item.startDate || '2022'),
+        endDate: sanitizeString(item.endDate || 'Present'),
+        description: sanitizeString(item.description || 'Clinical patient care.'),
+      };
+    })
+  );
+
   const finalCandidate: Candidate = {
     id: `cand-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     firstName: sanitizeString(candidateData?.firstName || baseHeuristic.firstName || 'Candidate'),
@@ -545,17 +588,7 @@ export async function parseResumeWithAI(
     resumeFilename: fileName,
     uploadedAt: new Date().toISOString().split('T')[0],
     professionalSummary: sanitizeString(candidateData?.professionalSummary || baseHeuristic.professionalSummary || 'Candidate profile extracted from document.'),
-    experienceTimeline: Array.isArray(candidateData?.experienceTimeline) && candidateData.experienceTimeline.length > 0
-      ? candidateData.experienceTimeline.map((item, idx) => ({
-          id: `exp-${Date.now()}-${idx}`,
-          position: sanitizeString(item.position || 'Staff Role'),
-          facility: sanitizeString(item.facility || 'Healthcare Facility'),
-          location: sanitizeString(item.location || 'United States'),
-          startDate: sanitizeString(item.startDate || '2022'),
-          endDate: sanitizeString(item.endDate || 'Present'),
-          description: sanitizeString(item.description || 'Clinical patient care.'),
-        }))
-      : baseHeuristic.experienceTimeline || [],
+    experienceTimeline: enrichedTimeline,
     verifiedByRecruiter: false,
     confidenceScore: confidence,
   };
