@@ -370,6 +370,75 @@ const testCases: TestCase[] = [
       mustHaveCerts: ['BLS', 'ACLS'],
     },
   },
+  {
+    id: 'case-irregular-anieth-daley',
+    title: 'Irregular Formatted Docx with Dates in Filename & Tabular Split',
+    fileName: 'Anieth Daley 2023 resume.docx',
+    text: `
+      PRIMARY SPECIALTY: Med-Surg Telemetry
+      COVID-19 VACCINATION STATUS: Fully Vaccinated
+      CONTACT INFORMATION:
+      anieth.daley@nursingcare.org | 806-555-0199
+      
+      Anieth Daley
+      Registered Nurse
+      Lubbock, TX
+      
+      PROFESSIONAL SUMMARY
+      Skilled Medical-Surgical, Tele, Psych, Acute care, LTACH nurse with 5 years experience in the hospital setting. Dedicated to patient safety and evidence-based protocols.
+      
+      CERTIFICATIONS & LICENSES
+      Texas State RN License, BLS, ACLS
+      
+      WORK EXPERIENCE
+      Staff RN | Covenant Health System | Lubbock, TX
+      2019 - Present
+    `,
+    expected: {
+      firstName: 'Anieth',
+      lastName: 'Daley',
+      emailDomain: 'nursingcare.org',
+      position: 'Registered Nurse',
+      specialty: 'Med-Surg',
+      minExperience: 4,
+      maxExperience: 6,
+      mustHaveCerts: ['BLS', 'ACLS'],
+    },
+  },
+  {
+    id: 'case-irregular-ariane-kouassi',
+    title: 'Messy Column Layout with Top Postal Address & Lowercase Heading',
+    fileName: 'Ariane Kouassi october 302023.pdf',
+    text: `
+      2821 82nd Ave, Apt 4B
+      Lubbock, TX 79423
+      ariane.kouassi@healthnet.org
+      806-555-8821
+      
+      Ariane Kouassi
+      
+      Professional Summary
+      Skilled Medical Surgical, Tele, Psych, Acute care, LTAC nurse with 7 years experience in the hospital setting. Advocate for clinical excellence and patient recovery.
+      
+      Education & Licenses
+      Bachelor of Science in Nursing (BSN)
+      Certified in Basic Life Support (BLS), Advanced Cardiovascular Life Support (ACLS)
+      
+      Employment History
+      Travel Registered Nurse | University Medical Center | Lubbock, TX
+      2017 - Present
+    `,
+    expected: {
+      firstName: 'Ariane',
+      lastName: 'Kouassi',
+      emailDomain: 'healthnet.org',
+      position: 'Registered Nurse',
+      specialty: 'Med-Surg',
+      minExperience: 6,
+      maxExperience: 8,
+      mustHaveCerts: ['BLS', 'ACLS'],
+    },
+  },
 ];
 
 async function runBenchmark() {
