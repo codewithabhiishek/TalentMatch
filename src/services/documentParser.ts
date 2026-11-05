@@ -75,10 +75,13 @@ function reconstructPageText(items: any[]): string {
 
 /**
  * Extracts plain text from an uploaded PDF file with spatial line preservation
+ * and multi-column awareness.
  */
 export async function extractTextFromPdf(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+
+  // Strategy 1: PDF.js with standard internal font rendering
   try {
-    const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       useSystemFonts: true,
@@ -86,33 +89,81 @@ export async function extractTextFromPdf(file: File): Promise<string> {
 
     const pdf = await loadingTask.promise;
     let fullText = '';
+    let rawItemsText = '';
 
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
       const textContent = await page.getTextContent();
+      
+      // Spatial line ordering
       const pageText = reconstructPageText(textContent.items);
-
       if (pageText) {
-        fullText += pageText + '\n\n--- Page Break ---\n\n';
+        fullText += pageText + '\n\n';
+      }
+
+      // Simple string join fallback in case spatial grouping gaps out
+      const rawPage = textContent.items
+        .map((it: any) => (typeof it.str === 'string' ? it.str : ''))
+        .filter(Boolean)
+        .join(' ');
+      if (rawPage) {
+        rawItemsText += rawPage + '\n';
       }
     }
 
     const trimmed = fullText.trim();
-    if (trimmed.length > 0) {
+    if (trimmed.length > 20) {
       return trimmed;
     }
-
-    throw new Error('PDF has no extractable text layers.');
-  } catch (error: any) {
-    console.warn('PDF.js spatial parsing warning, attempting standard stream fallback:', error.message);
-    try {
-      const rawText = await file.text();
-      const cleanText = rawText.replace(/[^\x20-\x7E\t\n\r]/g, ' ').replace(/\s+/g, ' ');
-      const alphaRatio = (cleanText.match(/[a-zA-Z]/g) || []).length / Math.max(1, cleanText.length);
-      if (cleanText.length > 50 && alphaRatio > 0.3) return cleanText;
-    } catch {}
-    throw new Error('This PDF appears to be a scanned image without selectable text. Please use a text-based PDF or convert it using Adobe Acrobat\'s OCR feature before uploading.');
+    if (rawItemsText.trim().length > 20) {
+      return rawItemsText.trim();
+    }
+  } catch (pdfErr: any) {
+    console.warn('PDF.js standard parse failed, attempting fallback streams:', pdfErr.message);
   }
+
+  // Strategy 2: PDF stream / character extraction from raw ArrayBuffer
+  try {
+    const uint8 = new Uint8Array(arrayBuffer);
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const rawContent = decoder.decode(uint8);
+
+    // Look for text within PDF text objects (BT ... ET)
+    const textObjects = rawContent.match(/BT[\s\S]*?ET/g);
+    if (textObjects && textObjects.length > 0) {
+      const extractedTokens: string[] = [];
+      for (const obj of textObjects) {
+        // Match string literals inside parentheses: (Text) Tj or [(T) (e) (x) (t)] TJ
+        const stringMatches = obj.match(/\(([^()]{1,200})\)/g);
+        if (stringMatches) {
+          for (const m of stringMatches) {
+            const cleanToken = m.slice(1, -1).replace(/\\([()\\])/g, '$1').trim();
+            if (cleanToken.length > 0) {
+              extractedTokens.push(cleanToken);
+            }
+          }
+        }
+      }
+      const streamResult = extractedTokens.join(' ').replace(/\s{2,}/g, '\n').trim();
+      if (streamResult.length > 30) {
+        return streamResult;
+      }
+    }
+
+    // Strategy 3: Clean ASCII printable run scanner
+    const cleanText = rawContent
+      .replace(/[^\x20-\x7E\t\n\r]/g, ' ')
+      .replace(/\s{2,}/g, '\n')
+      .trim();
+    const alphaCount = (cleanText.match(/[a-zA-Z]/g) || []).length;
+    if (cleanText.length > 60 && alphaCount / cleanText.length > 0.3) {
+      return cleanText;
+    }
+  } catch (fallbackErr: any) {
+    console.error('PDF fallback extraction failed:', fallbackErr);
+  }
+
+  throw new Error(`Could not extract readable text from "${file.name}". Please ensure the PDF is not an unsearchable image scan.`);
 }
 
 /**
