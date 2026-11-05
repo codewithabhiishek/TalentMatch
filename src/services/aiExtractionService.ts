@@ -435,9 +435,6 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
       detectedCerts.push(cert);
     }
   }
-  if (detectedCerts.length === 0) {
-    detectedCerts.push('BLS', 'ACLS', 'State RN License');
-  }
 
   // 8. Location Detection (City, State) — only valid US state abbreviations
   const US_STATES = new Set([
@@ -457,26 +454,85 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
       break;
     }
   }
-  const currentLocation = bestLocation || 'United States';
+  const currentLocation = bestLocation || '';
 
-  // 9. Timeline generation from detected text
-  const startYear = (new Date().getFullYear() - experienceYears).toString();
-  const timeline: ExperienceRecord[] = [
-    {
+  // 9. Timeline extraction from real document text
+  const timeline: ExperienceRecord[] = [];
+  const rawLines = resumeText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    // Check for pipe-separated work history e.g. "Staff RN | Covenant Health System | Lubbock, TX"
+    if (line.includes('|')) {
+      const parts = line.split('|').map(p => p.trim());
+      if (parts.length >= 2 && !/^(email|phone|contact|summary|skills|education|certifications)/i.test(parts[0])) {
+        let pos = '';
+        let fac = '';
+        let loc = '';
+
+        if (parts.length >= 3) {
+          pos = parts[0];
+          fac = parts[1];
+          loc = parts[2];
+        } else {
+          // 2 parts: could be Position | Facility, or Facility | Location
+          if (US_STATES.has(parts[1].slice(-2).toUpperCase()) || parts[1].includes(',')) {
+            fac = parts[0];
+            loc = parts[1];
+            pos = detectedPosition;
+          } else {
+            pos = parts[0];
+            fac = parts[1];
+          }
+        }
+
+        // Check next line for date range e.g. "2023 - Present | Outpatient..."
+        let start = '';
+        let end = 'Present';
+        let desc = '';
+        if (i + 1 < rawLines.length) {
+          const nextLine = rawLines[i + 1];
+          const dateMatch = nextLine.match(/((?:19|20)\d{2})\s*[-–—]\s*(Present|Current|Now|(?:19|20)\d{2})/i);
+          if (dateMatch) {
+            start = dateMatch[1];
+            end = dateMatch[2];
+            desc = nextLine.replace(dateMatch[0], '').replace(/^[|\s-]+/, '').trim();
+          }
+        }
+
+        if (fac || pos) {
+          timeline.push({
+            id: `exp-${Date.now()}-${timeline.length + 1}`,
+            position: sanitizeString(pos || detectedPosition),
+            facility: sanitizeString(fac || 'Clinical Healthcare Facility'),
+            location: sanitizeString(loc || bestLocation || ''),
+            startDate: start || (new Date().getFullYear() - experienceYears).toString(),
+            endDate: end,
+            description: sanitizeString(desc || `Clinical care in ${detectedSpecialty}.`),
+          });
+        }
+      }
+    }
+  }
+
+  // If no pipe entries were found, provide factual baseline without fake hospital name
+  if (timeline.length === 0) {
+    const startYear = (new Date().getFullYear() - experienceYears).toString();
+    timeline.push({
       id: `exp-${Date.now()}-1`,
       position: detectedPosition,
-      facility: 'Regional Medical Center',
+      facility: 'Clinical Healthcare Facility',
       location: currentLocation,
       startDate: startYear,
       endDate: 'Present',
       description: `Comprehensive patient management in ${detectedSpecialty} clinical units. Administered acute protocols and multidisciplinary patient evaluations.`,
-    },
-  ];
+    });
+  }
 
   return {
     firstName,
     lastName,
-    email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, '')}@talentmatch.demo`,
+    email: email || '',
     phone,
     position: detectedPosition,
     specialty: detectedSpecialty,
@@ -484,7 +540,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
     currentLocation,
     previousTravelLocations: [],
     certifications: detectedCerts,
-    professionalSummary: `Dedicated ${detectedPosition} with ${experienceYears} years of experience specializing in ${detectedSpecialty}. Certified in ${detectedCerts.slice(0, 3).join(', ')}. Strong background in acute hospital workflows extracted from ${fileName}.`,
+    professionalSummary: `Dedicated ${detectedPosition} with ${experienceYears} years of experience specializing in ${detectedSpecialty}. Certified in ${detectedCerts.length > 0 ? detectedCerts.slice(0, 3).join(', ') : 'clinical practice'}. Strong background in acute hospital workflows extracted from ${fileName}.`,
     experienceTimeline: timeline,
   };
 }
@@ -535,7 +591,7 @@ export async function parseResumeWithAI(
     ? candidateData.email
     : (baseHeuristic.email && isValidEmail(baseHeuristic.email) && !baseHeuristic.email.endsWith('.demo'))
     ? baseHeuristic.email
-    : baseHeuristic.email || 'candidate@talentmatch.demo';
+    : '';
 
   // If experienceTimeline items have a facility but no city/state location, fetch real location from web
   const rawTimeline = Array.isArray(candidateData?.experienceTimeline) && candidateData.experienceTimeline.length > 0
@@ -548,7 +604,7 @@ export async function parseResumeWithAI(
       let loc = sanitizeString(item.location || '');
 
       // If location is missing or generic, fetch the facility's real city/state from the internet
-      if ((!loc || loc === 'United States' || !loc.includes(',')) && facility && facility !== 'Healthcare Facility' && facility !== 'Regional Medical Center') {
+      if ((!loc || loc === 'United States' || !loc.includes(',')) && facility && facility !== 'Healthcare Facility' && facility !== 'Clinical Healthcare Facility') {
         const webLoc = await fetchFacilityLocationFromWeb(facility);
         if (webLoc) {
           loc = webLoc;
@@ -558,14 +614,36 @@ export async function parseResumeWithAI(
       return {
         id: `exp-${Date.now()}-${idx}`,
         position: sanitizeString(item.position || 'Staff Role'),
-        facility: facility || 'Healthcare Facility',
-        location: loc || 'United States',
+        facility: facility || 'Clinical Healthcare Facility',
+        location: loc || (baseHeuristic.currentLocation || ''),
         startDate: sanitizeString(item.startDate || '2022'),
         endDate: sanitizeString(item.endDate || 'Present'),
         description: sanitizeString(item.description || 'Clinical patient care.'),
       };
     })
   );
+
+  const resolvedLocation = sanitizeString(
+    candidateData?.currentLocation ||
+    baseHeuristic.currentLocation ||
+    (enrichedTimeline.length > 0 && enrichedTimeline[0].location ? enrichedTimeline[0].location : '')
+  );
+
+  const inferredTravelLocations = Array.from(new Set(
+    enrichedTimeline
+      .map(e => e.location)
+      .filter(loc => loc && loc.includes(',') && loc !== resolvedLocation)
+  ));
+
+  const resolvedTravelLocations = Array.isArray(candidateData?.previousTravelLocations) && candidateData.previousTravelLocations.length > 0
+    ? candidateData.previousTravelLocations.map(sanitizeString)
+    : (baseHeuristic.previousTravelLocations && baseHeuristic.previousTravelLocations.length > 0
+      ? baseHeuristic.previousTravelLocations.map(sanitizeString)
+      : inferredTravelLocations);
+
+  const resolvedCerts = Array.isArray(candidateData?.certifications) && candidateData.certifications.length > 0
+    ? candidateData.certifications.map(sanitizeString)
+    : (baseHeuristic.certifications || []);
 
   const finalCandidate: Candidate = {
     id: `cand-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -576,13 +654,9 @@ export async function parseResumeWithAI(
     position: sanitizeString(candidateData?.position || baseHeuristic.position || 'Registered Nurse'),
     specialty: sanitizeString(candidateData?.specialty || baseHeuristic.specialty || 'ICU'),
     experience: typeof candidateData?.experience === 'number' ? candidateData.experience : (baseHeuristic.experience || 4),
-    currentLocation: sanitizeString(candidateData?.currentLocation || baseHeuristic.currentLocation || 'San Francisco, CA'),
-    previousTravelLocations: Array.isArray(candidateData?.previousTravelLocations) && candidateData.previousTravelLocations.length > 0
-      ? candidateData.previousTravelLocations.map(sanitizeString)
-      : baseHeuristic.previousTravelLocations ?? [],
-    certifications: Array.isArray(candidateData?.certifications) && candidateData.certifications.length > 0
-      ? candidateData.certifications.map(sanitizeString)
-      : baseHeuristic.certifications || ['BLS', 'ACLS', 'State RN License'],
+    currentLocation: resolvedLocation,
+    previousTravelLocations: resolvedTravelLocations,
+    certifications: resolvedCerts,
     bestMatch: `${candidateData?.position || baseHeuristic.position} (Evaluating...)`,
     status: 'new',
     resumeFilename: fileName,

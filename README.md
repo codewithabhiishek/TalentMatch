@@ -90,7 +90,21 @@ TalentMatch features an intentional, architectural visual identity rooted in exe
 
 TalentMatch can run in any modern web browser or as a native desktop application with full operating system privileges.
 
-### 1-Step Terminal Launch (No manual binary download needed)
+### 🔄 Already Cloned or Downloaded on Windows? (How to Update)
+
+If you have already downloaded or cloned the project on your Windows laptop, you must pull the latest updates so your local app has the fixes (Excel parser, irregular docx/pdf formats, live web facility resolver, CSP fix):
+
+Open **Command Prompt** or **PowerShell** in your `TalentMatch` directory and run:
+```cmd
+git pull origin main
+npm install
+npm run electron
+```
+*(If running the web browser version instead of Electron: `npm run dev`)*
+
+---
+
+### 1-Step Terminal Launch (Fresh Install)
 
 **Windows (PowerShell / Command Prompt):**
 ```powershell

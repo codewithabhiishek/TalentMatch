@@ -61,18 +61,21 @@ export function JobImport() {
     newMappings.city = findMatch([
       /^(city|site\s*city|work\s*city|location\s*city)$/i,
       /city/i,
+      /location/i,
     ]);
 
     newMappings.state = findMatch([
-      /^(state|st|site\s*state|work\s*state|location\s*state)$/i,
+      /^(state|st|site\s*state|work\s*state|location\s*state|province)$/i,
       /state/i,
+      /province/i,
     ]);
 
     newMappings.facility = findMatch([
-      /^(facility|facility\s*name|hospital|client|hospital\s*name|account|site\s*location|site)$/i,
+      /^(facility|facility\s*name|hospital|client|hospital\s*name|account|site\s*location|site|vendor|location\s*name)$/i,
       /facility/i,
       /hospital/i,
       /client/i,
+      /account/i,
     ]);
 
     newMappings.shiftType = findMatch([
@@ -157,8 +160,8 @@ export function JobImport() {
     rows.forEach((row, rIdx) => {
       const position = posIdx >= 0 ? row[posIdx]?.trim() : '';
       const specialty = specIdx >= 0 ? row[specIdx]?.trim() : '';
-      const city = cityIdx >= 0 ? row[cityIdx]?.trim() : '';
-      const state = stateIdx >= 0 ? row[stateIdx]?.trim() : '';
+      let city = cityIdx >= 0 ? row[cityIdx]?.trim() : '';
+      let state = stateIdx >= 0 ? row[stateIdx]?.trim() : '';
       const facility = facIdx >= 0 ? row[facIdx]?.trim() : '';
       const shift = shiftIdx >= 0 ? row[shiftIdx]?.trim() : '';
       const duration = durIdx >= 0 ? row[durIdx]?.trim() : '';
@@ -167,6 +170,13 @@ export function JobImport() {
       if (!position && !specialty) {
         skipped++;
         return;
+      }
+
+      // If City has "City, ST" combined into a single column (e.g. "Dallas, TX" or "Houston, Texas")
+      if (city && city.includes(',') && (!state || state.length === 0)) {
+        const parts = city.split(',');
+        city = parts[0].trim();
+        state = parts[1].trim();
       }
 
       const job: Job = {

@@ -646,6 +646,34 @@ export function DesktopAppModal({ isOpen, onClose }: DesktopAppModalProps) {
                             ))}
                           </div>
                         </div>
+
+                        {/* Update guide for existing users */}
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                          <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                            <RefreshCw size={12} className="text-amber-400" />
+                            Already downloaded on your Windows laptop? Pull latest fixes:
+                          </span>
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-[#070b14] border border-white/8 font-mono text-[11px]">
+                            <span className="text-amber-200 truncate select-all">
+                              {os === 'windows' && winShell === 'powershell'
+                                ? 'git pull origin main ; npm install ; npm run electron'
+                                : 'git pull origin main && npm install && npm run electron'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(
+                                os === 'windows' && winShell === 'powershell'
+                                  ? 'git pull origin main ; npm install ; npm run electron'
+                                  : 'git pull origin main && npm install && npm run electron',
+                                'update-cmd'
+                              )}
+                              className="ml-2 text-slate-400 hover:text-white shrink-0 cursor-pointer"
+                              title="Copy update command"
+                            >
+                              {copiedIndex === 'update-cmd' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
 

@@ -144,16 +144,23 @@ export function CandidateProfile() {
 
               {/* Interactive Contact & Location Pills */}
               <div className="flex flex-wrap items-center gap-2 mt-2.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => copyField(candidate.email, 'email')}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-info)] transition-colors cursor-pointer text-[11px]"
-                  title="Click to copy email"
-                >
-                  <Mail size={11} className="text-[var(--color-info)]" />
-                  <span>{candidate.email}</span>
-                  {copiedField === 'email' ? <Check size={10} className="text-[var(--color-success)] ml-1" /> : <Copy size={10} className="opacity-40 ml-1" />}
-                </button>
+                {candidate.email ? (
+                  <button
+                    type="button"
+                    onClick={() => copyField(candidate.email, 'email')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-info)] transition-colors cursor-pointer text-[11px]"
+                    title="Click to copy email"
+                  >
+                    <Mail size={11} className="text-[var(--color-info)]" />
+                    <span>{candidate.email}</span>
+                    {copiedField === 'email' ? <Check size={10} className="text-[var(--color-success)] ml-1" /> : <Copy size={10} className="opacity-40 ml-1" />}
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)] text-[11px]">
+                    <Mail size={11} className="opacity-50" />
+                    <span>No email on resume</span>
+                  </span>
+                )}
 
                 {candidate.phone && (
                   <button
@@ -170,7 +177,7 @@ export function CandidateProfile() {
 
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface-secondary)] border border-[var(--color-border)] text-[var(--color-text-tertiary)] text-[11px]">
                   <MapPin size={11} className="text-amber-400" />
-                  <span>{candidate.currentLocation}</span>
+                  <span>{candidate.currentLocation || 'Location Not Specified'}</span>
                 </span>
               </div>
             </div>

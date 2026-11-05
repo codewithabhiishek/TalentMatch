@@ -295,7 +295,7 @@ export function Candidates() {
                         <p className="font-semibold text-xs text-[var(--color-text-primary)] group-hover/cell:text-[var(--color-info)] transition-colors truncate">
                           {c.firstName} {c.lastName}
                         </p>
-                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">{c.email}</p>
+                        <p className="text-[11px] text-[var(--color-text-tertiary)] truncate leading-tight mt-0.5">{c.email || 'No email on file'}</p>
                       </div>
                     </button>
                   </td>
@@ -303,7 +303,7 @@ export function Candidates() {
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] align-middle">{c.specialty}</td>
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] align-middle font-medium">{c.experience} yrs</td>
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] align-middle">
-                    <span className="inline-flex items-center gap-1.5"><MapPin size={11} className="text-[var(--color-text-tertiary)] flex-shrink-0" />{c.currentLocation}</span>
+                    <span className="inline-flex items-center gap-1.5"><MapPin size={11} className="text-[var(--color-text-tertiary)] flex-shrink-0" />{c.currentLocation || 'Not Specified'}</span>
                   </td>
                   <td className="px-4 py-2.5 text-[var(--color-text-secondary)] align-middle max-w-[200px]" title={c.bestMatch}>
                     <span className="block truncate">{c.bestMatch}</span>
