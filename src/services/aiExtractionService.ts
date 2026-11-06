@@ -456,15 +456,27 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
   }
   const currentLocation = bestLocation || '';
 
-  // 9. Timeline extraction from real document text
+  // 9. Comprehensive Timeline Extraction (Handles multi-line, pipe-delimited, and date-anchored resumes)
   const timeline: ExperienceRecord[] = [];
   const rawLines = resumeText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
+  const datePattern = /(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?\b((?:19|20)\d{2}|\d{1,2}\/\d{2,4})\b\s*(?:[-–—]|to)\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?\b(Present|Current|Now|(?:19|20)\d{2}|\d{1,2}\/\d{2,4})\b/i;
+
+  const clinicalTitleRegex = /\b(Registered Nurse|Staff RN|Staff Nurse|Charge Nurse|Travel Nurse|Travel RN|Nurse Practitioner|CRNA|Certified Registered Nurse Anesthetist|Physical Therapist|Respiratory Therapist|Occupational Therapist|Speech-Language Pathologist|Surgical Tech|Surgical Technologist|Telemetry Nurse|Telemetry RN|ICU Nurse|ER Nurse|Emergency Room Nurse|Certified Nursing Assistant|CNA|Patient Care Tech|Medical Assistant|Clinical Nurse Specialist|Licensed Practical Nurse|LPN|LVN)\b/i;
+
+  const facilityKeywords = /\b(Hospital|Medical Center|Health System|Healthcare|Health|Clinic|Infirmary|Center|Rehabilitation|Sports & Spine|Physicians|Care|System|Associates)\b/i;
+
   for (let i = 0; i < rawLines.length; i++) {
     const line = rawLines[i];
-    // Check for pipe-separated work history e.g. "Staff RN | Covenant Health System | Lubbock, TX"
+
+    // Format A: Pipe-separated on single line e.g. "Staff RN | Covenant Health System | Lubbock, TX"
     if (line.includes('|')) {
       const parts = line.split('|').map(p => p.trim());
+      // Skip lines containing contact info or links
+      if (parts.some(p => /@|\.(?:com|org|edu|net)|\+?1?\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/i.test(p))) {
+        continue;
+      }
+
       if (parts.length >= 2 && !/^(email|phone|contact|summary|skills|education|certifications)/i.test(parts[0])) {
         let pos = '';
         let fac = '';
@@ -492,7 +504,7 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
         let desc = '';
         if (i + 1 < rawLines.length) {
           const nextLine = rawLines[i + 1];
-          const dateMatch = nextLine.match(/((?:19|20)\d{2})\s*[-–—]\s*(Present|Current|Now|(?:19|20)\d{2})/i);
+          const dateMatch = nextLine.match(datePattern);
           if (dateMatch) {
             start = dateMatch[1];
             end = dateMatch[2];
@@ -511,11 +523,69 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
             description: sanitizeString(desc || `Clinical care in ${detectedSpecialty}.`),
           });
         }
+        continue;
+      }
+    }
+
+    // Format B: Multi-line stacked entries anchored by date range (e.g. "January 2021 - Present" or "2018 - 2020")
+    const dateMatch = line.match(datePattern);
+    if (dateMatch) {
+      if (i > 0 && rawLines[i - 1].includes('|')) continue;
+
+      const start = dateMatch[1];
+      const end = dateMatch[2];
+
+      let candidateTitle = '';
+      let candidateFacility = '';
+      let candidateLocation = '';
+
+      const precedingLines = [rawLines[i - 2], rawLines[i - 1]].filter(Boolean);
+
+      for (const pline of precedingLines) {
+        if (/^(professional\s+experience|work\s+experience|employment\s+history|experience|education|summary|certifications|work\s+history)$/i.test(pline)) continue;
+
+        const locMatch = pline.match(/\b([A-Z][a-zA-Z\s.-]{2,20}),\s*([A-Z]{2})\b/);
+        if (locMatch && US_STATES.has(locMatch[2])) {
+          candidateLocation = `${locMatch[1].trim()}, ${locMatch[2]}`;
+          const beforeLoc = pline.replace(locMatch[0], '').replace(/[-–—,|/\s]+$/, '').replace(/^[-–—,|/\s]+/, '').trim();
+          if (clinicalTitleRegex.test(beforeLoc)) {
+            candidateTitle = beforeLoc;
+          } else if (beforeLoc.length > 2) {
+            candidateFacility = beforeLoc;
+          }
+        } else if (clinicalTitleRegex.test(pline)) {
+          candidateTitle = pline.replace(/^[-–—•*|/\s]+/, '').trim();
+        } else if (facilityKeywords.test(pline)) {
+          candidateFacility = pline.replace(/^[-–—•*|/\s]+/, '').trim();
+        } else if (!candidateTitle && pline.length < 50 && !/@|\.(?:com|org)/.test(pline)) {
+          candidateTitle = pline;
+        }
+      }
+
+      // Collect bullet point descriptions below date line
+      const descLines: string[] = [];
+      for (let j = i + 1; j < Math.min(rawLines.length, i + 6); j++) {
+        if (datePattern.test(rawLines[j]) || /^(education|certifications|licenses|skills|references)/i.test(rawLines[j])) break;
+        if (/^[-–—•*]/.test(rawLines[j])) {
+          descLines.push(rawLines[j].replace(/^[-–—•*\s]+/, '').trim());
+        }
+      }
+
+      if (candidateTitle || candidateFacility) {
+        timeline.push({
+          id: `exp-${Date.now()}-${timeline.length + 1}`,
+          position: sanitizeString(candidateTitle || detectedPosition),
+          facility: sanitizeString(candidateFacility || 'Clinical Healthcare Facility'),
+          location: sanitizeString(candidateLocation || bestLocation || ''),
+          startDate: start,
+          endDate: end,
+          description: sanitizeString(descLines.join(' ') || `Clinical patient care.`),
+        });
       }
     }
   }
 
-  // If no pipe entries were found, provide factual baseline without fake hospital name
+  // If no employment entries were found, provide factual baseline
   if (timeline.length === 0) {
     const startYear = (new Date().getFullYear() - experienceYears).toString();
     timeline.push({
@@ -527,6 +597,28 @@ export function extractWithHeuristics(resumeText: string, fileName: string): Par
       endDate: 'Present',
       description: `Comprehensive patient management in ${detectedSpecialty} clinical units. Administered acute protocols and multidisciplinary patient evaluations.`,
     });
+  }
+
+  // 10. Prioritize Candidate's Primary Title & Specialty from Most Recent Employment (Last 3 Years)
+  // Ensures title reflects their current practice rather than student/past roles
+  if (timeline.length > 0) {
+    const mostRecentJob = timeline[0];
+    if (mostRecentJob.position && mostRecentJob.position !== 'Staff Role') {
+      const recentPosLower = mostRecentJob.position.toLowerCase();
+      for (const [key, title] of Object.entries(positionKeywords)) {
+        if (recentPosLower.includes(key)) {
+          detectedPosition = title;
+          break;
+        }
+      }
+      // Also check if recent job title specifies specialty (e.g., ICU, Emergency, Med-Surg)
+      for (const [spec, rxList] of Object.entries(specialtyKeywords)) {
+        if (rxList.some(rx => rx.test(mostRecentJob.position) || rx.test(mostRecentJob.description))) {
+          detectedSpecialty = spec;
+          break;
+        }
+      }
+    }
   }
 
   return {
