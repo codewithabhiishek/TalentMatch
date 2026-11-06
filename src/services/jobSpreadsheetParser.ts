@@ -151,28 +151,31 @@ async function parseXlsxWithJSZip(arrayBuffer: ArrayBuffer, fileName: string): P
 
   while ((rowMatch = rowRegex.exec(sheetXml)) !== null) {
     const rowContent = rowMatch[1];
-    const cellRegex = /<c\b[^>]*\br="([A-Z]+)(\d+)"[^>]*(?:\bt="([^"]+)")?[^>]*>([\s\S]*?)<\/c>/gi;
-    let cellMatch: RegExpExecArray | null;
+    const cellTags = rowContent.match(/<c\b[\s\S]*?<\/c>|<c\b[^>]*\/>/gi) || [];
     const rowObj: Record<number, string> = {};
     let maxCol = 0;
 
-    while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
-      const colLetter = cellMatch[1];
-      const type = cellMatch[3] || '';
-      const body = cellMatch[4] || '';
+    for (const cellXml of cellTags) {
+      const openingTag = cellXml.match(/<c\b([^>]*)>/i)?.[1] || '';
+      const rMatch = openingTag.match(/\br="([A-Z]+)(\d+)"/i);
+      if (!rMatch) continue;
+
+      const colLetter = rMatch[1];
+      const tMatch = openingTag.match(/\bt="([^"\s>]+)"/i);
+      const type = tMatch ? tMatch[1] : '';
 
       let val = '';
       if (type === 's') {
-        const vMatch = body.match(/<v\b[^>]*>(\d+)<\/v>/i);
+        const vMatch = cellXml.match(/<v\b[^>]*>(\d+)<\/v>/i);
         if (vMatch) {
           const idx = parseInt(vMatch[1], 10);
           val = sharedStrings[idx] || '';
         }
       } else if (type === 'inlineStr') {
-        const tMatch = body.match(/<t\b[^>]*>([\s\S]*?)<\/t>/i);
+        const tMatch = cellXml.match(/<t\b[^>]*>([\s\S]*?)<\/t>/i);
         if (tMatch) val = tMatch[1].replace(/<[^>]+>/g, '');
       } else {
-        const vMatch = body.match(/<v\b[^>]*>([\s\S]*?)<\/v>/i);
+        const vMatch = cellXml.match(/<v\b[^>]*>([\s\S]*?)<\/v>/i);
         if (vMatch) val = vMatch[1].trim();
       }
 
