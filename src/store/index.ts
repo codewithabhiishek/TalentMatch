@@ -12,6 +12,19 @@ import { AIConfig, defaultAIConfig } from '../services/aiExtractionService';
 import { calculateCandidateJobMatch } from '../services/matchEngine';
 import { notificationAudio, ChimeSound } from '../services/notificationAudioService';
 import { safeJsonParse, sanitizeObject } from '../services/securityService';
+import { haptics } from '../services/hapticsService';
+import {
+  BASE_STORAGE_KEY,
+  DEFAULT_WORKSPACE_ID,
+  getActiveWorkspaceId,
+  setActiveWorkspaceId,
+  sanitizeWorkspaceId,
+  getScopedStorageKey,
+  getAvailableWorkspaces,
+  deleteWorkspaceData,
+  workspaceStorageAdapter,
+  migrateLegacyStorageIfNeeded,
+} from '../services/storageService';
 
 export type Theme = 'light' | 'dark' | 'black';
 
@@ -131,6 +144,12 @@ export interface AppState {
   resetAllData: () => void;
   exportDataJSON: () => string;
   importDataJSON: (jsonString: string) => boolean;
+
+  // Multi-Workspace / Multi-User Isolation
+  activeWorkspaceId: string;
+  switchWorkspace: (workspaceId: string) => void;
+  getAvailableWorkspaces: () => string[];
+  deleteWorkspace: (workspaceId: string) => void;
 }
 
 // Initialize theme from localStorage or system preference
@@ -167,6 +186,8 @@ export const useAppStore = create<AppState>()(
       userProfile: defaultProfile,
       aiConfig: defaultAIConfig,
 
+      activeWorkspaceId: getActiveWorkspaceId(),
+
       // Default to empty workspace so new installations start clean and blank
       candidates: [],
       jobs: [],
@@ -195,24 +216,37 @@ export const useAppStore = create<AppState>()(
         aiConfig: { ...state.aiConfig, ...sanitizeObject(config) },
       })),
 
-      updateCandidateStatus: (id, status) => set((state) => ({
-        candidates: state.candidates.map(c => c.id === id ? { ...c, status } : c),
-      })),
+      updateCandidateStatus: (id, status) => {
+        if (status === 'placed') haptics.accept();
+        else if (status === 'rejected') haptics.reject();
+        else haptics.select();
+        set((state) => ({
+          candidates: state.candidates.map(c => c.id === id ? { ...c, status } : c),
+        }));
+      },
 
       updateCandidate: (id, updates) => set((state) => ({
         candidates: state.candidates.map(c => c.id === id ? { ...c, ...sanitizeObject(updates) } : c),
       })),
 
-      deleteCandidate: (id) => set((state) => ({
-        candidates: state.candidates.filter(c => c.id !== id),
-        jobMatches: state.jobMatches.filter(m => m.candidateId !== id),
-      })),
+      deleteCandidate: (id) => {
+        haptics.delete();
+        set((state) => ({
+          candidates: state.candidates.filter(c => c.id !== id),
+          jobMatches: state.jobMatches.filter(m => m.candidateId !== id),
+        }));
+      },
 
-      addCandidate: (candidate) => set((state) => ({
-        candidates: [sanitizeObject(candidate), ...state.candidates],
-      })),
+      addCandidate: (candidate) => {
+        haptics.match();
+        set((state) => ({
+          candidates: [sanitizeObject(candidate), ...state.candidates],
+        }));
+      },
 
-      addCandidateWithMatches: (rawCandidate) => set((state) => {
+      addCandidateWithMatches: (rawCandidate) => {
+        haptics.match();
+        set((state) => {
         const candidate = sanitizeObject(rawCandidate);
         // Calculate matches with active jobs
         const activeJobs = state.jobs.filter(j => j.status === 'active');
@@ -239,16 +273,20 @@ export const useAppStore = create<AppState>()(
           candidates: [candidateWithBestMatch, ...state.candidates],
           jobMatches: [...newMatches, ...state.jobMatches],
         };
-      }),
+      });
+      },
 
       updateJob: (id, updates) => set((state) => ({
         jobs: state.jobs.map(j => j.id === id ? { ...j, ...sanitizeObject(updates) } : j),
       })),
 
-      deleteJob: (id) => set((state) => ({
-        jobs: state.jobs.filter(j => j.id !== id),
-        jobMatches: state.jobMatches.filter(m => m.jobId !== id),
-      })),
+      deleteJob: (id) => {
+        haptics.delete();
+        set((state) => ({
+          jobs: state.jobs.filter(j => j.id !== id),
+          jobMatches: state.jobMatches.filter(m => m.jobId !== id),
+        }));
+      },
 
       addJob: (job) => set((state) => ({
         jobs: [sanitizeObject(job), ...state.jobs],
@@ -274,9 +312,14 @@ export const useAppStore = create<AppState>()(
         };
       }),
 
-      updateMatchStatus: (id, status) => set((state) => ({
-        jobMatches: state.jobMatches.map(m => m.id === id ? { ...m, status } : m),
-      })),
+      updateMatchStatus: (id, status) => {
+        if (status === 'accepted') haptics.accept();
+        else if (status === 'rejected') haptics.reject();
+        else haptics.select();
+        set((state) => ({
+          jobMatches: state.jobMatches.map(m => m.id === id ? { ...m, status } : m),
+        }));
+      },
 
       addImportedFile: (file) => set((state) => ({
         importedFiles: [file, ...state.importedFiles],
@@ -304,6 +347,14 @@ export const useAppStore = create<AppState>()(
         const isResume = newNotif.title.toLowerCase().includes('resume') ||
                          newNotif.title.toLowerCase().includes('candidate') ||
                          newNotif.title.toLowerCase().includes('folder');
+
+        if (newNotif.type === 'error' || newNotif.type === 'warning') {
+          haptics.error();
+        } else if (newNotif.type === 'success' || isMatch) {
+          haptics.match();
+        } else {
+          haptics.tap();
+        }
 
         let shouldAlert = true;
         if (isMatch && !currentSettings.matchAlerts) shouldAlert = false;
@@ -340,6 +391,8 @@ export const useAppStore = create<AppState>()(
         else if (state.theme === 'black') newTheme = 'light';
         else newTheme = 'dark';
 
+        haptics.select();
+
         if (typeof window !== 'undefined') {
           localStorage.setItem('talentflow-theme', newTheme);
         }
@@ -354,6 +407,7 @@ export const useAppStore = create<AppState>()(
       },
 
       loadSampleData: () => {
+        haptics.match();
         set({
           candidates: mockCandidates,
           jobs: mockJobs,
@@ -364,6 +418,7 @@ export const useAppStore = create<AppState>()(
       },
 
       clearAllData: () => {
+        haptics.delete();
         set({
           candidates: [],
           jobs: [],
@@ -374,6 +429,7 @@ export const useAppStore = create<AppState>()(
       },
 
       resetAllData: () => {
+        haptics.delete();
         set({
           candidates: [],
           jobs: [],
@@ -390,6 +446,7 @@ export const useAppStore = create<AppState>()(
         const exportPayload = {
           version: 1,
           exportedAt: new Date().toISOString(),
+          activeWorkspaceId: state.activeWorkspaceId,
           userProfile: state.userProfile,
           aiConfig: state.aiConfig,
           candidates: state.candidates,
@@ -416,6 +473,7 @@ export const useAppStore = create<AppState>()(
               aiConfig: parsed.aiConfig ? { ...state.aiConfig, ...sanitizeObject(parsed.aiConfig) } : state.aiConfig,
               theme: (parsed.theme === 'light' || parsed.theme === 'dark' || parsed.theme === 'black') ? parsed.theme : state.theme,
             }));
+            haptics.match();
             return true;
           }
           return false;
@@ -423,17 +481,66 @@ export const useAppStore = create<AppState>()(
           return false;
         }
       },
+
+      switchWorkspace: (workspaceId: string) => {
+        const sanitized = sanitizeWorkspaceId(workspaceId);
+        setActiveWorkspaceId(sanitized);
+        haptics.select();
+
+        const raw = workspaceStorageAdapter.getItem(BASE_STORAGE_KEY);
+        if (raw) {
+          const parsed = safeJsonParse<{ state?: Partial<AppState> }>(raw, {});
+          if (parsed && parsed.state) {
+            set({
+              ...parsed.state,
+              activeWorkspaceId: sanitized,
+            });
+            return;
+          }
+        }
+
+        // Fresh isolated workspace state
+        set({
+          activeWorkspaceId: sanitized,
+          candidates: [],
+          jobs: [],
+          jobMatches: [],
+          importedFiles: [],
+          notifications: [],
+          userProfile: {
+            ...defaultProfile,
+            department: sanitized === 'travel-nursing' ? 'Travel Nursing Division' :
+                        sanitized === 'allied-health' ? 'Allied Health Division' :
+                        sanitized === 'locum-tenens' ? 'Physician & Locum Division' :
+                        defaultProfile.department,
+          },
+        });
+      },
+
+      getAvailableWorkspaces: () => getAvailableWorkspaces(),
+
+      deleteWorkspace: (workspaceId: string) => {
+        const target = sanitizeWorkspaceId(workspaceId);
+        if (target === DEFAULT_WORKSPACE_ID) return;
+        deleteWorkspaceData(target);
+        haptics.delete();
+        if (get().activeWorkspaceId === target) {
+          get().switchWorkspace(DEFAULT_WORKSPACE_ID);
+        }
+      },
     }),
     {
-      name: 'talentflow-storage',
-      storage: createJSONStorage(() => localStorage),
+      name: BASE_STORAGE_KEY,
+      storage: createJSONStorage(() => workspaceStorageAdapter),
       onRehydrateStorage: () => (state) => {
+        migrateLegacyStorageIfNeeded();
         if (state && state.userProfile && state.userProfile.email?.includes('talentflow.com')) {
           state.updateUserProfile({ email: 'jordan.rivera@talentmatch.ai' });
         }
       },
       // Only persist long-lived application state & device data in localStorage
       partialize: (state) => ({
+        activeWorkspaceId: state.activeWorkspaceId,
         candidates: state.candidates,
         jobs: state.jobs,
         jobMatches: state.jobMatches,

@@ -3,7 +3,7 @@ import {
   Save, User, Bell, Database, Key, Palette, Check, Sun, Moon, Sparkles,
   Keyboard, HardDrive, Download, Upload, RefreshCw, AlertTriangle, CheckCircle2,
   FileText, Briefcase, Users, GitMerge, Globe, ChevronDown, Trash2,
-  Volume2, VolumeX, Laptop, Play, Mail, ShieldCheck
+  Volume2, VolumeX, Laptop, Play, Mail, ShieldCheck, Layers, ExternalLink, Plus
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { SHORTCUT_DEFINITIONS, isMac } from '../hooks/useKeyboardShortcuts';
@@ -20,7 +20,8 @@ export function Settings() {
     aiConfig, updateAIConfig,
     candidates, jobs, jobMatches, importedFiles, notifications,
     notificationSettings, updateNotificationSettings, addNotification,
-    loadSampleData, clearAllData, resetAllData, exportDataJSON, importDataJSON
+    loadSampleData, clearAllData, resetAllData, exportDataJSON, importDataJSON,
+    activeWorkspaceId, switchWorkspace, getAvailableWorkspaces, deleteWorkspace
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'storage' | 'shortcuts' | 'notifications' | 'integrations' | 'api'>('profile');
@@ -28,6 +29,7 @@ export function Settings() {
   const [saveMessage, setSaveMessage] = useState('Saved successfully');
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [storageSize, setStorageSize] = useState<string>('0 KB');
+  const [customWsInput, setCustomWsInput] = useState('');
   const [testAlertSent, setTestAlertSent] = useState(false);
   const [playingSoundId, setPlayingSoundId] = useState<ChimeSound | null>(null);
   const [browserPermission, setBrowserPermission] = useState<string>(
@@ -96,12 +98,14 @@ export function Settings() {
   const updateStorageSize = () => {
     try {
       if (typeof window !== 'undefined') {
-        const item = localStorage.getItem('talentflow-storage') || '';
+        const item = localStorage.getItem(`talentflow-storage:${activeWorkspaceId}`) || localStorage.getItem('talentflow-storage') || '';
         const bytes = new Blob([item]).size;
         if (bytes < 1024) {
           setStorageSize(`${bytes} B`);
-        } else {
+        } else if (bytes < 1024 * 1024) {
           setStorageSize(`${(bytes / 1024).toFixed(1)} KB`);
+        } else {
+          setStorageSize(`${(bytes / (1024 * 1024)).toFixed(2)} MB`);
         }
       }
     } catch {
@@ -111,7 +115,7 @@ export function Settings() {
 
   useEffect(() => {
     updateStorageSize();
-  }, [candidates, jobs, jobMatches, importedFiles, notifications, userProfile]);
+  }, [candidates, jobs, jobMatches, importedFiles, notifications, userProfile, activeWorkspaceId]);
 
   const handleSaveProfile = () => {
     const cleaned = {
@@ -667,9 +671,9 @@ export function Settings() {
               <div className="p-4 bg-[var(--color-surface-secondary)]/60 border border-[var(--color-border)] rounded-xl space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                   <div>
-                    <span className="text-[var(--color-text-tertiary)]">Storage Key: </span>
+                    <span className="text-[var(--color-text-tertiary)]">Scoped Storage Key: </span>
                     <code className="text-xs font-mono font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface)] px-1.5 py-0.5 rounded border border-[var(--color-border)]">
-                      talentflow-storage
+                      talentflow-storage:{activeWorkspaceId}
                     </code>
                   </div>
                   <div className="text-[var(--color-text-secondary)]">
@@ -704,6 +708,85 @@ export function Settings() {
                     <p className="text-base font-bold text-[var(--color-text-primary)]">{notifications.length}</p>
                     <p className="text-[10px] text-[var(--color-text-tertiary)]">Notifications</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Workspace Profiles (Multi-User / Multi-Division Data Isolation) */}
+              <div className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Layers size={14} className="text-sky-400" />
+                      Recruiter Workspace Profiles (Isolated Storage)
+                    </h4>
+                    <p className="text-[11px] text-[var(--color-text-tertiary)] mt-0.5">
+                      Operate in independent clinical divisions or test scenarios. Each workspace is isolated with zero cross-account state collision.
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 self-start sm:self-auto">
+                    Active: {activeWorkspaceId}
+                  </span>
+                </div>
+
+                {/* Preset Switcher Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {getAvailableWorkspaces().map((ws) => (
+                    <div key={ws} className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => switchWorkspace(ws)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
+                          activeWorkspaceId === ws
+                            ? 'bg-sky-500/20 text-sky-400 border-sky-500/40 shadow-xs'
+                            : 'bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:text-[var(--color-text-primary)]'
+                        }`}
+                      >
+                        <span className="capitalize">{ws.replace(/[-_]/g, ' ')}</span>
+                        {activeWorkspaceId === ws && <Check size={12} className="text-sky-400" />}
+                      </button>
+                      {ws !== 'default' && (
+                        <button
+                          type="button"
+                          onClick={() => deleteWorkspace(ws)}
+                          title={`Delete workspace ${ws}`}
+                          className="p-1.5 rounded-lg text-[var(--color-text-tertiary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Create Custom Workspace */}
+                <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
+                  <input
+                    type="text"
+                    value={customWsInput}
+                    onChange={(e) => setCustomWsInput(e.target.value)}
+                    placeholder="Create custom workspace (e.g. oncology-icu, pediatrics)..."
+                    className="flex-1 px-3 py-1.5 bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-lg text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-sky-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && customWsInput.trim()) {
+                        e.preventDefault();
+                        switchWorkspace(customWsInput.trim());
+                        setCustomWsInput('');
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customWsInput.trim()) {
+                        switchWorkspace(customWsInput.trim());
+                        setCustomWsInput('');
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                  >
+                    <Plus size={13} />
+                    <span>Create / Switch</span>
+                  </button>
                 </div>
               </div>
 
@@ -1469,6 +1552,27 @@ export function Settings() {
                 </div>
               </div>
           )}
+        </div>
+
+        {/* Creator Portfolio Attribution Footer */}
+        <div className="pt-6 pb-2 border-t border-[var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--color-text-tertiary)]">
+          <div className="flex items-center gap-1.5">
+            <span>Designed &amp; Engineered by</span>
+            <a
+              href="https://abhiishek.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-sky-400 hover:text-sky-300 transition-colors inline-flex items-center gap-1 underline underline-offset-2"
+            >
+              Abhishek
+              <ExternalLink size={11} />
+            </a>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="font-medium text-[var(--color-text-secondary)]">TalentMatch ATS</span>
+            <span>•</span>
+            <span className="font-mono text-[11px] text-[var(--color-text-tertiary)]">Multi-Workspace Isolation &amp; Tactile Haptics</span>
+          </div>
         </div>
       </div>
 

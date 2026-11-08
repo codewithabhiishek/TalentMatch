@@ -3,7 +3,8 @@ import {
   LayoutDashboard, Users, Briefcase, GitMerge, Upload, Settings,
   Search, Bell, BellOff, Menu, X, ChevronLeft, ChevronRight, User, LogOut,
   CheckCircle, CheckCircle2, AlertTriangle, Info, XCircle, Sun, Moon, Sparkles, ChevronDown,
-  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop, ShieldCheck, Activity, Building2
+  Keyboard, PanelLeftClose, PanelLeftOpen, Download, Laptop, ShieldCheck, Activity, Building2,
+  ExternalLink, Layers
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { Page, Notification } from '../types';
@@ -61,7 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     currentPage, sidebarCollapsed, mobileSidebarOpen, notifications, theme, userProfile, updateUserProfile,
     candidates, jobs, loadSampleData,
     navigateTo, toggleSidebar, setMobileSidebarOpen, markNotificationRead, markAllNotificationsRead, toggleTheme,
-    setShortcutsModalOpen
+    setShortcutsModalOpen, activeWorkspaceId
   } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -256,6 +257,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <Laptop size={15} />
             </button>
+          </div>
+        )}
+
+        {/* Creator Attribution in Sidebar */}
+        {!sidebarCollapsed && (
+          <div className="px-3 pb-3 pt-1 border-t border-[var(--color-border)]/40 text-center">
+            <a
+              href="https://abhiishek.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] text-[var(--color-text-tertiary)] hover:text-sky-400 transition-colors"
+            >
+              <span>Crafted by Abhishek</span>
+              <ExternalLink size={10} />
+            </a>
           </div>
         )}
       </aside>
@@ -646,6 +662,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Activity size={14} className="text-[var(--color-text-tertiary)] group-hover:text-white transition-colors" />
                     <span>Return to Overview</span>
                   </button>
+
+                  {/* Creator Portfolio & Workspace Badge */}
+                  <div className="border-t border-[var(--color-border)]/70 mt-2 pt-2 flex items-center justify-between text-[10px] text-[var(--color-text-tertiary)] px-1">
+                    <div className="flex items-center gap-1 font-mono text-sky-400">
+                      <Layers size={11} />
+                      <span className="truncate max-w-[100px]">{activeWorkspaceId}</span>
+                    </div>
+                    <a
+                      href="https://abhiishek.is-a.dev/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+                    >
+                      <span>Abhishek</span>
+                      <ExternalLink size={10} />
+                    </a>
+                  </div>
                 </div>
               )}
             </div>

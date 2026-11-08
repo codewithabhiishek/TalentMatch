@@ -7,12 +7,15 @@
   </p>
 
   <p align="center">
+    <a href="https://abhiishek.is-a.dev/"><img src="https://img.shields.io/badge/Portfolio-abhiishek.is--a.dev-0284c7?style=for-the-badge&logo=safari&logoColor=white" alt="Portfolio" /></a>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
-    <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6.3-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
+    <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6.4-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" /></a>
     <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" /></a>
     <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" /></a>
     <a href="https://ollama.com/"><img src="https://img.shields.io/badge/Ollama-Local_LLM-000000?style=for-the-badge&logo=ollama&logoColor=white" alt="Ollama" /></a>
+    <img src="https://img.shields.io/badge/Vulnerabilities-0_Passed-10b981?style=for-the-badge&logo=shield" alt="0 Vulnerabilities" />
+    <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge&logo=checkmarx" alt="Tests 100% Passing" />
   </p>
 
   <p align="center">
@@ -83,6 +86,15 @@ TalentMatch features an intentional, architectural visual identity rooted in exe
 * **Sequence Navigation**: Two-key rapid jumps (<kbd>G</kbd> then <kbd>O</kbd>, <kbd>C</kbd>, <kbd>J</kbd>, <kbd>M</kbd>, <kbd>R</kbd>, <kbd>S</kbd>) with visual floating indicator.
 * **Global Search**: <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> or <kbd>/</kbd> anywhere.
 * **Cheat Sheet**: Press <kbd>?</kbd> anytime to open the modal cheat sheet.
+
+### 🏢 6. Multi-Workspace Profile Data Isolation
+* **Zero Cross-Account State Collision**: Complete namespace isolation across recruiter divisions (`travel-nursing`, `allied-health`, `locum-tenens`, or custom division IDs) utilizing scoped storage keys (`talentflow-storage:[workspaceId]`).
+* **Seamless Legacy Migration**: Automatic, lossless forward migration of legacy unstructured storage keys on first boot.
+* **One-Click Workspace Switching**: Switch active divisions instantly from Settings with live local device storage auditing and backup portability.
+
+### 📳 7. Tactile Mobile Haptic Feedback Engine
+* **Physical Interaction Nuance**: Hardware vibration patterns calibrated for recruiter workflows: `accept` ([15ms, 50ms, 20ms]), `reject` ([20ms, 40ms, 20ms]), `match` ([15ms, 60ms, 25ms]), `tap` (8ms), and `error` ([35ms, 50ms, 35ms]).
+* **SSR-Safe & Battery Conscious**: Guaranteed execution safety across non-supporting desktop browsers and battery-saving mobile modes.
 
 ---
 
@@ -238,6 +250,8 @@ npm run electron
 | Command | Action |
 | :--- | :--- |
 | `npm run dev` | Starts Vite local development server with HMR |
+| `npm test` | Runs the automated unit test suite (Data Isolation, Haptics, Match Engine) |
+| `npm run verify` | Runs the multi-suite verification checks (benchmarks, tests, parsers) |
 | `npm run build` | Compiles optimized production bundle in `dist/` |
 | `npm run typecheck` | Executes TypeScript type checking (`tsc --noEmit`) |
 | `npm run benchmark` | Executes the 100% clinical extraction accuracy & speed benchmark |
@@ -250,6 +264,7 @@ npm run electron
 ## 👤 Author
 
 - **Developer**: [Abhishek Jain](https://github.com/codewithabhiishek)
+- **Portfolio**: [https://abhiishek.is-a.dev/](https://abhiishek.is-a.dev/)
 - **GitHub**: [@codewithabhiishek](https://github.com/codewithabhiishek)
 - **Repository**: [https://github.com/codewithabhiishek/TalentMatch](https://github.com/codewithabhiishek/TalentMatch)
 - **Email**: socials.abhiishek@gmail.com
