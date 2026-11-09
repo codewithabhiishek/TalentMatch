@@ -112,3 +112,4 @@ export const workspaceStorageAdapter = {
     localStorage.removeItem(scopedKey);
   },
 };
+
